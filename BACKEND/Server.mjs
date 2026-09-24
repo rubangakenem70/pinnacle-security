@@ -8,19 +8,28 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// TiDB Connection - Put your TiDB details in.env
+console.log("Connecting to:", process.env.DB_HOST);
+
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  port: process.env.DB_PORT || 4000,
-  ssl: { rejectUnauthorized: true }
+  port: Number(process.env.DB_PORT) || 4000,
+  ssl: {
+    minVersion: 'TLSv1.2',
+    rejectUnauthorized: true
+  },
+  waitForConnections: true,
+  connectionLimit: 10
 });
 
-// Create tables
 async function initDB() {
   try {
+    const conn = await pool.getConnection();
+    console.log("✅ Connected to TiDB!");
+    conn.release();
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS contacts (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -46,36 +55,43 @@ async function initDB() {
       )
     `);
     console.log("✅ Tables ready");
-  } catch (err) { console.error(err); }
+  } catch (err) {
+    console.error("❌ DB Error:", err.message);
+    console.error(err);
+  }
 }
 initDB();
 
-// CONTACT API
 app.post('/api/contact', async (req, res) => {
-  const { fullName, email, service, message } = req.body;
-  const [result] = await pool.query(
-    "INSERT INTO contacts (full_name, email, service, message) VALUES (?,?,?,?)",
-    [fullName, email, service, message]
-  );
-  res.json({ id: result.insertId });
+  try {
+    const { fullName, email, service, message } = req.body;
+    const [result] = await pool.query(
+      "INSERT INTO contacts (full_name, email, service, message) VALUES (?,?,?,?)",
+      [fullName, email, service, message]
+    );
+    res.json({ id: result.insertId });
+  } catch(e){ res.status(500).json({error:e.message}) }
 });
+
 app.get('/api/contact', async (req, res) => {
   const [rows] = await pool.query("SELECT * FROM contacts ORDER BY full_name ASC");
   res.json(rows);
 });
 
-// APPLICANTS API
 app.post('/api/applicants', async (req, res) => {
-  const { fullName, phone, email, position, education, experience, interest, appliedBy } = req.body;
-  const [result] = await pool.query(
-    "INSERT INTO applicants (full_name, phone, email, position, education, experience, interest, applied_by) VALUES (?,?,?,?,?,?,?,?)",
-    [fullName, phone, email, position, education, experience, interest, appliedBy]
-  );
-  res.json({ id: result.insertId });
+  try {
+    const { fullName, phone, email, position, education, experience, interest, appliedBy } = req.body;
+    const [result] = await pool.query(
+      "INSERT INTO applicants (full_name, phone, email, position, education, experience, interest, applied_by) VALUES (?,?,?,?,?,?,?,?)",
+      [fullName, phone, email, position, education, experience, interest, appliedBy]
+    );
+    res.json({ id: result.insertId });
+  } catch(e){ res.status(500).json({error:e.message}) }
 });
+
 app.get('/api/applicants', async (req, res) => {
   const [rows] = await pool.query("SELECT * FROM applicants ORDER BY full_name ASC");
   res.json(rows);
 });
 
-app.listen(5000, () => console.log("🚀 Backend running on http://localhost:5000"));
+app.listen(process.env.PORT || 5000, () => console.log(`🚀 Backend running on http://localhost:${process.env.PORT || 5000}`));
