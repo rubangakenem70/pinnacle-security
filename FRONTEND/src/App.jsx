@@ -35,7 +35,7 @@ const Home = () => {
     <div className="section"><div className="card"><h3>🛡️ Who We Are</h3><p>Pinnacle Security Ltd at Plot 442 & 443 Masajjagere is licensed ISIC 8010 and F. 60+ sites, 150+ officers, 4.3★ rated.</p></div><div className="card gold"><h3>🎯 Our Services</h3><p>Security Guard, Construction, CCTV, Mobile Patrol, Event Security. 24/7 professional.</p></div><div className="card dark"><h3>🚨 Recruitment - No Fees</h3><p>SITE INCHARGE: UCE + 3yrs | SUPERVISOR: UACE + Rider Permit + 3yrs | Free Training 2 weeks | Salary 500k-800k</p><Link to="/join" className="btn-yellow">Apply Now</Link></div></div></>)
 }
 
-const About = () => (<div className="section"><h2>About Pinnacle</h2><div className="card"><h3>📍 Location</h3><p>Plot 442 & 443 Masajjagere, Off Kironde Road Muyenga. Licensed ISIC 8010 & F. Control Room 24/7 at 0754 139726.</p></div></div>)
+const About = () => (<div className="section"><h2>About Pinnacle</h2><div className="card"><h3>📍 Location</h3><p>Plot 442 & 443 Masajjagere, Muyenga. Licensed ISIC 8010 & F. Control Room 24/7 at 0754 139726.</p></div></div>)
 const Services = () => { const [open,setOpen]=useState(null); const list=[{n:"1. Security Guard Service (ISIC 8010)",d:["Licensed ISIC 8010. 60+ sites."]},{n:"2. Construction Security (F)",d:["Protect materials."]},{n:"3. CCTV & Patrol",d:["CCTV, alarm, 10 mins response."]}]; return (<div className="section"><h2>Our Services</h2>{list.map((s,i)=><div key={i} className="service-box"><div className="service-head" onClick={()=>setOpen(open===i?null:i)}><strong>{s.n}</strong><span>{open===i?'Close -':'Open +'}</span></div>{open===i&&<div className="service-body">{s.d.map((p,k)=><p key={k}>{p}</p>)}</div>}</div>)}</div>) }
 
 const Contact = () => {
@@ -44,13 +44,36 @@ const Contact = () => {
   return (<div className="section"><h2>Contact Us - Big Form</h2><form className="form-big" onSubmit={send}><div className="form-row-2"><div><label>Full Names *</label><input value={f.fullName} onChange={e=>setF({...f,fullName:e.target.value})} required/></div><div><label>Email *</label><input type="email" value={f.email} onChange={e=>setF({...f,email:e.target.value})} required/></div></div><label>Service Needed *</label><select value={f.service} onChange={e=>setF({...f,service:e.target.value})} required><option value="">Choose Service</option><option>Security Guard Service</option><option>Construction Security</option><option>CCTV Installation</option><option>Mobile Patrol</option><option>Event Security</option></select><label>Message *</label><textarea rows="6" value={f.message} onChange={e=>setF({...f,message:e.target.value})} required></textarea><button className="big-btn">Submit Inquiry</button>{s&&<p className="msg">{s}</p>}</form></div>)
 }
 
+// APPLY NOW - POSITION REMOVED AS YOU ASKED
 const Join = () => {
-  const [f,setF]=useState({fullName:"",phone:"",email:"",position:"SITE INCHARGE",education:"",experience:"",interest:"",appliedBy:""}); const [s,setS]=useState("");
-  const send=async(e)=>{ e.preventDefault(); setS("Sending..."); try{ const r=await fetch(`${API_URL}/api/applicants`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(f)}); if(r.ok){ setS("✅ Saved!"); setF({fullName:"",phone:"",email:"",position:"SITE INCHARGE",education:"",experience:"",interest:"",appliedBy:""}) } }catch{ setS("❌ Error") } };
-  return (<div className="section"><h2>Apply Now - 2 Columns</h2><form className="form-big" onSubmit={send}><div className="form-row-2"><div><label>Position *</label><select value={f.position} onChange={e=>setF({...f,position:e.target.value})}><option>SITE INCHARGE</option><option>SUPERVISOR / DEPLOYMENT OFFICER</option></select></div><div><label>Full Name *</label><input value={f.fullName} onChange={e=>setF({...f,fullName:e.target.value})} required/></div></div><div className="form-row-2"><div><label>Phone *</label><input value={f.phone} onChange={e=>setF({...f,phone:e.target.value})} required/></div><div><label>Email *</label><input type="email" value={f.email} onChange={e=>setF({...f,email:e.target.value})} required/></div></div><div className="form-row-2"><div><label>Education Level *</label><select value={f.education} onChange={e=>setF({...f,education:e.target.value})} required><option value="">Choose</option><option>P7</option><option>O-Level</option><option>UCE</option><option>UACE</option><option>Diploma</option><option>Degree</option><option>Master</option></select></div><div><label>New / Ongoing *</label><input value={f.appliedBy} onChange={e=>setF({...f,appliedBy:e.target.value})} required/></div></div><div className="form-row-2"><div><label>Why interested? *</label><input value={f.interest} onChange={e=>setF({...f,interest:e.target.value})} required/></div><div><label>Experience *</label><textarea rows="2" value={f.experience} onChange={e=>setF({...f,experience:e.target.value})} required></textarea></div></div><button className="big-btn">Submit Application</button>{s&&<p className="msg">{s}</p>}</form></div>)
+  const [f,setF]=useState({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",appliedBy:""}); const [s,setS]=useState("");
+  const send=async(e)=>{ e.preventDefault(); setS("Sending..."); try{ const r=await fetch(`${API_URL}/api/applicants`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...f, position: "Not Specified"})}); if(r.ok){ setS("✅ Application Saved! We will call you soon."); setF({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",appliedBy:""}) } }catch{ setS("❌ Error") } };
+  return (
+    <div className="section">
+      <h2>Apply Now - Join Pinnacle Security</h2>
+      <p style={{textAlign:'center', fontSize:'17px', marginBottom:'20px', background:'#fff3cd', padding:'15px', borderRadius:'12px', border:'2px dashed #ffcc00'}}>Free Training 2 weeks at Plot 442 & 443 Masajjagere Muyenga HQ 8AM-4PM | No fees | Bring original documents</p>
+      <form className="form-big" onSubmit={send}>
+        <div className="form-row-2">
+          <div><label>Full Name As On National ID *</label><input value={f.fullName} onChange={e=>setF({...f,fullName:e.target.value})} required placeholder="Your full name"/></div>
+          <div><label>Phone Number *</label><input value={f.phone} onChange={e=>setF({...f,phone:e.target.value})} required placeholder="07XXXXXXXX"/></div>
+        </div>
+        <div className="form-row-2">
+          <div><label>Email Address *</label><input type="email" value={f.email} onChange={e=>setF({...f,email:e.target.value})} required placeholder="your@email.com"/></div>
+          <div><label>Highest Education Level *</label><select value={f.education} onChange={e=>setF({...f,education:e.target.value})} required><option value="">Choose Education Level</option><option>P7</option><option>O-Level</option><option>UCE</option><option>UACE</option><option>Diploma</option><option>Degree</option><option>Master</option></select></div>
+        </div>
+        <div className="form-row-2">
+          <div><label>New or Ongoing Applicant? *</label><input value={f.appliedBy} onChange={e=>setF({...f,appliedBy:e.target.value})} required placeholder="New or Ongoing"/></div>
+          <div><label>Why Are You Interested? *</label><input value={f.interest} onChange={e=>setF({...f,interest:e.target.value})} required placeholder="I want to protect..."/></div>
+        </div>
+        <label>Your Experience Details *</label>
+        <textarea rows="3" value={f.experience} onChange={e=>setF({...f,experience:e.target.value})} required placeholder="Where you worked before, years of experience..."></textarea>
+        <button className="big-btn">Submit Application - Free</button>
+        {s&&<p className="msg">{s}</p>}
+      </form>
+    </div>
+  )
 }
 
-// ADMIN - SEARCHBAR COLOR FIXED - HIGH VISIBILITY
 const Admin = () => {
   const [contacts, setContacts] = useState([]); 
   const [applicants, setApplicants] = useState([]); 
@@ -58,7 +81,6 @@ const Admin = () => {
   const [searchName, setSearchName] = useState("");
   const [eduFilter, setEduFilter] = useState("");
   const [serviceFilter, setServiceFilter] = useState("");
-  const [positionFilter, setPositionFilter] = useState("");
 
   const load = () => {
     fetch(`${API_URL}/api/contact`).then(r=>r.json()).then(d=>Array.isArray(d)&&setContacts(d));
@@ -73,10 +95,9 @@ const Admin = () => {
   });
 
   const filteredApplicants = applicants.filter(a => {
-    const matchName = searchName ? (a.full_name||a.fullName||"").toLowerCase().includes(searchName.toLowerCase()) || (a.phone||"").toLowerCase().includes(searchName.toLowerCase()) || (a.email||"").toLowerCase().includes(searchName.toLowerCase()) : true;
+    const matchName = searchName ? (a.full_name||a.fullName||"").toLowerCase().includes(searchName.toLowerCase()) || (a.phone||"").toLowerCase().includes(searchName.toLowerCase()) : true;
     const matchEdu = eduFilter ? (a.education||"").toLowerCase() === eduFilter.toLowerCase() : true;
-    const matchPos = positionFilter ? (a.position||"").toLowerCase() === positionFilter.toLowerCase() : true;
-    return matchName && matchEdu && matchPos;
+    return matchName && matchEdu;
   });
 
   return (
@@ -86,7 +107,7 @@ const Admin = () => {
         <div className="stats"><span>📩 {contacts.length} Contacts</span><span>👮 {applicants.length} Applicants</span></div>
         <div className="tabs">
           <button onClick={()=>{setTab("contacts"); setSearchName(""); setServiceFilter("");}} className={tab==="contacts"?"tab on":"tab"}>Contacts</button>
-          <button onClick={()=>{setTab("applicants"); setSearchName(""); setEduFilter(""); setPositionFilter("");}} className={tab==="applicants"?"tab on":"tab"}>Applicants</button>
+          <button onClick={()=>{setTab("applicants"); setSearchName(""); setEduFilter("");}} className={tab==="applicants"?"tab on":"tab"}>Applicants</button>
         </div>
       </div>
 
@@ -101,7 +122,6 @@ const Admin = () => {
               <option value="CCTV Installation">CCTV Installation</option>
               <option value="Mobile Patrol">Mobile Patrol</option>
               <option value="Event Security">Event Security</option>
-              <option value="Alarm System">Alarm System</option>
             </select>
           </>
         ) : (
@@ -109,22 +129,11 @@ const Admin = () => {
             <input className="search-visible" placeholder="🔍 Search by Name, Phone or Email..." value={searchName} onChange={e=>setSearchName(e.target.value)} />
             <select className="search-visible-dropdown" value={eduFilter} onChange={e=>setEduFilter(e.target.value)}>
               <option value="">🎓 Search by Education Level ▼</option>
-              <option value="P7">P7</option>
-              <option value="O-Level">O-Level</option>
-              <option value="UCE">UCE</option>
-              <option value="UACE">UACE</option>
-              <option value="Diploma">Diploma</option>
-              <option value="Degree">Degree</option>
-              <option value="Master">Master</option>
-            </select>
-            <select className="search-visible-dropdown" value={positionFilter} onChange={e=>setPositionFilter(e.target.value)}>
-              <option value="">💼 Search by Position ▼</option>
-              <option value="SITE INCHARGE">SITE INCHARGE</option>
-              <option value="SUPERVISOR / DEPLOYMENT OFFICER">SUPERVISOR</option>
+              <option value="P7">P7</option><option value="O-Level">O-Level</option><option value="UCE">UCE</option><option value="UACE">UACE</option><option value="Diploma">Diploma</option><option value="Degree">Degree</option><option value="Master">Master</option>
             </select>
           </>
         )}
-        <button className="btn-dark" onClick={()=>{setSearchName(""); setEduFilter(""); setServiceFilter(""); setPositionFilter("");}}>Clear</button>
+        <button className="btn-dark" onClick={()=>{setSearchName(""); setEduFilter(""); setServiceFilter("");}}>Clear</button>
         <button className="btn-yellow" onClick={load}>🔄 Refresh</button>
       </div>
 
@@ -135,8 +144,8 @@ const Admin = () => {
             <table><thead><tr><th>#</th><th>Full Name</th><th>Email</th><th>Service Needed</th><th>Message</th></tr></thead>
               <tbody>{filteredContacts.map((c,i)=>(<tr key={c.id||i}><td>{i+1}</td><td><b>{c.full_name||c.fullName}</b></td><td>{c.email}</td><td><span className="tag blue">{c.service}</span></td><td>{c.message}</td></tr>))}</tbody></table>
           ) : (
-            <table><thead><tr><th>#</th><th>Full Name</th><th>Position</th><th>Phone</th><th>Email</th><th>Education</th></tr></thead>
-              <tbody>{filteredApplicants.map((a,i)=>(<tr key={a.id||i}><td>{i+1}</td><td><b>{a.full_name||a.fullName}</b></td><td><span className="tag gold">{a.position}</span></td><td>{a.phone}</td><td>{a.email}</td><td><span className="tag dark">{a.education}</span></td></tr>))}</tbody></table>
+            <table><thead><tr><th>#</th><th>Full Name</th><th>Phone</th><th>Email</th><th>Education Level</th><th>Experience</th></tr></thead>
+              <tbody>{filteredApplicants.map((a,i)=>(<tr key={a.id||i}><td>{i+1}</td><td><b>{a.full_name||a.fullName}</b></td><td>{a.phone}</td><td>{a.email}</td><td><span className="tag dark">{a.education}</span></td><td>{a.experience?.substring(0,60)}</td></tr>))}</tbody></table>
           )}
         </div>
       </div>
@@ -144,7 +153,7 @@ const Admin = () => {
   )
 }
 
-const Blog = () => (<div className="section"><h2>Jobs</h2><div className="card"><h3>SITE INCHARGE</h3><p>UCE + 3yrs, 500k-700k</p></div><div className="card gold"><h3>SUPERVISOR</h3><p>UACE + Rider Permit, 600k-800k</p></div><div style={{textAlign:'center'}}><Link to="/join" className="btn-yellow big">Apply Now</Link></div></div>)
+const Blog = () => (<div className="section"><h2>Jobs</h2><div className="card"><h3>SITE INCHARGE - UCE + 3yrs</h3><p>5 positions, 500k-700k + benefits, free training.</p></div><div className="card gold"><h3>SUPERVISOR - UACE + Rider Permit</h3><p>3 positions, 600k-800k + fuel + motorcycle.</p></div><div style={{textAlign:'center'}}><Link to="/join" className="btn-yellow big">Apply Now</Link></div></div>)
 const Footer = () => <div className="footer">© 2026 Pinnacle Security Ltd | Plot 442 & 443 Masajjagere | HR: hr@pinnaclegroup.co.ug | 0754 139726</div>
 
 const App = () => (
@@ -180,40 +189,9 @@ const App = () => (
       .stats{display:flex; gap:12px; justify-content:center; margin:14px 0; flex-wrap:wrap} .stats span{background:rgba(255,204,0,0.15); border:2px solid #ffcc00; padding:8px 16px; border-radius:25px; font-size:15px; font-weight:800; color:#ffcc00}
       .tabs{display:flex; gap:12px; justify-content:center; margin-top:14px} .tab{padding:10px 22px; border-radius:25px; border:2px solid #ffcc00; background:transparent; color:#ffcc00; font-weight:800; font-size:15px; cursor:pointer} .tab.on{background:#ffcc00; color:#0a1931}
       .filter-bar-clean{display:flex; gap:12px; margin-bottom:18px; background:#0a1931; padding:20px; border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.15); flex-wrap:wrap; align-items:center; border:3px solid #ffcc00}
-      
-      /* HIGH VISIBILITY SEARCHBAR - FIXED COLOR */
-      .search-visible{
-        flex:1; 
-        padding:16px 20px; 
-        border-radius:12px; 
-        border:3px solid #ffcc00; 
-        font-size:17px; 
-        min-width:260px; 
-        outline:none; 
-        background:#ffffff; 
-        color:#0a1931; 
-        font-weight:900;
-        box-shadow:0 4px 12px rgba(255,204,0,0.3);
-      }
+      .search-visible{flex:1; padding:16px 20px; border-radius:12px; border:3px solid #ffcc00; font-size:17px; min-width:260px; outline:none; background:#ffffff; color:#0a1931; font-weight:900; box-shadow:0 4px 12px rgba(255,204,0,0.3)}
       .search-visible::placeholder{color:#1e3a8a; font-weight:700; opacity:1}
-      .search-visible:focus{border-color:#ffcc00; background:#fffbeb; box-shadow:0 0 0 4px rgba(255,204,0,0.4)}
-      
-      .search-visible-dropdown{
-        padding:16px 20px; 
-        border-radius:12px; 
-        border:3px solid #ffcc00; 
-        font-size:17px; 
-        background:#ffcc00; 
-        font-weight:900; 
-        min-width:260px; 
-        cursor:pointer; 
-        outline:none;
-        color:#0a1931;
-        box-shadow:0 4px 12px rgba(255,204,0,0.3);
-      }
-      .search-visible-dropdown option{background:#fff; color:#0a1931; font-weight:700; font-size:16px}
-      .search-visible-dropdown:focus{background:#fffbeb; border-color:#fff; box-shadow:0 0 0 4px rgba(255,255,255,0.3)}
-      
+      .search-visible-dropdown{padding:16px 20px; border-radius:12px; border:3px solid #ffcc00; font-size:17px; background:#ffcc00; font-weight:900; min-width:260px; cursor:pointer; outline:none; color:#0a1931; box-shadow:0 4px 12px rgba(255,204,0,0.3)}
       .table-card{background:#fff; border-radius:16px; padding:16px; box-shadow:0 5px 18px rgba(0,0,0,0.08)}
       .table-card h3{font-size:17px; margin-bottom:12px; color:#0a1931} .scroll{overflow-x:auto}
       .table-card table{width:100%; border-collapse:collapse; font-size:16px; min-width:850px}
