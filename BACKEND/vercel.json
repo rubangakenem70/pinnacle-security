@@ -1,5 +1,18 @@
 {
   "version": 2,
-  "builds": [{ "src": "Server.mjs", "use": "@vercel/node" }],
-  "routes": [{ "src": "/(.*)", "dest": "Server.mjs" }]
+  "builds": [
+    {
+      "src": "Server.mjs",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "Server.mjs"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }
