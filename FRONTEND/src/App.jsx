@@ -30,9 +30,9 @@ const Home = () => {
   const [i, setI] = useState(0);
   useEffect(()=>{ const t=setInterval(()=>setI(p=>(p+1)%3), 3500); return()=>clearInterval(t) },[]);
   const slides=[
-    {t:"Pinnacle Security Limited - 4.3★ Rated Security Company", d:"Plot 442 & 443 Masajjagere, Off Kironde Road Muyenga, P.O.Box 124853 Kampala"},
+    {t:"Pinnacle Security Limited - 4.3★ Rated Security Company", d:"Plot 442 & 443 Masajjagere, Off Kironde Road Muyenga"},
     {t:"🚨 WE ARE RECRUITING - Join Our Team Today", d:"SITE INCHARGE: UCE + 3yrs | SUPERVISOR: UACE + Rider Permit + 3yrs"},
-    {t:"Security Guard Service ISIC 8010 | 60+ Sites | 150+ Officers | 24/7 Response", d:"Control Room: 0754 139726 | HR: hr@pinnaclegroup.co.ug | pinnaclegroup.co.ug"},
+    {t:"Security Guard Service ISIC 8010 | 60+ Sites | 150+ Officers", d:"Control Room: 0754 139726 | HR: hr@pinnaclegroup.co.ug"},
   ];
   return (
     <>
@@ -41,57 +41,44 @@ const Home = () => {
         <Link to="/join" className="btn-yellow big">Apply Now</Link>
       </div>
       <div className="section">
-        <div className="card"><h3>🛡️ Who We Are</h3><p>Pinnacle Security Ltd at Plot 442 & 443 Masajjagere is licensed ISIC 8010 and F Construction. 60+ sites protected, 150+ disciplined officers, 4.3★ rated by 92+ clients. Control Room 0754 139726. Open 8AM-4PM daily. We provide reliable professional affordable security services across Central Region Uganda.</p><Link to="/about" className="link-more">Read More →</Link></div>
-        <div className="card gold"><h3>🎯 Our Services</h3><p>Security Guard Service ISIC 8010, Construction Security Category F, CCTV Installation & Alarm Systems, Mobile Patrol 10 mins response, Event Security. All services available 24/7 with GPS tracking, radio communication and 24/7 control room monitoring.</p><Link to="/services" className="link-more">View Services →</Link></div>
-        <div className="card dark"><h3>🚨 Urgent Recruitment - No Fees</h3><p>SITE INCHARGE: UCE + 3yrs exp, 25-45yrs, LC letters | SUPERVISOR: UACE + Rider Permit + 3yrs, 23-40yrs | Free Training 2 weeks at Muyenga HQ 8AM-4PM | Salary 500k-800k + accommodation + medical + uniform. Apply now free!</p><Link to="/join" className="btn-yellow">Apply Now</Link></div>
+        <div className="card"><h3>🛡️ Who We Are</h3><p>Pinnacle Security Ltd at Plot 442 & 443 Masajjagere is licensed ISIC 8010 and F Construction. 60+ sites, 150+ officers, 4.3★ rated. Control Room 0754 139726. Open 8AM-4PM daily.</p><Link to="/about" className="link-more">Read More →</Link></div>
+        <div className="card gold"><h3>🎯 Our Services</h3><p>Security Guard Service, Construction Security, CCTV Installation, Mobile Patrol 10 mins response, Event Security. All 24/7 professional.</p><Link to="/services" className="link-more">View Services →</Link></div>
+        <div className="card dark"><h3>🚨 Urgent Recruitment - No Fees</h3><p>SITE INCHARGE: UCE + 3yrs, 25-45yrs | SUPERVISOR: UACE + Rider Permit + 3yrs, 23-40yrs | Free Training 2 weeks at Muyenga HQ | Salary 500k-800k + benefits.</p><Link to="/join" className="btn-yellow">Apply Now</Link></div>
       </div>
     </>
   )
 }
 
 const About = () => (
-  <div className="section">
-    <h2>About Pinnacle Security Limited</h2>
-    <div className="card"> <h3>📍 Location & License Details</h3>
-      <p><strong>Head Office:</strong> Plot 442 & 443 Masajjagere, Off Kironde Road Muyenga, Kampala, P.O.Box 124853. Branch: 256 Bukasa Rd (4.3★ 92 reviews) and Kironde Rd (4.3★ 11 reviews). Licensed ISIC 8010 Security Guard Service and Category F Construction Security by Uganda Registration Services Bureau. Hours 8AM-4PM daily, Control Room 24/7 at 0754 139726. Wheelchair accessible.</p>
-    </div>
-    <div className="card gold"><h3>🎯 Mission, Vision & Values</h3>
-      <p><strong>Mission:</strong> To provide reliable, professional and affordable security services that exceed client expectations across Uganda. <strong>Vision:</strong> To be leading security company in East Africa known for integrity, excellence and discipline. <strong>Values:</strong> Integrity, Discipline, Professionalism, Quick Response, Client Satisfaction. We protect 60+ sites with 150+ officers, trained 2 weeks free at HQ.</p>
-    </div>
-    <div className="card dark"><h3>📊 Capacity & Contacts</h3>
-      <p>We protect 60+ sites across Kampala, Wakiso, Mukono, Entebbe with 150+ disciplined officers. Control Room: 0754 139726 | HR: hr@pinnaclegroup.co.ug, hrassistant@pinnaclegroup.co.ug | Website: pinnaclegroup.co.ug | Recruiting SITE INCHARGE (UCE + 3yrs) and SUPERVISOR (UACE + Rider Permit + 3yrs). Free training, no fees!</p>
-    </div>
+  <div className="section"><h2>About Pinnacle Security Limited</h2>
+    <div className="card"><h3>📍 Location & License</h3><p><strong>Head Office:</strong> Plot 442 & 443 Masajjagere, Off Kironde Road Muyenga, P.O.Box 124853. Branch: 256 Bukasa Rd (4.3★ 92 reviews). Licensed ISIC 8010 and Category F by URSB. Hours 8AM-4PM, Control Room 24/7 at 0754 139726.</p></div>
+    <div className="card dark"><h3>📊 Capacity</h3><p>60+ sites across Kampala, Wakiso, Mukono with 150+ officers. Control Room: 0754 139726 | HR: hr@pinnaclegroup.co.ug | Website: pinnaclegroup.co.ug</p></div>
   </div>
 )
 
 const Services = () => {
   const [open, setOpen] = useState(null);
   const list=[
-    {n:"1. Security Guard Service (ISIC 8010)", d:["Licensed under ISIC 8010 at Plot 442 & 443 Masajjagere. Armed & unarmed guards for offices, banks, NGOs, schools, hospitals, homes, apartments. 24/7 vigilance, radio communication, incident reporting. 60+ sites, 150+ officers, GPS tracking, control room 0754 139726."]},
-    {n:"2. Construction Security (Category F)", d:["Protect construction materials, cement, iron bars, equipment, workers on building sites. Prevent theft, control access, monitor CCTV, enforce safety helmets, log materials, night patrol. Experienced officers with construction safety training."]},
-    {n:"3. CCTV, Alarm & Mobile Patrol Quick Response", d:["Supply, install and monitor CCTV cameras, alarm systems, access control, electric fences. Mobile patrol 3 vehicles with GPS, 10 minutes quick response in Kampala, 24/7 control room at 0754 139726. Monthly maintenance, cloud storage, phone viewing."]},
+    {n:"1. Security Guard Service (ISIC 8010)", d:["Licensed under ISIC 8010. Armed & unarmed guards for offices, banks, NGOs, schools, hospitals, homes. 24/7 vigilance, radio communication, 60+ sites, 150+ officers."]},
+    {n:"2. Construction Security (Category F)", d:["Protect cement, iron bars, equipment, workers. Prevent theft, control access, monitor CCTV, enforce safety, night patrol."]},
+    {n:"3. CCTV, Alarm & Mobile Patrol", d:["CCTV cameras, alarm systems, access control, electric fences. Mobile patrol 3 vehicles GPS, 10 mins response, 24/7 control room 0754 139726."]},
   ];
-  return (
-    <div className="section"><h2>Our Services</h2>
-      {list.map((s,i)=><div key={i} className="service-box"><div className="service-head" onClick={()=>setOpen(open===i?null:i)}><strong>{s.n}</strong><span>{open===i?'Close -':'Open +'}</span></div>{open===i&&<div className="service-body">{s.d.map((p,k)=><p key={k}>{p}</p>)}</div>}</div>)}
-      <div className="recruit"><h3>🚨 URGENT RECRUITMENT</h3><p>SITE INCHARGE: UCE + 3yrs | SUPERVISOR: UACE + Rider Permit 3yrs | Free Training at Muyenga HQ | No fees</p><Link to="/join" className="btn-yellow">Apply Now</Link></div>
-    </div>
-  )
+  return (<div className="section"><h2>Our Services</h2>{list.map((s,i)=><div key={i} className="service-box"><div className="service-head" onClick={()=>setOpen(open===i?null:i)}><strong>{s.n}</strong><span>{open===i?'Close -':'Open +'}</span></div>{open===i&&<div className="service-body">{s.d.map((p,k)=><p key={k}>{p}</p>)}</div>}</div>)}</div>)
 }
 
 const Contact = () => {
   const [f,setF]=useState({fullName:"",email:"",service:"",message:""}); const [s,setS]=useState("");
-  const send=async(e)=>{ e.preventDefault(); setS("Sending..."); try{ const r=await fetch(`${API_URL}/api/contact`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(f)}); if(r.ok){ setS("✅ Saved to Live DB!"); setF({fullName:"",email:"",service:"",message:""}) } }catch{ setS("❌ Error") } };
-  return (<div className="section"><h2>Contact Us</h2><form className="form" onSubmit={send}><label>Full Names *</label><input value={f.fullName} onChange={e=>setF({...f,fullName:e.target.value})} required/><label>Email *</label><input type="email" value={f.email} onChange={e=>setF({...f,email:e.target.value})} required/><label>Service *</label><select value={f.service} onChange={e=>setF({...f,service:e.target.value})} required><option value="">Choose Service</option><option>Security Guard Service</option><option>Construction Security</option><option>CCTV Installation</option><option>Mobile Patrol</option><option>Event Security</option></select><label>Message *</label><textarea rows="4" value={f.message} onChange={e=>setF({...f,message:e.target.value})} required></textarea><button>Submit Inquiry</button>{s&&<p className="msg">{s}</p>}</form></div>)
+  const send=async(e)=>{ e.preventDefault(); setS("Sending..."); try{ const r=await fetch(`${API_URL}/api/contact`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(f)}); if(r.ok){ setS("✅ Saved!"); setF({fullName:"",email:"",service:"",message:""}) } }catch{ setS("❌ Error") } };
+  return (<div className="section"><h2>Contact Us</h2><form className="form" onSubmit={send}><label>Full Names *</label><input value={f.fullName} onChange={e=>setF({...f,fullName:e.target.value})} required/><label>Email *</label><input type="email" value={f.email} onChange={e=>setF({...f,email:e.target.value})} required/><label>Service *</label><select value={f.service} onChange={e=>setF({...f,service:e.target.value})} required><option value="">Choose Service</option><option>Security Guard Service</option><option>Construction Security</option><option>CCTV Installation</option><option>Mobile Patrol</option><option>Event Security</option></select><label>Message *</label><textarea rows="4" value={f.message} onChange={e=>setF({...f,message:e.target.value})} required></textarea><button>Submit</button>{s&&<p className="msg">{s}</p>}</form></div>)
 }
 
 const Join = () => {
   const [f,setF]=useState({fullName:"",phone:"",email:"",position:"SITE INCHARGE",education:"",experience:"",interest:"",appliedBy:""}); const [s,setS]=useState("");
-  const send=async(e)=>{ e.preventDefault(); setS("Sending..."); try{ const r=await fetch(`${API_URL}/api/applicants`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(f)}); if(r.ok){ setS("✅ Application Saved!"); setF({fullName:"",phone:"",email:"",position:"SITE INCHARGE",education:"",experience:"",interest:"",appliedBy:""}) } }catch{ setS("❌ Error") } };
-  return (<div className="section"><h2>Apply Now - Join Pinnacle Security</h2><form className="form" onSubmit={send}><label>Position *</label><select value={f.position} onChange={e=>setF({...f,position:e.target.value})}><option>SITE INCHARGE</option><option>SUPERVISOR / DEPLOYMENT OFFICER</option></select><label>Full Name *</label><input value={f.fullName} onChange={e=>setF({...f,fullName:e.target.value})} required/><label>Phone *</label><input value={f.phone} onChange={e=>setF({...f,phone:e.target.value})} required/><label>Email *</label><input type="email" value={f.email} onChange={e=>setF({...f,email:e.target.value})} required/><label>Education Level *</label><select value={f.education} onChange={e=>setF({...f,education:e.target.value})} required><option value="">Choose Education Level</option><option>P7</option><option>O-Level</option><option>UCE</option><option>UACE</option><option>Diploma</option><option>Degree</option><option>Master</option></select><label>Why interested? *</label><input value={f.interest} onChange={e=>setF({...f,interest:e.target.value})} required/><label>New / Ongoing *</label><input value={f.appliedBy} onChange={e=>setF({...f,appliedBy:e.target.value})} required/><label>Experience *</label><textarea value={f.experience} onChange={e=>setF({...f,experience:e.target.value})} required></textarea><button>Submit Application</button>{s&&<p className="msg">{s}</p>}</form></div>)
+  const send=async(e)=>{ e.preventDefault(); setS("Sending..."); try{ const r=await fetch(`${API_URL}/api/applicants`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(f)}); if(r.ok){ setS("✅ Saved!"); setF({fullName:"",phone:"",email:"",position:"SITE INCHARGE",education:"",experience:"",interest:"",appliedBy:""}) } }catch{ setS("❌ Error") } };
+  return (<div className="section"><h2>Apply Now</h2><form className="form" onSubmit={send}><label>Position *</label><select value={f.position} onChange={e=>setF({...f,position:e.target.value})}><option>SITE INCHARGE</option><option>SUPERVISOR / DEPLOYMENT OFFICER</option></select><label>Full Name *</label><input value={f.fullName} onChange={e=>setF({...f,fullName:e.target.value})} required/><label>Phone *</label><input value={f.phone} onChange={e=>setF({...f,phone:e.target.value})} required/><label>Email *</label><input type="email" value={f.email} onChange={e=>setF({...f,email:e.target.value})} required/><label>Education *</label><select value={f.education} onChange={e=>setF({...f,education:e.target.value})} required><option value="">Choose Education</option><option>P7</option><option>O-Level</option><option>UCE</option><option>UACE</option><option>Diploma</option><option>Degree</option><option>Master</option></select><label>Why interested? *</label><input value={f.interest} onChange={e=>setF({...f,interest:e.target.value})} required/><label>New / Ongoing *</label><input value={f.appliedBy} onChange={e=>setF({...f,appliedBy:e.target.value})} required/><label>Experience *</label><textarea value={f.experience} onChange={e=>setF({...f,experience:e.target.value})} required></textarea><button>Submit</button>{s&&<p className="msg">{s}</p>}</form></div>)
 }
 
-// ========== ADMIN - FIXED - NO POPUP ERROR - WITH DROPDOWN FILTERS - BIGGER FONT ==========
+// ========== ADMIN - FINAL CLEAN - ONLY SEARCH & FILTER - NO DELETE/UPDATE ==========
 const Admin = () => {
   const [contacts, setContacts] = useState([]); 
   const [applicants, setApplicants] = useState([]); 
@@ -120,36 +107,20 @@ const Admin = () => {
     return matchSearch && matchEdu && matchPos;
   });
 
-  // DELETE - NO POPUP - FIXED
-  const handleDelete = async (id, type) => {
-    if(!confirm("Are you sure you want to delete this?")) return;
-    // Remove immediately from screen - looks deleted even if backend fails
-    if(type==="contact"){
-      setContacts(prev => prev.filter(c => c.id !== id));
-    } else {
-      setApplicants(prev => prev.filter(a => a.id !== id));
-    }
-    // Try backend silently - no alert if fails
-    try {
-      const url = type==="contact" ? `${API_URL}/api/contact/${id}` : `${API_URL}/api/applicants/${id}`;
-      await fetch(url, {method:'DELETE'});
-    } catch(e) {}
-  };
-
   return (
     <div className="section">
       <div className="admin-top">
-        <h2>🔐 Admin Dashboard - No Error Popup</h2>
-        <p>Search by Name + Filter by Education Level & Service Needed - Big Font</p>
+        <h2>🔐 Admin Dashboard</h2>
+        <p>View & Filter - Search by Name, Education, Service - Big Font</p>
         <div className="stats"><span>📩 {contacts.length} Contacts</span><span>👮 {applicants.length} Applicants</span></div>
         <div className="tabs">
-          <button onClick={()=>{setTab("contacts"); setSearch(""); setServiceFilter("");}} className={tab==="contacts"?"tab on":"tab"}>Contacts ({contacts.length})</button>
-          <button onClick={()=>{setTab("applicants"); setSearch(""); setEduFilter(""); setPositionFilter("");}} className={tab==="applicants"?"tab on":"tab"}>Applicants ({applicants.length})</button>
+          <button onClick={()=>{setTab("contacts"); setSearch(""); setServiceFilter("");}} className={tab==="contacts"?"tab on":"tab"}>Contacts</button>
+          <button onClick={()=>{setTab("applicants"); setSearch(""); setEduFilter(""); setPositionFilter("");}} className={tab==="applicants"?"tab on":"tab"}>Applicants</button>
         </div>
       </div>
 
       <div className="filter-bar">
-        <input className="filter-input" placeholder="🔍 Type name, email, phone..." value={search} onChange={e=>setSearch(e.target.value)} />
+        <input className="filter-input" placeholder="🔍 Search by name, email, phone..." value={search} onChange={e=>setSearch(e.target.value)} />
         {tab==="contacts" ? (
           <>
             <select className="filter-select" value={serviceFilter} onChange={e=>setServiceFilter(e.target.value)}>
@@ -159,9 +130,8 @@ const Admin = () => {
               <option value="CCTV Installation">CCTV Installation</option>
               <option value="Mobile Patrol">Mobile Patrol</option>
               <option value="Event Security">Event Security</option>
-              <option value="Alarm System">Alarm System</option>
             </select>
-            <button className="btn-dark" onClick={()=>{setSearch(""); setServiceFilter("");}}>Clear All</button>
+            <button className="btn-dark" onClick={()=>{setSearch(""); setServiceFilter("");}}>Clear</button>
           </>
         ) : (
           <>
@@ -178,9 +148,9 @@ const Admin = () => {
             <select className="filter-select" value={positionFilter} onChange={e=>setPositionFilter(e.target.value)}>
               <option value="">All Positions ▼</option>
               <option value="SITE INCHARGE">SITE INCHARGE</option>
-              <option value="SUPERVISOR / DEPLOYMENT OFFICER">SUPERVISOR / DEPLOYMENT OFFICER</option>
+              <option value="SUPERVISOR / DEPLOYMENT OFFICER">SUPERVISOR</option>
             </select>
-            <button className="btn-dark" onClick={()=>{setSearch(""); setEduFilter(""); setPositionFilter("");}}>Clear All</button>
+            <button className="btn-dark" onClick={()=>{setSearch(""); setEduFilter(""); setPositionFilter("");}}>Clear</button>
           </>
         )}
         <button className="btn-yellow" onClick={load}>🔄 Refresh</button>
@@ -191,17 +161,17 @@ const Admin = () => {
         <div className="scroll">
           {tab==="contacts" ? (
             <table>
-              <thead><tr><th>#</th><th>Full Name</th><th>Email Address</th><th>Service Needed</th><th>Message</th><th>Action</th></tr></thead>
-              <tbody>{filteredContacts.map((c,i)=>(<tr key={c.id||i}><td>{i+1}</td><td><b>{c.full_name||c.fullName}</b></td><td>{c.email}</td><td><span className="tag blue">{c.service}</span></td><td>{c.message?.substring(0,80)}...</td><td><button onClick={()=>handleDelete(c.id,"contact")} className="mini red">Delete</button></td></tr>))}</tbody>
+              <thead><tr><th>#</th><th>Full Name</th><th>Email Address</th><th>Service Needed</th><th>Message</th></tr></thead>
+              <tbody>{filteredContacts.map((c,i)=>(<tr key={c.id||i}><td>{i+1}</td><td><b>{c.full_name||c.fullName}</b></td><td>{c.email}</td><td><span className="tag blue">{c.service}</span></td><td>{c.message}</td></tr>))}</tbody>
             </table>
           ) : (
             <table>
-              <thead><tr><th>#</th><th>Full Name</th><th>Position Applied</th><th>Phone</th><th>Email</th><th>Education Level</th><th>Experience</th><th>Action</th></tr></thead>
-              <tbody>{filteredApplicants.map((a,i)=>(<tr key={a.id||i}><td>{i+1}</td><td><b>{a.full_name||a.fullName}</b></td><td><span className="tag gold">{a.position}</span></td><td>{a.phone}</td><td>{a.email}</td><td><span className="tag dark">{a.education}</span></td><td>{a.experience?.substring(0,50)}...</td><td><button onClick={()=>handleDelete(a.id,"applicant")} className="mini red">Delete</button></td></tr>))}</tbody>
+              <thead><tr><th>#</th><th>Full Name</th><th>Position</th><th>Phone</th><th>Email</th><th>Education Level</th><th>Experience</th></tr></thead>
+              <tbody>{filteredApplicants.map((a,i)=>(<tr key={a.id||i}><td>{i+1}</td><td><b>{a.full_name||a.fullName}</b></td><td><span className="tag gold">{a.position}</span></td><td>{a.phone}</td><td>{a.email}</td><td><span className="tag dark">{a.education}</span></td><td>{a.experience}</td></tr>))}</tbody>
             </table>
           )}
         </div>
-        {((tab==="contacts" && filteredContacts.length===0) || (tab==="applicants" && filteredApplicants.length===0)) && <p className="no-result">No results found. Try Clear All button.</p>}
+        {((tab==="contacts" && filteredContacts.length===0) || (tab==="applicants" && filteredApplicants.length===0)) && <p className="no-result">No results - Try Clear button</p>}
       </div>
     </div>
   )
@@ -209,13 +179,13 @@ const Admin = () => {
 
 const Blog = () => (
   <div className="section"><h2>Jobs - We Are Recruiting</h2>
-    <div className="card"><h3>1. SITE INCHARGE - 5 Positions - UCE + 3yrs Security Experience Required</h3><p><strong>Requirements:</strong> UCE certificate, 3+ years security experience, Age 25-45, LC1 & LC3 letters, National ID, Good English, No criminal record. <strong>Salary:</strong> 500k-700k + accommodation + medical + uniform. Free training 2 weeks at Muyenga HQ 8AM-4PM. No fees!</p></div>
-    <div className="card gold"><h3>2. SUPERVISOR / DEPLOYMENT OFFICER - 3 Positions - UACE + Rider Permit Required</h3><p><strong>Requirements:</strong> UACE, Valid Rider Permit 3+ years, 3+ years deployment experience, Age 23-40, Knows Kampala routes, Motorcycle maintenance. <strong>Salary:</strong> 600k-800k + fuel + motorcycle + airtime + accommodation. Free training.</p></div>
+    <div className="card"><h3>1. SITE INCHARGE - 5 Positions - UCE + 3yrs</h3><p>Requirements: UCE, 3+ years security, Age 25-45, LC letters. Salary: 500k-700k + accommodation + medical. Free training 2 weeks at Muyenga HQ.</p></div>
+    <div className="card gold"><h3>2. SUPERVISOR / DEPLOYMENT OFFICER - 3 Positions - UACE + Rider Permit</h3><p>Requirements: UACE, Valid Rider Permit 3+ years, 3+ years deployment, Age 23-40, Knows Kampala routes. Salary: 600k-800k + fuel + motorcycle + airtime.</p></div>
     <div style={{textAlign:'center', marginTop:'15px'}}><Link to="/join" className="btn-yellow big">Apply Now - Free</Link></div>
   </div>
 )
 
-const Footer = () => <div className="footer">© 2026 Pinnacle Security Limited | Plot 442 & 443 Masajjagere, Off Kironde Road Muyenga, P.O.Box 124853 Kampala | HR: hr@pinnaclegroup.co.ug | 0754 139726 | Licensed ISIC 8010 & Category F | 60+ Sites | 150+ Officers | 4.3★ Rated</div>
+const Footer = () => <div className="footer">© 2026 Pinnacle Security Limited | Plot 442 & 443 Masajjagere, Off Kironde Road Muyenga, P.O.Box 124853 Kampala | HR: hr@pinnaclegroup.co.ug | 0754 139726</div>
 
 const App = () => (
   <BrowserRouter>
@@ -234,36 +204,35 @@ const App = () => (
       .btn-admin{background:#1e3a8a!important; color:#ffcc00!important; border:2px solid #ffcc00!important; padding:10px 20px!important; border-radius:25px!important; font-weight:900!important; text-decoration:none; font-size:16px}
       .btn-dark{background:#0a1931; color:#ffcc00; border:none; padding:12px 18px; border-radius:10px; font-weight:800; cursor:pointer; font-size:14px}
       .hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:45px 15px; text-align:center; border-radius:0 0 20px 20px}
-      .hero h1{color:#ffcc00; font-size:26px; margin-bottom:12px; line-height:1.3} .hero p{font-size:17px; opacity:0.95}
+      .hero h1{color:#ffcc00; font-size:26px; margin-bottom:12px} .hero p{font-size:17px}
       .dots{margin:14px 0} .dot{width:12px; height:12px; background:#555; border-radius:50%; display:inline-block; margin:0 6px; cursor:pointer} .dot.on{background:#ffcc00}
       .section{padding:22px 14px; max-width:1200px; margin:auto}
       .section h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:10px; margin-bottom:20px; font-size:26px}
       .card{background:#fff; padding:20px; border-radius:14px; margin-bottom:16px; box-shadow:0 4px 12px rgba(0,0,0,0.07); border-left:6px solid #0a1931; font-size:17px; line-height:1.8; text-align:justify}
       .card.gold{border-left-color:#ffcc00; background:#fffbeb} .card.dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; border-left-color:#ffcc00}
-      .card h3{font-size:19px; margin-bottom:12px; color:#0a1931} .card.dark h3{color:#ffcc00} .card p{margin-bottom:12px} .link-more{color:#0a1931; font-weight:800; font-size:16px; text-decoration:none}
+      .card h3{font-size:19px; margin-bottom:12px; color:#0a1931} .card.dark h3{color:#ffcc00} .link-more{color:#0a1931; font-weight:800; font-size:16px; text-decoration:none}
       .service-box{background:#fff; border-radius:14px; margin-bottom:12px; overflow:hidden; box-shadow:0 3px 10px rgba(0,0,0,0.06)}
       .service-head{background:#0a1931; color:#ffcc00; padding:16px 18px; display:flex; justify-content:space-between; cursor:pointer; font-size:17px}
-      .service-body{padding:16px 18px; font-size:17px; background:#f8fafc; line-height:1.8} .service-body p{margin-bottom:14px}
+      .service-body{padding:16px 18px; font-size:17px; background:#f8fafc; line-height:1.8}
       .form{max-width:600px; margin:18px auto; background:#fff; padding:22px; border-radius:16px; display:flex; flex-direction:column; gap:10px; box-shadow:0 5px 18px rgba(0,0,0,0.08)}
       .form label{font-size:16px; font-weight:700; color:#0a1931} .form input,.form select,.form textarea{padding:13px; border:2px solid #ddd; border-radius:10px; font-size:16px}
       .form button{background:#0a1931; color:#fff; padding:14px; border:none; border-radius:12px; font-weight:800; cursor:pointer; font-size:17px} .msg{padding:12px; background:#d4edda; border-radius:10px; font-size:16px; text-align:center}
       .admin-top{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:24px; border-radius:18px; text-align:center; margin-bottom:18px}
-      .admin-top h2{color:#ffcc00; border:none; margin-bottom:8px; font-size:24px} .admin-top p{font-size:16px; opacity:0.9}
+      .admin-top h2{color:#ffcc00; border:none; margin-bottom:8px; font-size:24px} .admin-top p{font-size:16px}
       .stats{display:flex; gap:12px; justify-content:center; margin:14px 0; flex-wrap:wrap} .stats span{background:rgba(255,204,0,0.15); border:2px solid #ffcc00; padding:8px 16px; border-radius:25px; font-size:15px; font-weight:800; color:#ffcc00}
       .tabs{display:flex; gap:12px; justify-content:center; margin-top:14px} .tab{padding:10px 22px; border-radius:25px; border:2px solid #ffcc00; background:transparent; color:#ffcc00; font-weight:800; font-size:15px; cursor:pointer} .tab.on{background:#ffcc00; color:#0a1931}
       .filter-bar{display:flex; gap:10px; margin-bottom:18px; background:#fff; padding:16px; border-radius:14px; box-shadow:0 4px 12px rgba(0,0,0,0.07); flex-wrap:wrap; align-items:center}
       .filter-input{flex:1; padding:14px; border-radius:10px; border:2px solid #0a1931; font-size:16px; min-width:220px}
       .filter-select{padding:14px; border-radius:10px; border:2px solid #0a1931; font-size:16px; background:#fff; font-weight:700; min-width:190px; cursor:pointer}
       .table-card{background:#fff; border-radius:16px; padding:16px; box-shadow:0 5px 18px rgba(0,0,0,0.08)}
-      .table-card h3{font-size:17px; margin-bottom:12px; color:#0a1931} .scroll{overflow-x:auto; -webkit-overflow-scrolling:touch}
-      .table-card table{width:100%; border-collapse:collapse; font-size:15px; min-width:850px}
+      .table-card h3{font-size:17px; margin-bottom:12px; color:#0a1931} .scroll{overflow-x:auto}
+      .table-card table{width:100%; border-collapse:collapse; font-size:16px; min-width:850px}
       .table-card th{background:#0a1931; color:#ffcc00; padding:14px 10px; text-align:left; font-size:14px; font-weight:800}
-      .table-card td{padding:12px 10px; border-bottom:1px solid #f1f5f9; border-right:1px solid #f1f5f9; font-size:15px}
+      .table-card td{padding:12px 10px; border-bottom:1px solid #f1f5f9; font-size:16px}
       .table-card tr:hover{background:#fffbeb}
       .tag{padding:5px 12px; border-radius:15px; font-size:13px; font-weight:800} .tag.blue{background:#dbeafe; color:#1e40af} .tag.gold{background:#fef3c7; color:#92400e} .tag.dark{background:#1e293b; color:#ffcc00}
-      .mini{border:none; padding:8px 16px; border-radius:8px; font-size:13px; cursor:pointer; font-weight:800} .mini.red{background:red; color:#fff}
       .no-result{text-align:center; padding:25px; color:#999; font-size:16px}
-      .footer{background:#0a1931; color:#aaa; text-align:center; padding:18px; font-size:13px; margin-top:24px; line-height:1.7}
+      .footer{background:#0a1931; color:#aaa; text-align:center; padding:18px; font-size:13px; margin-top:24px}
       @media(max-width:750px){ .menu-btn{display:block} .links{display:none; flex-direction:column; align-items:flex-start; padding-top:14px} .links.show{display:flex} .filter-bar{flex-direction:column} .filter-select,.filter-input{width:100%} }
     `}</style>
     <Navbar/>
