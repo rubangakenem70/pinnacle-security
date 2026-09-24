@@ -1,0 +1,10 @@
+node_modules/
+BACKEND/node_modules/
+FRONTEND/node_modules/
+FRONTEND/FRONTEND/node_modules/
+.env
+BACKEND/.env
+FRONTEND/.env
+FRONTEND/FRONTEND/.env
+dist/
+build/
