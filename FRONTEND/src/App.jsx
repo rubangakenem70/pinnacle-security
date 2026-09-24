@@ -121,18 +121,20 @@ const Admin = () => {
   }, []);
   const filteredContacts = contacts.filter(c => searchService === "" || c.service?.toLowerCase().includes(searchService.toLowerCase()));
   const filteredApplicants = applicants.filter(a => searchEdu === "" || a.education?.toLowerCase().includes(searchEdu.toLowerCase()));
+  const fmt = (t) => new Date(t).toLocaleString('en-UG', { timeZone: 'Africa/Kampala', year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', hour12:true });
+
   return (
     <div className="section admin-page">
       <h2 className="centered">Admin Dashboard</h2>
       <div className="admin-card">
         <h3 className="centered">Contact Message</h3>
         <div className="admin-search centered"><select value={searchService} onChange={e => setSearchService(e.target.value)}><option value="">All Services - Choose Service</option><option>Security Guard Service</option><option>Construction Security</option><option>CCTV Installation</option><option>Mobile Patrol</option><option>Event Security</option></select></div>
-        <div className="table-wrap"><table className="admin-table"><thead><tr><th>#</th><th>Full Name ASC</th><th>Email</th><th>Service</th><th>Message</th><th>Date</th></tr></thead><tbody>{filteredContacts.map((c, i) => <tr key={c.id}><td>{i + 1}</td><td>{c.full_name}</td><td>{c.email}</td><td>{c.service}</td><td>{c.message}</td><td>{new Date(c.created_at).toLocaleString()}</td></tr>)}</tbody></table></div>
+        <div className="table-wrap"><table className="admin-table"><thead><tr><th>#</th><th>Full Name ASC</th><th>Email</th><th>Service</th><th>Message</th><th>Date (Kampala EAT)</th></tr></thead><tbody>{filteredContacts.map((c, i) => <tr key={c.id}><td>{i + 1}</td><td>{c.full_name || c.fullName}</td><td>{c.email}</td><td>{c.service}</td><td>{c.message}</td><td>{fmt(c.created_at)}</td></tr>)}</tbody></table></div>
       </div>
       <div className="admin-card" style={{ marginTop: '20px' }}>
         <h3 className="centered">Job Applicant</h3>
         <div className="admin-search centered"><select value={searchEdu} onChange={e => setSearchEdu(e.target.value)}><option value="">All Education</option><option>P7</option><option>O-Level</option><option>UCE</option><option>UACE</option><option>Diploma</option><option>Degree</option><option>Master</option></select><span className="count">Found: {filteredApplicants.length}</span></div>
-        <div className="table-wrap"><table className="admin-table"><thead><tr><th>#</th><th>Full Name ASC</th><th>Position</th><th>Phone</th><th>Email</th><th>Education</th><th>Date</th></tr></thead><tbody>{filteredApplicants.map((a, i) => <tr key={a.id}><td>{i + 1}</td><td>{a.full_name}</td><td>{a.position}</td><td>{a.phone}</td><td>{a.email}</td><td>{a.education}</td><td>{new Date(a.created_at).toLocaleString()}</td></tr>)}</tbody></table></div>
+        <div className="table-wrap"><table className="admin-table"><thead><tr><th>#</th><th>Full Name ASC</th><th>Position</th><th>Phone</th><th>Email</th><th>Education</th><th>Date (Kampala EAT)</th></tr></thead><tbody>{filteredApplicants.map((a, i) => <tr key={a.id}><td>{i + 1}</td><td>{a.full_name || a.fullName}</td><td>{a.position}</td><td>{a.phone}</td><td>{a.email}</td><td>{a.education}</td><td>{fmt(a.created_at)}</td></tr>)}</tbody></table></div>
       </div>
     </div>
   )
@@ -149,22 +151,22 @@ const App = () => {
     <BrowserRouter>
       <style>{`
         *{margin:0;padding:0;box-sizing:border-box} body{font-family:Arial,sans-serif;background:#f4f6f9;line-height:1.6}
-     .nav{background:#0a1931;padding:12px;position:sticky;top:0;z-index:1000}.centered-nav{display:flex;justify-content:center}.centered-links{display:flex;gap:15px;align-items:center;justify-content:center;flex-wrap:wrap}.nav-link{color:#fff;text-decoration:none;font-size:12px;font-weight:700}.btn-nav{background:#ffcc00!important;color:#0a1931!important;padding:6px 12px;border-radius:5px;text-decoration:none;font-weight:800;font-size:12px}.admin-link{background:red;color:#fff!important;padding:5px 10px;border-radius:4px;text-decoration:none;font-size:12px;font-weight:800}
-     .hero{background:#0a1931;color:#fff;padding:50px 15px;text-align:center}.hero h1{color:#ffcc00;font-size:24px}.dots{margin-top:15px}.dot{width:10px;height:10px;background:#555;border-radius:50%;display:inline-block;margin:0 5px;cursor:pointer}.dot.active{background:#ffcc00}.btn{background:#ffcc00;color:#0a1931;padding:10px 18px;border-radius:6px;text-decoration:none;font-weight:800;display:inline-block;margin:5px;font-size:13px}
-     .section{padding:25px 15px;max-width:1100px;margin:auto}.section h2{text-align:center;color:#0a1931;margin-bottom:15px;border-bottom:4px solid #ffcc00;padding-bottom:6px;font-size:18px}
-     .about-text-full p{font-size:12px;color:#333;margin-bottom:12px;text-align:justify;background:#fff;padding:15px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.05);border-left:4px solid #0a1931;line-height:1.6}
-     .about-hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:15px}.about-card{padding:15px;border-radius:10px;color:#fff}.about-card.gold{background:linear-gradient(135deg,#ffcc00,#ffb700);color:#0a1931}.about-card.blue{background:linear-gradient(135deg,#0a1931,#1a3a6a)}.about-card.dark{background:linear-gradient(135deg,#333,#000);color:#ffcc00}
-     .service-dropdown{display:flex;flex-direction:column;gap:10px}.dropdown-item{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06);overflow:hidden}.dropdown-head{display:flex;justify-content:space-between;align-items:center;padding:12px 15px;cursor:pointer;background:#0a1931;color:#fff}.dropdown-head h3{font-size:13px;color:#ffcc00}.close-btn{background:#ffcc00;color:#0a1931;border:none;padding:5px 10px;border-radius:4px;font-size:11px;font-weight:800;cursor:pointer}.dropdown-body{padding:12px 15px;background:#fffbe6}.dropdown-body p{font-size:11px;color:#333;margin-bottom:10px;text-align:justify}
-     .recruit-note{background:#fff3cd;border:2px dashed #ffcc00;padding:15px;border-radius:10px;margin-top:20px;text-align:center}
-     .form{max-width:500px;margin:15px auto;background:#fff;padding:15px;border-radius:10px;box-shadow:0 3px 10px rgba(0,0,0,0.1);display:flex;flex-direction:column;gap:6px}.form input,.form select,.form textarea{padding:10px;border:1px solid #ccc;border-radius:5px;font-size:12px}.form button{background:#0a1931;color:#fff;padding:11px;border:none;border-radius:5px;font-weight:800;cursor:pointer}.form label{font-size:12px;font-weight:700;color:#0a1931}.red{color:red}.status{padding:8px;background:#d4edda;border-radius:5px;font-size:12px}
-     .admin-page{background:#f0f2f5}.admin-card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.08)}.admin-search.centered{display:flex;justify-content:center;gap:10px;margin:15px 0;flex-wrap:wrap}.admin-search.centered select{padding:10px;border:2px solid #0a1931;border-radius:8px;min-width:250px;text-align:center}.count{background:#0a1931;color:#ffcc00;padding:8px 12px;border-radius:6px;font-size:12px;font-weight:800}
-     .table-wrap{overflow-x:auto;background:#fff;border-radius:8px;margin-top:10px;border:2px solid #0a1931}
-     .admin-table{width:100%;border-collapse:collapse;font-size:11px;border:1px solid #0a1931}
-     .admin-table th{background:#0a1931;color:#ffcc00;padding:10px 8px;text-align:left;border:1px solid #333;font-weight:800}
-     .admin-table td{padding:10px 8px;border:1px solid #999;color:#222;background:#fff}
-     .admin-table tr:nth-child(even) td{background:#f2f6ff}
-     .admin-table tr:hover td{background:#fff3cd}
-     .footer{background:#0a1931;color:#aaa;text-align:center;padding:15px;font-size:9px;margin-top:20px}.centered{text-align:center}.center{text-align:center;color:#555;font-size:12px}
+    .nav{background:#0a1931;padding:12px;position:sticky;top:0;z-index:1000}.centered-nav{display:flex;justify-content:center}.centered-links{display:flex;gap:15px;align-items:center;justify-content:center;flex-wrap:wrap}.nav-link{color:#fff;text-decoration:none;font-size:12px;font-weight:700}.btn-nav{background:#ffcc00!important;color:#0a1931!important;padding:6px 12px;border-radius:5px;text-decoration:none;font-weight:800;font-size:12px}.admin-link{background:red;color:#fff!important;padding:5px 10px;border-radius:4px;text-decoration:none;font-size:12px;font-weight:800}
+    .hero{background:#0a1931;color:#fff;padding:50px 15px;text-align:center}.hero h1{color:#ffcc00;font-size:24px}.dots{margin-top:15px}.dot{width:10px;height:10px;background:#555;border-radius:50%;display:inline-block;margin:0 5px;cursor:pointer}.dot.active{background:#ffcc00}.btn{background:#ffcc00;color:#0a1931;padding:10px 18px;border-radius:6px;text-decoration:none;font-weight:800;display:inline-block;margin:5px;font-size:13px}
+    .section{padding:25px 15px;max-width:1100px;margin:auto}.section h2{text-align:center;color:#0a1931;margin-bottom:15px;border-bottom:4px solid #ffcc00;padding-bottom:6px;font-size:18px}
+    .about-text-full p{font-size:12px;color:#333;margin-bottom:12px;text-align:justify;background:#fff;padding:15px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.05);border-left:4px solid #0a1931;line-height:1.6}
+    .about-hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:15px}.about-card{padding:15px;border-radius:10px;color:#fff}.about-card.gold{background:linear-gradient(135deg,#ffcc00,#ffb700);color:#0a1931}.about-card.blue{background:linear-gradient(135deg,#0a1931,#1a3a6a)}.about-card.dark{background:linear-gradient(135deg,#333,#000);color:#ffcc00}
+    .service-dropdown{display:flex;flex-direction:column;gap:10px}.dropdown-item{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06);overflow:hidden}.dropdown-head{display:flex;justify-content:space-between;align-items:center;padding:12px 15px;cursor:pointer;background:#0a1931;color:#fff}.dropdown-head h3{font-size:13px;color:#ffcc00}.close-btn{background:#ffcc00;color:#0a1931;border:none;padding:5px 10px;border-radius:4px;font-size:11px;font-weight:800;cursor:pointer}.dropdown-body{padding:12px 15px;background:#fffbe6}.dropdown-body p{font-size:11px;color:#333;margin-bottom:10px;text-align:justify}
+    .recruit-note{background:#fff3cd;border:2px dashed #ffcc00;padding:15px;border-radius:10px;margin-top:20px;text-align:center}
+    .form{max-width:500px;margin:15px auto;background:#fff;padding:15px;border-radius:10px;box-shadow:0 3px 10px rgba(0,0,0,0.1);display:flex;flex-direction:column;gap:6px}.form input,.form select,.form textarea{padding:10px;border:1px solid #ccc;border-radius:5px;font-size:12px}.form button{background:#0a1931;color:#fff;padding:11px;border:none;border-radius:5px;font-weight:800;cursor:pointer}.form label{font-size:12px;font-weight:700;color:#0a1931}.red{color:red}.status{padding:8px;background:#d4edda;border-radius:5px;font-size:12px}
+    .admin-page{background:#f0f2f5}.admin-card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.08)}.admin-search.centered{display:flex;justify-content:center;gap:10px;margin:15px 0;flex-wrap:wrap}.admin-search.centered select{padding:10px;border:2px solid #0a1931;border-radius:8px;min-width:250px;text-align:center}.count{background:#0a1931;color:#ffcc00;padding:8px 12px;border-radius:6px;font-size:12px;font-weight:800}
+    .table-wrap{overflow-x:auto;background:#fff;border-radius:8px;margin-top:10px;border:3px solid #0a1931}
+    .admin-table{width:100%;border-collapse:collapse;font-size:11px;border:1px solid #0a1931}
+    .admin-table th{background:#0a1931;color:#ffcc00;padding:12px 8px;text-align:left;border:1px solid #000;font-weight:900;text-transform:uppercase}
+    .admin-table td{padding:10px 8px;border:1px solid #aaa;color:#222;background:#fff;font-size:11px}
+    .admin-table tr:nth-child(even) td{background:#eef2ff}
+    .admin-table tr:hover td{background:#ffef9c}
+    .footer{background:#0a1931;color:#aaa;text-align:center;padding:15px;font-size:9px;margin-top:20px}.centered{text-align:center}.center{text-align:center;color:#555;font-size:12px}
       `}</style>
       <Navbar /><Routes>
         <Route path="/" element={<Home />} />
