@@ -1,4 +1,7 @@
 import express from 'express';
+app.get('/', (req, res) => {
+  res.send('Pinnacle Security Backend is Running! API is LIVE');
+});
 import mysql from 'mysql2/promise';
 import cors from 'cors';
 import dotenv from 'dotenv';
