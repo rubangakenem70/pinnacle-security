@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom'
 
 const API_URL = "https://pinnacle-security-backend.vercel.app";
-const ADMIN_PASSWORD = "Pinnacle2026!Secure123"; // MUST MATCH VERCEL ADMIN_SECRET
+const ADMIN_PASSWORD = "Pinnacle2026!Secure123";
 
 const Navbar = () => {
   const loc = useLocation();
@@ -112,7 +112,7 @@ const AdminLogin = () => {
       setMsg("✅ Correct! Opening admin...");
       setTimeout(()=> navigate("/admin"), 500);
     } else {
-      setMsg(`❌ Wrong password. Use: ${ADMIN_PASSWORD}`);
+      setMsg(`❌ Wrong password.`);
     }
   };
   return (
@@ -125,7 +125,6 @@ const AdminLogin = () => {
           <button className="big-btn">Login to Dashboard</button>
           {msg && <p className="msg">{msg}</p>}
         </form>
-        <p style={{fontSize:'11px', marginTop:'10px', color:'#888'}}>Password must match ADMIN_SECRET in Vercel Backend</p>
       </div>
     </div>
   )
@@ -154,7 +153,7 @@ const Admin = () => {
   useEffect(()=>{ setPage(1); },[tab, search]);
 
   const handleDelete = async (id, type) => {
-    if (!window.confirm("Delete this? After handling?")) return;
+    if (!window.confirm("Delete after handling?")) return;
     const url = type==='contacts'? `${API_URL}/api/contact/${id}` : `${API_URL}/api/applicants/${id}`;
     await fetch(url, {method:'DELETE', headers:{'x-admin-secret': token}});
     load();
@@ -169,35 +168,71 @@ const Admin = () => {
   }
   const logout = () => { localStorage.removeItem("pinnacle_admin_token"); navigate("/admin-login"); }
 
-  const filteredContacts = contacts.filter(c => (c.full_name||"").toLowerCase().includes(search.toLowerCase()) || (c.email||"").toLowerCase().includes(search.toLowerCase()));
-  const filteredApplicants = applicants.filter(a => (a.full_name||"").toLowerCase().includes(search.toLowerCase()) || (a.phone||"").toLowerCase().includes(search.toLowerCase()));
+  const filteredContacts = contacts.filter(c => (c.full_name||c.fullName||"").toLowerCase().includes(search.toLowerCase()) || (c.email||"").toLowerCase().includes(search.toLowerCase()) || (c.phone||"").toLowerCase().includes(search.toLowerCase()));
+  const filteredApplicants = applicants.filter(a => (a.full_name||a.fullName||"").toLowerCase().includes(search.toLowerCase()) || (a.phone||"").toLowerCase().includes(search.toLowerCase()));
   const currentList = tab==="contacts"? filteredContacts : filteredApplicants;
   const totalPages = Math.ceil(currentList.length / perPage) || 1;
   const paged = currentList.slice((page-1)*perPage, page*perPage);
 
   return (
-    <div className="section">
+    <div className="admin-page">
       <div className="admin-top">
         <h2>🔐 Admin Dashboard - Secure</h2>
-        <div className="stats"><span>📩 {contacts.length} Contacts</span><span>👮 {applicants.length} Applicants</span><span>Page {page}/{totalPages}</span></div>
+        <div className="stats">
+          <span>📩 {contacts.length} Contacts</span>
+          <span>👮 {applicants.length} Applicants</span>
+          <span>Page {page}/{totalPages}</span>
+        </div>
         <div className="tabs">
           <button onClick={()=>setTab("contacts")} className={tab==="contacts"?"tab on":"tab"}>Contacts</button>
           <button onClick={()=>setTab("applicants")} className={tab==="applicants"?"tab on":"tab"}>Applicants</button>
-          <button onClick={exportExcel} className="tab" style={{background:'#fff', color:'#0a1931'}}>📊 Export Excel</button>
-          <button onClick={logout} className="tab" style={{borderColor:'#ff4444', color:'#ff4444'}}>Logout</button>
+          <button onClick={exportExcel} className="tab white">📊 Export Excel</button>
+          <button onClick={logout} className="tab red">Logout</button>
         </div>
       </div>
-      <div className="filter-bar-clean">
-        <input className="search-visible" placeholder="🔍 Search name/email/phone..." value={search} onChange={e=>setSearch(e.target.value)} />
-        <button className="btn-yellow" onClick={load}>🔄 Refresh</button>
-        <button className="btn-dark" onClick={()=>setPage(p=>Math.max(1,p-1))}>‹ Prev</button>
-        <button className="btn-dark" onClick={()=>setPage(p=>Math.min(totalPages,p+1))}>Next ›</button>
+
+      <div className="filter-bar">
+        <input className="search-input" placeholder="🔍 Search name/email/phone..." value={search} onChange={e=>setSearch(e.target.value)} />
+        <div className="filter-btns">
+          <button className="btn-yellow small" onClick={load}>🔄 Refresh</button>
+          <button className="btn-dark small" onClick={()=>setPage(p=>Math.max(1,p-1))}>‹ Prev</button>
+          <button className="btn-dark small" onClick={()=>setPage(p=>Math.min(totalPages,p+1))}>Next ›</button>
+        </div>
       </div>
-      <div className="table-card"><div className="scroll">
-        <table><thead><tr><th>#</th><th>Name</th><th>Contact</th><th>Details</th><th>Date</th><th>Delete</th></tr></thead>
-        <tbody>{paged.map((item,i)=>(<tr key={item.id}><td>{(page-1)*perPage+i+1}</td><td><b>{item.full_name}</b></td><td>{item.email||item.phone}<br/><small>{item.phone||''}</small></td><td><span className="tag blue">{item.service||item.education}</span><br/><small>{(item.message||item.interest||'').substring(0,80)}</small></td><td>{(item.created_at||'').substring(0,10)}</td><td><button onClick={()=>handleDelete(item.id, tab)} style={{background:'#e11d48',color:'#fff',border:'none',padding:'7px 12px',borderRadius:'6px',cursor:'pointer',fontWeight:800}}>Delete</button></td></tr>))}</tbody></table>
-        {paged.length===0 && <p style={{textAlign:'center', padding:'20px'}}>No data found - Check backend is protected correctly</p>}
-      </div></div>
+
+      {/* MOBILE CARDS */}
+      <div className="mobile-cards">
+        {paged.map((item,i)=>(
+          <div key={item.id || i} className="m-card">
+            <div className="m-head">
+              <b>{item.full_name || item.fullName}</b>
+              <small>{(item.created_at||'').substring(0,10)}</small>
+            </div>
+            <div className="m-line">📧 {item.email || '-'} </div>
+            <div className="m-line">📞 {item.phone || '-'} </div>
+            <div className="m-tag"><span className="tag blue">{item.service || item.education || item.interest || 'General'}</span></div>
+            <div className="m-msg">{(item.message||item.interest||item.experience||'').substring(0,120)}</div>
+            <div className="m-actions">
+              <a href={`tel:${item.phone}`} className="m-btn call">📞 Call</a>
+              <a href={`https://wa.me/${(item.phone||'').replace(/[^0-9]/g,'')}`} target="_blank" rel="noreferrer" className="m-btn wa">WhatsApp</a>
+              <button onClick={()=>handleDelete(item.id, tab)} className="m-btn del">🗑️</button>
+            </div>
+          </div>
+        ))}
+        {paged.length===0 && <p className="no-data">No data found</p>}
+      </div>
+
+      {/* DESKTOP TABLE */}
+      <div className="table-card desktop-only">
+        <div className="scroll">
+          <table>
+            <thead><tr><th>#</th><th>Name</th><th>Contact</th><th>Details</th><th>Date</th><th>Action</th></tr></thead>
+            <tbody>{paged.map((item,i)=>(
+              <tr key={item.id}><td>{(page-1)*perPage+i+1}</td><td><b>{item.full_name}</b></td><td>{item.email||item.phone}<br/><small>{item.phone||''}</small></td><td><span className="tag blue">{item.service||item.education}</span><br/><small>{(item.message||item.interest||'').substring(0,80)}</small></td><td>{(item.created_at||'').substring(0,10)}</td><td><button onClick={()=>handleDelete(item.id, tab)} className="del-btn">Delete</button></td></tr>
+            ))}</tbody>
+          </table>
+        </div>
+      </div>
     </div>
   )
 }
@@ -213,8 +248,15 @@ const Footer = () => <div className="footer">© 2026 Pinnacle Security Ltd | Plo
 const App = () => (
   <BrowserRouter>
     <style>{`
-      *{margin:0;padding:0;box-sizing:border-box} body{font-family:Arial,sans-serif; background:#f4f6f9; line-height:1.9}
-     .nav{background:#0a1931; padding:14px 15px; position:sticky; top:0; z-index:999}.nav-top{display:flex; justify-content:space-between; align-items:center}.logo{color:#ffcc00; font-weight:900; font-size:18px}.menu-btn{color:#fff; font-size:26px; cursor:pointer; display:none}.links{display:flex; gap:12px; align-items:center; justify-content:center; flex-wrap:wrap}.links a{color:#fff; text-decoration:none; font-size:16px; font-weight:700; padding:8px 12px}.btn-yellow{background:#ffcc00!important; color:#0a1931!important; padding:10px 20px!important; border-radius:25px!important; font-weight:900!important; border:none; cursor:pointer; text-decoration:none; display:inline-block; font-size:16px}.btn-yellow.big{padding:14px 28px!important; font-size:17px}.btn-admin{background:#1e3a8a!important; color:#ffcc00!important; border:2px solid #ffcc00!important; padding:10px 20px!important; border-radius:25px!important; font-weight:900!important; text-decoration:none; font-size:16px}.btn-dark{background:#0a1931; color:#ffcc00; border:none; padding:14px 22px; border-radius:12px; font-weight:800; cursor:pointer; font-size:15px}.hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:45px 15px; text-align:center; border-radius:0 0 20px 20px}.hero h1{color:#ffcc00; font-size:26px; margin-bottom:12px}.hero p{font-size:17px}.dots{margin:14px 0}.dot{width:12px; height:12px; background:#555; border-radius:50%; display:inline-block; margin:0 6px; cursor:pointer}.dot.on{background:#ffcc00}.section{padding:22px 14px; max-width:1250px; margin:auto}.section h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:10px; margin-bottom:20px; font-size:26px}.card{background:#fff; padding:22px; border-radius:14px; margin-bottom:18px; box-shadow:0 4px 12px rgba(0,0,0,0.07); border-left:6px solid #0a1931; font-size:17px; line-height:1.9}.card.gold{border-left-color:#ffcc00; background:#fffbeb}.card.dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; border-left-color:#ffcc00}.card h3{font-size:20px; margin-bottom:14px; color:#0a1931; line-height:1.5}.card.dark h3{color:#ffcc00}.form-big{max-width:900px; margin:20px auto; background:#fff; padding:28px; border-radius:18px; display:flex; flex-direction:column; gap:16px; box-shadow:0 6px 20px rgba(0,0,0,0.09)}.form-big label{font-size:17px; font-weight:800; color:#0a1931; display:block; margin-bottom:4px}.form-big input,.form-big select,.form-big textarea{padding:15px; border:2px solid #0a1931; border-radius:12px; font-size:17px; width:100%; outline:none}.big-btn{background:#0a1931; color:#ffcc00; padding:18px; border:none; border-radius:14px; font-weight:900; cursor:pointer; font-size:19px}.msg{padding:14px; background:#d4edda; border-radius:12px; font-size:17px; text-align:center; font-weight:700}.admin-top{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:24px; border-radius:18px; text-align:center; margin-bottom:18px}.admin-top h2{color:#ffcc00; border:none; margin-bottom:8px; font-size:24px}.stats{display:flex; gap:12px; justify-content:center; margin:14px 0; flex-wrap:wrap}.stats span{background:rgba(255,204,0,0.15); border:2px solid #ffcc00; padding:8px 16px; border-radius:25px; font-size:15px; font-weight:800; color:#ffcc00}.tabs{display:flex; gap:12px; justify-content:center; margin-top:14px; flex-wrap:wrap}.tab{padding:10px 22px; border-radius:25px; border:2px solid #ffcc00; background:transparent; color:#ffcc00; font-weight:800; font-size:15px; cursor:pointer}.tab.on{background:#ffcc00; color:#0a1931}.filter-bar-clean{display:flex; gap:12px; margin-bottom:18px; background:#0a1931; padding:20px; border-radius:16px; flex-wrap:wrap; align-items:center; border:3px solid #ffcc00}.search-visible{flex:1; padding:16px 20px; border-radius:12px; border:3px solid #ffcc00; font-size:17px; min-width:260px; background:#fff; color:#0a1931; font-weight:900}.table-card{background:#fff; border-radius:16px; padding:16px; box-shadow:0 5px 18px rgba(0,0,0,0.08)}.table-card h3{font-size:17px; margin-bottom:12px; color:#0a1931}.scroll{overflow-x:auto}.table-card table{width:100%; border-collapse:collapse; font-size:16px; min-width:850px}.table-card th{background:#0a1931; color:#ffcc00; padding:14px 10px; text-align:left}.table-card td{padding:12px 10px; border-bottom:1px solid #f1f5f9}.tag{padding:5px 12px; border-radius:15px; font-size:13px; font-weight:800}.tag.blue{background:#dbeafe; color:#1e40af}.tag.dark{background:#1e293b; color:#ffcc00}.footer{background:#0a1931; color:#aaa; text-align:center; padding:18px; font-size:13px; margin-top:24px} @media(max-width:850px){.menu-btn{display:block}.links{display:none; flex-direction:column; align-items:flex-start; padding-top:14px}.links.show{display:flex} }
+      *{margin:0;padding:0;box-sizing:border-box} body{font-family:Arial,sans-serif; background:#f4f6f9; line-height:1.6; overflow-x:hidden}
+    .nav{background:#0a1931; padding:14px 15px; position:sticky; top:0; z-index:999}.nav-top{display:flex; justify-content:space-between; align-items:center}.logo{color:#ffcc00; font-weight:900; font-size:16px}.menu-btn{color:#fff; font-size:26px; cursor:pointer; display:none}.links{display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap}.links a{color:#fff; text-decoration:none; font-size:15px; font-weight:700; padding:8px 10px}.btn-yellow{background:#ffcc00!important; color:#0a1931!important; padding:10px 18px!important; border-radius:25px!important; font-weight:900!important; border:none; cursor:pointer; text-decoration:none; display:inline-block; font-size:14px}.btn-yellow.big{padding:14px 26px!important; font-size:16px}.btn-yellow.small{padding:10px 16px!important; font-size:13px}.btn-admin{background:#1e3a8a!important; color:#ffcc00!important; border:2px solid #ffcc00!important; padding:8px 16px!important; border-radius:25px!important; font-weight:900!important; text-decoration:none; font-size:14px}.btn-dark{background:#0a1931; color:#ffcc00; border:none; padding:12px 18px; border-radius:10px; font-weight:800; cursor:pointer; font-size:13px}.btn-dark.small{padding:10px 14px}.hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:35px 15px; text-align:center; border-radius:0 0 20px 20px}.hero h1{color:#ffcc00; font-size:22px; margin-bottom:10px; line-height:1.3}.hero p{font-size:15px}.dots{margin:12px 0}.dot{width:10px; height:10px; background:#555; border-radius:50%; display:inline-block; margin:0 5px; cursor:pointer}.dot.on{background:#ffcc00}.section{padding:18px 12px; max-width:1250px; margin:auto}.section h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:8px; margin-bottom:16px; font-size:22px}.card{background:#fff; padding:18px; border-radius:14px; margin-bottom:14px; box-shadow:0 4px 12px rgba(0,0,0,0.06); border-left:5px solid #0a1931; font-size:15px; line-height:1.7}.card.gold{border-left-color:#ffcc00; background:#fffbeb}.card.dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; border-left-color:#ffcc00}.card h3{font-size:18px; margin-bottom:10px; color:#0a1931}.card.dark h3{color:#ffcc00}.form-big{max-width:900px; margin:16px auto; background:#fff; padding:22px; border-radius:16px; display:flex; flex-direction:column; gap:14px; box-shadow:0 6px 20px rgba(0,0,0,0.08)}.form-big input,.form-big select,.form-big textarea{padding:14px; border:2px solid #0a1931; border-radius:10px; font-size:16px; width:100%; outline:none}.big-btn{background:#0a1931; color:#ffcc00; padding:16px; border:none; border-radius:12px; font-weight:900; cursor:pointer; font-size:17px}.msg{padding:12px; background:#d4edda; border-radius:10px; font-size:14px; text-align:center; font-weight:700}
+     .admin-page{padding:12px; max-width:1250px; margin:auto}
+     .admin-top{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:16px; border-radius:16px; text-align:center; margin-bottom:12px; border:2px solid #ffcc00}.admin-top h2{color:#ffcc00; border:none; margin-bottom:6px; font-size:18px}.stats{display:flex; gap:8px; justify-content:center; margin:10px 0; flex-wrap:wrap}.stats span{background:rgba(255,204,0,0.15); border:1.5px solid #ffcc00; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:800; color:#ffcc00}.tabs{display:flex; gap:8px; justify-content:center; margin-top:10px; flex-wrap:wrap}.tab{padding:8px 16px; border-radius:20px; border:1.5px solid #ffcc00; background:transparent; color:#ffcc00; font-weight:800; font-size:12px; cursor:pointer}.tab.on{background:#ffcc00; color:#0a1931}.tab.white{background:#fff; color:#0a1931}.tab.red{border-color:#ff4444; color:#ff4444}
+     .filter-bar{display:flex; gap:8px; margin-bottom:12px; background:#0a1931; padding:12px; border-radius:14px; flex-wrap:wrap; align-items:center; border:2px solid #ffcc00}.search-input{flex:1; padding:12px 14px; border-radius:10px; border:2px solid #ffcc00; font-size:14px; min-width:200px; background:#fff; color:#0a1931; font-weight:700}.filter-btns{display:flex; gap:6px; flex-wrap:wrap}
+     .mobile-cards{display:flex; flex-direction:column; gap:10px}.m-card{background:#fff; border-radius:12px; padding:14px; box-shadow:0 2px 10px rgba(0,0,0,0.07); border-left:4px solid #ffcc00}.m-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px}.m-head b{font-size:14px; color:#0a1931}.m-head small{font-size:10px; color:#888}.m-line{font-size:12px; color:#334155; margin:2px 0; word-break:break-all}.m-tag{margin:6px 0}.m-msg{font-size:12px; color:#475569; background:#f8fafc; padding:8px; border-radius:8px; margin:6px 0}.m-actions{display:flex; gap:6px; margin-top:8px}.m-btn{flex:1; text-align:center; padding:9px 8px; border-radius:8px; font-size:12px; font-weight:800; text-decoration:none; border:none; cursor:pointer}.m-btn.call{background:#0a1931; color:#ffcc00}.m-btn.wa{background:#22c55e; color:#fff}.m-btn.del{background:#fee2e2; color:#dc2626; flex:0 0 45px}
+     .table-card{background:#fff; border-radius:14px; padding:12px; box-shadow:0 4px 14px rgba(0,0,0,0.06)}.scroll{overflow-x:auto}.table-card table{width:100%; border-collapse:collapse; font-size:14px; min-width:700px}.table-card th{background:#0a1931; color:#ffcc00; padding:12px 8px; text-align:left}.table-card td{padding:10px 8px; border-bottom:1px solid #f1f5f9}.tag{padding:4px 10px; border-radius:12px; font-size:11px; font-weight:800}.tag.blue{background:#dbeafe; color:#1e40af}.del-btn{background:#e11d48; color:#fff; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; font-weight:800; font-size:12px}.no-data{text-align:center; padding:20px; color:#888}
+     .desktop-only{display:none} @media(min-width:768px){.mobile-cards{display:none}.desktop-only{display:block}.logo{font-size:18px}.hero h1{font-size:26px}.section{padding:22px 14px}}
+     .footer{background:#0a1931; color:#aaa; text-align:center; padding:16px; font-size:11px; margin-top:20px; line-height:1.6} @media(max-width:850px){.menu-btn{display:block}.links{display:none; flex-direction:column; align-items:flex-start; padding-top:12px}.links.show{display:flex} }
     `}</style>
     <Navbar/>
     <Routes>
