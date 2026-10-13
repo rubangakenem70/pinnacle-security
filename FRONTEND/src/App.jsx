@@ -2,19 +2,33 @@ import React, { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom'
 
 const API_URL = "https://pinnacle-security-backend.vercel.app";
-const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbzvOyb3XQljr1w5zwTc8Kvh_ODdxXkyNkTXvHLtZS6AwzBDOD1aTWQQro8M127m731ikA/exec";
 
-const sendToGoogleSheet = async (payload) => {
+// YOUR NEW FINAL LINKS - BOTH TABLES
+const GOOGLE_SHEET_APPLICANTS_URL = "https://script.google.com/macros/s/AKfycbz0Fx9gSfPwPXZdi8pivw9IdQ_fzj707fPk22GBECuGYhGzwePtEPZV47TyXk8TN8bggQ/exec";
+const GOOGLE_SHEET_CONTACTS_URL = "https://script.google.com/macros/s/AKfycbz0Fx9gSfPwPXZdi8pivw9IdQ_fzj707fPk22GBECuGYhGzwePtEPZV47TyXk8TN8bggQ/exec";
+
+const sendToApplicantsSheet = async (payload) => {
   try {
-    const dataForSheet = {...payload, date: new Date().toLocaleString() };
-    await fetch(GOOGLE_SHEET_URL, {
+    await fetch(GOOGLE_SHEET_APPLICANTS_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dataForSheet)
+      body: JSON.stringify({...payload, date: new Date().toLocaleString()})
     });
-    console.log("Sent to Sheet:", payload.type);
-  } catch (err) { console.log("Sheet error", err); }
+    console.log("Applicant → Sheet");
+  } catch (e) { console.log("Applicants Sheet error", e); }
+};
+
+const sendToContactsSheet = async (payload) => {
+  try {
+    await fetch(GOOGLE_SHEET_CONTACTS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({...payload, date: new Date().toLocaleString()})
+    });
+    console.log("Contact → Sheet");
+  } catch (e) { console.log("Contacts Sheet error", e); }
 };
 
 const ADMIN_PASSWORD = "Pinnacle2026!Secure123";
@@ -120,13 +134,11 @@ const Blog = () => {
   )
 }
 
-// FIXED CONTACT - NOW SHEET FIRST THEN ADMIN - BOTH WORK
 const Contact = () => {
   const [f,setF]=useState({fullName:"",email:"",phone:"",service:"",message:""});
   const [s,setS]=useState("");
   const send=async(e)=>{
-    e.preventDefault();
-    setS("Submitting to Sheet & Admin...");
+    e.preventDefault(); setS("Submitting to Contact Sheet & Admin...");
     const payload = {
       full_name: f.fullName, fullName: f.fullName,
       email: f.email,
@@ -137,12 +149,12 @@ const Contact = () => {
       created_at: new Date().toISOString(),
       date: new Date().toLocaleString()
     };
-    await sendToGoogleSheet(payload);
+    await sendToContactsSheet(payload);
     try{
       const r=await fetch(`${API_URL}/api/contact`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-      if(r.ok){ setS("✅ Saved to Admin + Google Sheet"); setF({fullName:"",email:"",phone:"",service:"",message:""}) }
-      else { setS("✅ Saved to Sheet! Admin will sync"); setF({fullName:"",email:"",phone:"",service:"",message:""}) }
-    }catch{ setS("✅ Saved to Sheet! Admin offline - will sync"); setF({fullName:"",email:"",phone:"",service:"",message:""}) }
+      if(r.ok){ setS("✅ Contact saved to Admin + Google Sheet"); setF({fullName:"",email:"",phone:"",service:"",message:""}) }
+      else { setS("✅ Saved to Sheet! Admin syncing"); setF({fullName:"",email:"",phone:"",service:"",message:""}) }
+    }catch{ setS("✅ Saved to Contact Sheet! Admin offline"); setF({fullName:"",email:"",phone:"",service:"",message:""}) }
   };
   const inputStyle={width:'100%',padding:'14px 16px',borderRadius:'12px',border:'2px solid #d1d5db',outline:'none',fontSize:'15px',background:'white',color:'#1e293b'};
   return (
@@ -173,7 +185,7 @@ const Join = () => {
   const [s,setS]=useState("");
   const inputStyle={width:'100%',padding:'14px 16px',borderRadius:'12px',border:'2px solid #d1d5db',outline:'none',fontSize:'15px',background:'white',color:'#1e293b'};
   const send=async(e)=>{
-    e.preventDefault(); setS("Submitting to Sheet & Admin...");
+    e.preventDefault(); setS("Submitting to Applicant Sheet & Admin...");
     const payload = {
       full_name: f.fullName, fullName: f.fullName,
       phone: f.phone, phone_number: f.phone,
@@ -182,11 +194,11 @@ const Join = () => {
       created_at: new Date().toISOString(),
       date: new Date().toLocaleString()
     };
-    await sendToGoogleSheet(payload);
+    await sendToApplicantsSheet(payload);
     try{
       const r=await fetch(`${API_URL}/api/applicants`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-      if(r.ok){ setS("✅ Submitted! Admin + Sheet both!"); setF({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",position:"SITE INCHARGE",district:""}) } else setS("✅ Saved to Sheet!")
-    }catch{ setS("✅ Saved to Sheet - Admin syncing...") }
+      if(r.ok){ setS("✅ Applicant saved to Admin + Google Sheet!"); setF({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",position:"SITE INCHARGE",district:""}) } else setS("✅ Saved to Applicant Sheet!")
+    }catch{ setS("✅ Saved to Applicant Sheet - Admin syncing...") }
   };
   return (
     <div className="section"><h2>Apply Now - Free Training - No Fees</h2>
@@ -224,7 +236,6 @@ const Admin = () => {
     } catch(err){}
   }
   useEffect(()=>{ load(); const interval=setInterval(load, 10000); return()=>clearInterval(interval); },[]);
-
   const handleDelete = async (id, type) => {
     if (!window.confirm("Delete this?")) return;
     const url = type==='contacts'? `${API_URL}/api/contact/${id}` : `${API_URL}/api/applicants/${id}`;
@@ -239,40 +250,26 @@ const Admin = () => {
     const blob = new Blob([csv], {type:'text/csv'}); const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href=url; a.download=`pinnacle_${tab}_${new Date().toISOString().slice(0,10)}.csv`; a.click();
   }
-  const exportGoogleSheet = () => {
-    exportExcel();
-    window.open("https://docs.google.com/spreadsheets/", "_blank");
-  }
+  const exportGoogleSheet = () => { window.open("https://docs.google.com/spreadsheets/", "_blank"); }
   const logout = () => { localStorage.removeItem("pinnacle_admin_token"); navigate("/admin-login"); }
   const list = tab==="contacts"? contacts : applicants;
-
   return (
     <div className="admin-full">
       <div className="admin-top-full">
-        <h2>Admin - {contacts.length} Contacts | {applicants.length} Applicants | Auto-Sync to Sheet ON</h2>
+        <h2>Admin - {contacts.length} Contacts | {applicants.length} Applicants | Sheet: 8bggQ</h2>
         <div className="tabs">
           <button onClick={()=>setTab("contacts")} className={tab==="contacts"?"tab on":"tab"}>Contacts ({contacts.length})</button>
           <button onClick={()=>setTab("applicants")} className={tab==="applicants"?"tab on":"tab"}>Applicants ({applicants.length})</button>
-          <button onClick={exportExcel} className="tab white">Export Excel (CSV)</button>
+          <button onClick={exportExcel} className="tab white">Export Excel</button>
           <button onClick={exportGoogleSheet} className="tab white">Open Google Sheet</button>
           <button onClick={load} className="tab">Refresh</button>
           <button onClick={logout} className="tab red">Logout</button>
         </div>
-        <p style={{fontSize:'11px', marginTop:'8px', color:'#94a3b8'}}>✅ Final URL AKfycbzv... | Admin + Sheet connected | Contact + Join both to Sheet</p>
+        <p style={{fontSize:'11px', marginTop:'8px', color:'#94a3b8'}}>✅ Final Script:...8bggQ | Both forms → Admin + Sheet</p>
       </div>
       <div className="table-wrap">
         <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>{tab==='contacts'?'Service':'Position / Education'}</th>
-              <th>Message</th>
-              <th>Date</th>
-              <th>Action</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>{tab==='contacts'?'Service':'Position / Education'}</th><th>Message</th><th>Date</th><th>Action</th></tr></thead>
           <tbody>
             {list.map((item)=>(
               <tr key={item.id}>
