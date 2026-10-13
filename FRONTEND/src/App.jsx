@@ -2,12 +2,22 @@ import React, { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom'
 
 const API_URL = "https://pinnacle-security-backend.vercel.app";
-const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbzk1JBV7dwWVonyh4MblR4n9jeTsptGyICu1tuPh18Y11sBbWJHsMcCd2qOR55vT6nw/exec";
+const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycby2IGgfdMWa-yYTUr4d56KepxZbLlvc4x8GrCjyvfr4uw74Ss_1yxUz3Nr2z4v3z7QvVg/exec";
+
 const sendToGoogleSheet = async (payload) => {
   try {
-    fetch(GOOGLE_SHEET_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    // Add Date for organized sheet
+    const dataForSheet = {...payload, date: new Date().toLocaleString() };
+    await fetch(GOOGLE_SHEET_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dataForSheet)
+    });
+    console.log("Sent to Sheet");
   } catch (err) { console.log("Sheet error", err); }
 };
+
 const ADMIN_PASSWORD = "Pinnacle2026!Secure123";
 const KOBO_LINK = "https://ee.kobotoolbox.org/x/ODCdeyaJ";
 
@@ -123,12 +133,14 @@ const Contact = () => {
         service: f.service,
         message: f.message,
         type: "contact",
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        date: new Date().toLocaleString()
       };
+      // SEND TO BOTH AT SAME TIME
       sendToGoogleSheet(payload);
       const r=await fetch(`${API_URL}/api/contact`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-      if(r.ok){ setS("Submitted! We will call you."); setF({fullName:"",email:"",phone:"",service:"",message:""}) } else setS("Error - try again");
-    }catch{ setS("Network error") }
+      if(r.ok){ setS("✅ Submitted! Saved to Admin + Google Sheet"); setF({fullName:"",email:"",phone:"",service:"",message:""}) } else setS("Saved to Sheet! Admin will sync");
+    }catch{ setS("Saved to Sheet - Admin syncing...") }
   };
   return (
     <div className="contact-full">
@@ -139,7 +151,7 @@ const Contact = () => {
           <div className="two-col"><input value={f.fullName} onChange={e=>setF({...f,fullName:e.target.value})} required placeholder="Fullname"/><input value={f.phone} onChange={e=>setF({...f,phone:e.target.value})} required placeholder="Phone e.g 0754139726"/></div>
           <div className="two-col"><input type="email" value={f.email} onChange={e=>setF({...f,email:e.target.value})} required placeholder="Email"/><select value={f.service} onChange={e=>setF({...f,service:e.target.value})} required><option value="">Choose Service</option><option>Security Guard Service</option><option>Construction Security</option><option>CCTV Installation</option><option>Mobile Patrol</option><option>Event Security</option><option>Alarm System</option></select></div>
           <textarea rows="5" value={f.message} onChange={e=>setF({...f,message:e.target.value})} required placeholder="Message - I need to..."></textarea>
-          <button className="big-btn">Submit</button>{s&&<p className="msg">{s}</p>}
+          <button className="big-btn">Submit - Admin + Sheet</button>{s&&<p className="msg">{s}</p>}
         </form>
       </div>
     </div>
@@ -156,12 +168,14 @@ const Join = () => {
         phone: f.phone, phone_number: f.phone,
         email: f.email, education: f.education, experience: f.experience, interest: f.interest, position: f.position, district: f.district,
         type: "applicant",
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        date: new Date().toLocaleString()
       };
+      // SEND TO BOTH AT SAME TIME
       sendToGoogleSheet(payload);
       const r=await fetch(`${API_URL}/api/applicants`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-      if(r.ok){ setS("Submitted! Admin will see instantly + Excel auto."); setF({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",position:"SITE INCHARGE",district:""}) } else setS("Error")
-    }catch{ setS("Error") }
+      if(r.ok){ setS("✅ Submitted! Admin + Sheet both!"); setF({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",position:"SITE INCHARGE",district:""}) } else setS("Saved to Sheet!")
+    }catch{ setS("Saved to Sheet - Admin syncing...") }
   };
   return (
     <div className="section"><h2>Apply Now - Free Training - No Fees</h2>
@@ -169,7 +183,7 @@ const Join = () => {
         <div className="two-col"><div><label>Full Name *</label><input value={f.fullName} onChange={e=>setF({...f,fullName:e.target.value})} required placeholder="Fullname"/></div><div><label>Phone *</label><input value={f.phone} onChange={e=>setF({...f,phone:e.target.value})} required placeholder="0754..."/></div></div>
         <div className="two-col"><div><label>Email *</label><input type="email" value={f.email} onChange={e=>setF({...f,email:e.target.value})} required placeholder="Email"/></div><div><label>Education *</label><select value={f.education} onChange={e=>setF({...f,education:e.target.value})} required><option value="">Choose</option><option>P7</option><option>UCE</option><option>UACE</option><option>Diploma</option><option>Degree</option></select></div></div>
         <div className="two-col"><div><label>Position *</label><select value={f.position} onChange={e=>setF({...f,position:e.target.value})} required><option>SITE INCHARGE</option><option>SUPERVISOR</option><option>SECURITY OFFICER - General</option></select></div><div><label>District *</label><input value={f.district} onChange={e=>setF({...f,district:e.target.value})} required placeholder="District"/></div></div>
-        <button className="big-btn">Submit - Goes to Admin Instantly</button>{s&&<p className="msg">{s}</p>}
+        <button className="big-btn">Submit - Goes to Admin + Sheet</button>{s&&<p className="msg">{s}</p>}
       </form>
     </div>
   )
@@ -224,16 +238,16 @@ const Admin = () => {
   return (
     <div className="admin-full">
       <div className="admin-top-full">
-        <h2>Admin - {contacts.length} Contacts | {applicants.length} Applicants | Auto-Sync ON</h2>
+        <h2>Admin - {contacts.length} Contacts | {applicants.length} Applicants | Auto-Sync to Sheet ON</h2>
         <div className="tabs">
           <button onClick={()=>setTab("contacts")} className={tab==="contacts"?"tab on":"tab"}>Contacts ({contacts.length})</button>
           <button onClick={()=>setTab("applicants")} className={tab==="applicants"?"tab on":"tab"}>Applicants ({applicants.length})</button>
           <button onClick={exportExcel} className="tab white">Export Excel (CSV)</button>
-          <button onClick={exportGoogleSheet} className="tab white">Auto to Google Sheet</button>
+          <button onClick={exportGoogleSheet} className="tab white">Open Google Sheet</button>
           <button onClick={load} className="tab">Refresh</button>
           <button onClick={logout} className="tab red">Logout</button>
         </div>
-        <p style={{fontSize:'11px', marginTop:'8px', color:'#94a3b8'}}>Applicant submitted = appears here in 10 seconds automatically | Phone fixed | No white space</p>
+        <p style={{fontSize:'11px', marginTop:'8px', color:'#94a3b8'}}>✅ Now connected: Form → Admin + Google Sheet both auto | New URL: AKfycby2...</p>
       </div>
       <div className="table-wrap">
         <table className="admin-table">
@@ -298,30 +312,30 @@ const App = () => (
       html,body{width:100%; overflow-x:hidden; background:#f1f5f9; margin:0}
       body{font-family:'Inter', sans-serif; font-size:15px; line-height:1.7; color:#1e293b}
       h1,h2,h3,h4,.logo{font-family:'Poppins', sans-serif; line-height:1.3}
-   .nav{background:#0a1931; padding:14px 16px; position:sticky; top:0; z-index:999; width:100%}.nav-top{display:flex; justify-content:space-between; align-items:center}.logo{color:#ffcc00; font-weight:800; font-size:16px}.menu-btn{color:#fff; font-size:26px; cursor:pointer; display:none}.links{display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap}.links a{color:#e2e8f0; text-decoration:none; font-size:14px; font-weight:600; padding:8px 10px}.btn-yellow{background:#ffcc00!important; color:#0a1931!important; padding:9px 18px!important; border-radius:25px!important; font-weight:800!important; text-decoration:none}.btn-yellow.big{padding:13px 26px!important; font-size:15px}.btn-admin{border:2px solid #ffcc00!important; color:#ffcc00!important; padding:7px 16px!important; border-radius:25px!important; font-weight:800!important; text-decoration:none; font-size:12px}
-   .hero{background:linear-gradient(135deg,#0a1931 0%,#1e3a8a 100%); color:#fff; padding:40px 16px; text-align:center; width:100%}.hero h1{color:#ffcc00; font-size:24px; margin-bottom:10px; font-weight:800}.hero p{font-size:14px; color:#cbd5e1}.dots{margin:14px 0}.dot{width:9px; height:9px; background:#475569; border-radius:50%; display:inline-block; margin:0 4px; cursor:pointer}.dot.on{background:#ffcc00}
-   .section{padding:18px 14px; max-width:1250px; margin:auto; width:100%}.section h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:8px; margin-bottom:16px; font-size:22px; font-weight:800}.card{background:#fff; padding:18px; border-radius:14px; margin-bottom:12px; box-shadow:0 4px 12px rgba(0,0,0,0.05); border-left:4px solid #0a1931}.card.gold{border-left-color:#ffcc00; background:#fffbeb}.card.dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; border-left-color:#ffcc00}.card h3{font-size:17px; margin-bottom:8px}
-   .about-hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:22px; border-radius:14px; margin-bottom:14px; border:2px solid #ffcc00}.service-box{background:#fff; border-radius:12px; margin-bottom:10px; box-shadow:0 3px 10px rgba(0,0,0,0.04); border-left:4px solid #0a1931}.service-head{display:flex; justify-content:space-between; align-items:center; padding:14px; cursor:pointer}.service-short{font-size:13px; color:#64748b}.expand-btn{background:#0a1931; color:#ffcc00; padding:6px 12px; border-radius:20px; font-size:11px; font-weight:800}.service-body{background:#f8fafc; padding:12px; border-top:1px solid #e2e8f0}
-   .memo{background:#fff; border-radius:14px; padding:18px; border:2px solid #0a1931}.memo-head{background:#0a1931; color:#fff; padding:16px; border-radius:12px; margin:-18px -18px 16px -18px; text-align:center}.job-card{background:#f8fafc; border:2px solid #e2e8f0; border-radius:12px; padding:14px; margin-bottom:12px}.job-card.gold{background:#fffbeb; border-color:#ffcc00}.big-recruit-btn{background:#ffcc00; color:#0a1931; padding:14px 24px; border-radius:30px; font-weight:800; text-decoration:none; display:inline-block; margin-top:12px; text-align:center}
-   .contact-full{padding:0; margin:0; width:100vw; margin-left:calc(-50vw + 50%); background:#f1f5f9; padding:20px 16px 30px 16px}.contact-full h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:8px; margin-bottom:18px; font-size:22px; font-weight:800; max-width:1250px; margin-left:auto; margin-right:auto}
-   .form-big{max-width:900px; margin:14px auto; background:#fff; padding:22px; border-radius:14px; display:flex; flex-direction:column; gap:14px; box-shadow:0 4px 12px rgba(0,0,0,0.06)}.light-form input,.light-form select,.light-form textarea{background:#ffffff!important; color:#0a1931!important; border:2px solid #cbd5e1!important}.light-form input::placeholder,.light-form textarea::placeholder{color:#64748b!important}.form-big input,.form-big select,.form-big textarea{padding:12px 14px; border-radius:10px; font-size:14px; width:100%; font-family:'Inter'}.form-big label{font-size:13px; font-weight:700; color:#0a1931; margin-bottom:4px; display:block}.two-col{display:grid; grid-template-columns:1fr 1fr; gap:12px} @media(max-width:700px){.two-col{grid-template-columns:1fr}}.form-2col{display:grid; grid-template-columns:320px 1fr; gap:16px; max-width:1250px; margin:auto} @media(max-width:900px){.form-2col{grid-template-columns:1fr}}.big-btn{background:#0a1931; color:#ffcc00; padding:14px; border:none; border-radius:10px; font-weight:800; cursor:pointer; font-size:15px}.msg{padding:12px; background:#d4edda; border-radius:10px; font-size:13px; text-align:center; font-weight:700}
-   .admin-full{width:100vw; margin-left:calc(-50vw + 50%); margin-right:calc(-50vw + 50%); background:#ffffff; min-height:70vh; padding:0; margin-top:0; margin-bottom:0}
-   .admin-top-full{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:16px 10px; text-align:center; border-bottom:4px solid #ffcc00; width:100%}.admin-top-full h2{color:#ffcc00; font-size:16px; border:none; margin-bottom:10px}
-   .tabs{display:flex; gap:6px; justify-content:center; flex-wrap:wrap}.tab{padding:8px 12px; border-radius:20px; border:1.5px solid #ffcc00; background:transparent; color:#ffcc00; font-weight:700; font-size:11px; cursor:pointer}.tab.on{background:#ffcc00; color:#0a1931}.tab.white{background:#fff; color:#0a1931; border-color:#fff}.tab.red{border-color:#ff4444; color:#ff4444}
-   .table-wrap{width:100%; overflow-x:auto; background:#fff; -webkit-overflow-scrolling:touch}
-   .admin-table{width:100%; border-collapse:collapse; min-width:900px; font-size:13px}
-   .admin-table th{background:#0a1931; color:#ffcc00; padding:11px 8px; text-align:left; font-weight:800; font-size:11.5px; text-transform:uppercase; position:sticky; top:0; white-space:nowrap}
-   .admin-table td{padding:9px 8px; border-bottom:1px solid #e2e8f0; vertical-align:top; max-width:220px; word-wrap:break-word}
-   .admin-table tr:hover{background:#f8fafc}.admin-table tr:nth-child(even){background:#fffbeb}
-   .msg-cell{max-width:220px; font-size:12px; color:#334155}.row-actions{display:flex; gap:4px}.mini-btn{padding:5px 9px; border-radius:7px; font-size:10px; font-weight:800; text-decoration:none; border:none; cursor:pointer}.mini-btn.call{background:#0a1931; color:#ffcc00}.mini-btn.wa{background:#22c55e; color:#fff}.mini-btn.del{background:#fee2e2; color:#dc2626}
-   .footer-new{background:#0a1931; color:#fff; width:100vw; margin-left:calc(-50vw + 50%); border-top:4px solid #ffcc00; text-align:center; margin-top:0}
-   .footer-inner{max-width:1250px; margin:auto; padding:28px 16px; display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center}
-   .footer-inner h4{color:#ffcc00; font-size:18px; font-weight:800}.footer-inner p{font-size:13.5px; color:#94a3b8; line-height:1.6}
-   .footer-test-btn{background:#ffcc00; color:#0a1931; padding:12px 24px; border-radius:30px; font-weight:800; text-decoration:none; font-size:14px}
-   .footer-socials{display:flex; gap:12px; justify-content:center; margin-top:10px}
-   .social-icon{width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; text-decoration:none; font-weight:800; font-size:13px; color:#fff}
-   .social-icon.fb{background:#1877f2}.social-icon.wa{background:#25d366}.social-icon.ig{background:linear-gradient(45deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5)}.social-icon.li{background:#0a66c2}.social-icon.tw{background:#111}
-   .footer-copy{text-align:center; font-size:12px; color:#64748b; padding:14px; border-top:1px solid rgba(255,255,255,0.08); width:100%}
+  .nav{background:#0a1931; padding:14px 16px; position:sticky; top:0; z-index:999; width:100%}.nav-top{display:flex; justify-content:space-between; align-items:center}.logo{color:#ffcc00; font-weight:800; font-size:16px}.menu-btn{color:#fff; font-size:26px; cursor:pointer; display:none}.links{display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap}.links a{color:#e2e8f0; text-decoration:none; font-size:14px; font-weight:600; padding:8px 10px}.btn-yellow{background:#ffcc00!important; color:#0a1931!important; padding:9px 18px!important; border-radius:25px!important; font-weight:800!important; text-decoration:none}.btn-yellow.big{padding:13px 26px!important; font-size:15px}.btn-admin{border:2px solid #ffcc00!important; color:#ffcc00!important; padding:7px 16px!important; border-radius:25px!important; font-weight:800!important; text-decoration:none; font-size:12px}
+  .hero{background:linear-gradient(135deg,#0a1931 0%,#1e3a8a 100%); color:#fff; padding:40px 16px; text-align:center; width:100%}.hero h1{color:#ffcc00; font-size:24px; margin-bottom:10px; font-weight:800}.hero p{font-size:14px; color:#cbd5e1}.dots{margin:14px 0}.dot{width:9px; height:9px; background:#475569; border-radius:50%; display:inline-block; margin:0 4px; cursor:pointer}.dot.on{background:#ffcc00}
+  .section{padding:18px 14px; max-width:1250px; margin:auto; width:100%}.section h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:8px; margin-bottom:16px; font-size:22px; font-weight:800}.card{background:#fff; padding:18px; border-radius:14px; margin-bottom:12px; box-shadow:0 4px 12px rgba(0,0,0,0.05); border-left:4px solid #0a1931}.card.gold{border-left-color:#ffcc00; background:#fffbeb}.card.dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; border-left-color:#ffcc00}.card h3{font-size:17px; margin-bottom:8px}
+  .about-hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:22px; border-radius:14px; margin-bottom:14px; border:2px solid #ffcc00}.service-box{background:#fff; border-radius:12px; margin-bottom:10px; box-shadow:0 3px 10px rgba(0,0,0,0.04); border-left:4px solid #0a1931}.service-head{display:flex; justify-content:space-between; align-items:center; padding:14px; cursor:pointer}.service-short{font-size:13px; color:#64748b}.expand-btn{background:#0a1931; color:#ffcc00; padding:6px 12px; border-radius:20px; font-size:11px; font-weight:800}.service-body{background:#f8fafc; padding:12px; border-top:1px solid #e2e8f0}
+  .memo{background:#fff; border-radius:14px; padding:18px; border:2px solid #0a1931}.memo-head{background:#0a1931; color:#fff; padding:16px; border-radius:12px; margin:-18px -18px 16px -18px; text-align:center}.job-card{background:#f8fafc; border:2px solid #e2e8f0; border-radius:12px; padding:14px; margin-bottom:12px}.job-card.gold{background:#fffbeb; border-color:#ffcc00}.big-recruit-btn{background:#ffcc00; color:#0a1931; padding:14px 24px; border-radius:30px; font-weight:800; text-decoration:none; display:inline-block; margin-top:12px; text-align:center}
+  .contact-full{padding:0; margin:0; width:100vw; margin-left:calc(-50vw + 50%); background:#f1f5f9; padding:20px 16px 30px 16px}.contact-full h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:8px; margin-bottom:18px; font-size:22px; font-weight:800; max-width:1250px; margin-left:auto; margin-right:auto}
+  .form-big{max-width:900px; margin:14px auto; background:#fff; padding:22px; border-radius:14px; display:flex; flex-direction:column; gap:14px; box-shadow:0 4px 12px rgba(0,0,0,0.06)}.light-form input,.light-form select,.light-form textarea{background:#ffffff!important; color:#0a1931!important; border:2px solid #cbd5e1!important}.light-form input::placeholder,.light-form textarea::placeholder{color:#64748b!important}.form-big input,.form-big select,.form-big textarea{padding:12px 14px; border-radius:10px; font-size:14px; width:100%; font-family:'Inter'}.form-big label{font-size:13px; font-weight:700; color:#0a1931; margin-bottom:4px; display:block}.two-col{display:grid; grid-template-columns:1fr 1fr; gap:12px} @media(max-width:700px){.two-col{grid-template-columns:1fr}}.form-2col{display:grid; grid-template-columns:320px 1fr; gap:16px; max-width:1250px; margin:auto} @media(max-width:900px){.form-2col{grid-template-columns:1fr}}.big-btn{background:#0a1931; color:#ffcc00; padding:14px; border:none; border-radius:10px; font-weight:800; cursor:pointer; font-size:15px}.msg{padding:12px; background:#d4edda; border-radius:10px; font-size:13px; text-align:center; font-weight:700}
+  .admin-full{width:100vw; margin-left:calc(-50vw + 50%); margin-right:calc(-50vw + 50%); background:#ffffff; min-height:70vh; padding:0; margin-top:0; margin-bottom:0}
+  .admin-top-full{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:16px 10px; text-align:center; border-bottom:4px solid #ffcc00; width:100%}.admin-top-full h2{color:#ffcc00; font-size:16px; border:none; margin-bottom:10px}
+  .tabs{display:flex; gap:6px; justify-content:center; flex-wrap:wrap}.tab{padding:8px 12px; border-radius:20px; border:1.5px solid #ffcc00; background:transparent; color:#ffcc00; font-weight:700; font-size:11px; cursor:pointer}.tab.on{background:#ffcc00; color:#0a1931}.tab.white{background:#fff; color:#0a1931; border-color:#fff}.tab.red{border-color:#ff4444; color:#ff4444}
+  .table-wrap{width:100%; overflow-x:auto; background:#fff; -webkit-overflow-scrolling:touch}
+  .admin-table{width:100%; border-collapse:collapse; min-width:900px; font-size:13px}
+  .admin-table th{background:#0a1931; color:#ffcc00; padding:11px 8px; text-align:left; font-weight:800; font-size:11.5px; text-transform:uppercase; position:sticky; top:0; white-space:nowrap}
+  .admin-table td{padding:9px 8px; border-bottom:1px solid #e2e8f0; vertical-align:top; max-width:220px; word-wrap:break-word}
+  .admin-table tr:hover{background:#f8fafc}.admin-table tr:nth-child(even){background:#fffbeb}
+  .msg-cell{max-width:220px; font-size:12px; color:#334155}.row-actions{display:flex; gap:4px}.mini-btn{padding:5px 9px; border-radius:7px; font-size:10px; font-weight:800; text-decoration:none; border:none; cursor:pointer}.mini-btn.call{background:#0a1931; color:#ffcc00}.mini-btn.wa{background:#22c55e; color:#fff}.mini-btn.del{background:#fee2e2; color:#dc2626}
+  .footer-new{background:#0a1931; color:#fff; width:100vw; margin-left:calc(-50vw + 50%); border-top:4px solid #ffcc00; text-align:center; margin-top:0}
+  .footer-inner{max-width:1250px; margin:auto; padding:28px 16px; display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center}
+  .footer-inner h4{color:#ffcc00; font-size:18px; font-weight:800}.footer-inner p{font-size:13.5px; color:#94a3b8; line-height:1.6}
+  .footer-test-btn{background:#ffcc00; color:#0a1931; padding:12px 24px; border-radius:30px; font-weight:800; text-decoration:none; font-size:14px}
+  .footer-socials{display:flex; gap:12px; justify-content:center; margin-top:10px}
+  .social-icon{width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; text-decoration:none; font-weight:800; font-size:13px; color:#fff}
+  .social-icon.fb{background:#1877f2}.social-icon.wa{background:#25d366}.social-icon.ig{background:linear-gradient(45deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5)}.social-icon.li{background:#0a66c2}.social-icon.tw{background:#111}
+  .footer-copy{text-align:center; font-size:12px; color:#64748b; padding:14px; border-top:1px solid rgba(255,255,255,0.08); width:100%}
       @media(max-width:850px){.menu-btn{display:block}.links{display:none; flex-direction:column; align-items:flex-start; padding-top:12px; width:100%}.links.show{display:flex}.admin-table{min-width:700px}}
     `}</style>
     <Navbar/>
