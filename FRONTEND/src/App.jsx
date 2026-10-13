@@ -1,36 +1,31 @@
 import React, { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Link, useNavigate, Navigate } from 'react-router-dom'
 
 const API_URL = "https://pinnacle-security-backend.vercel.app";
 const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbz0Fx9gSfPwPXZdi8pivw9IdQ_fzj707fPk22GBECuGYhGzwePtEPZV47TyXk8TN8bggQ/exec";
-
-const sendToSheet = async (payload) => {
-  try {
-    await fetch(GOOGLE_SHEET_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      body: JSON.stringify(payload)
-    });
-  } catch (e) {}
-};
-
+const sendToSheet = async (payload) => { try { await fetch(GOOGLE_SHEET_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) }); } catch (e) {} };
 const ADMIN_PASSWORD = "Pinnacle2026!Secure123";
 const KOBO_LINK = "https://ee.kobotoolbox.org/x/ODCdeyaJ";
 
 const Navbar = () => {
-  const loc = useLocation();
-  const active = (p) => loc.pathname === p? {color:'#ffcc00', borderBottom:'3px solid #ffcc00'} : {color:'white'};
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const scroll = (id) => {
+    setOpen(false);
+    const doScroll = () => document.getElementById(id)?.scrollIntoView({behavior:'smooth', block:'start'});
+    if (window.location.pathname!== "/") { navigate("/"); setTimeout(doScroll, 350); }
+    else doScroll();
+  };
   return (
     <nav className="nav">
       <div className="nav-top"><span className="logo">PINNACLE SECURITY LTD</span><span className="menu-btn" onClick={()=>setOpen(!open)}>{open?'X':'☰'}</span></div>
       <div className={`links ${open?'show':''}`}>
-        <Link to="/" style={active("/")} onClick={()=>setOpen(false)}>Home</Link>
-        <Link to="/about" style={active("/about")} onClick={()=>setOpen(false)}>About</Link>
-        <Link to="/services" style={active("/services")} onClick={()=>setOpen(false)}>Services</Link>
-        <Link to="/blog" style={active("/blog")} onClick={()=>setOpen(false)}>Jobs</Link>
-        <Link to="/contact" style={active("/contact")} onClick={()=>setOpen(false)}>Contact</Link>
-        <Link to="/join" className="btn-yellow" onClick={()=>setOpen(false)}>Apply Now</Link>
+        <span onClick={()=>scroll("home")} style={{color:'white',cursor:'pointer',padding:'8px 10px',fontWeight:600}}>Home</span>
+        <span onClick={()=>scroll("about")} style={{color:'white',cursor:'pointer',padding:'8px 10px',fontWeight:600}}>About</span>
+        <span onClick={()=>scroll("services")} style={{color:'white',cursor:'pointer',padding:'8px 10px',fontWeight:600}}>Services</span>
+        <span onClick={()=>scroll("jobs")} style={{color:'white',cursor:'pointer',padding:'8px 10px',fontWeight:600}}>Jobs</span>
+        <span onClick={()=>scroll("contact")} style={{color:'white',cursor:'pointer',padding:'8px 10px',fontWeight:600}}>Contact</span>
+        <span onClick={()=>scroll("join")} className="btn-yellow" style={{cursor:'pointer'}}>Apply Now</span>
         <Link to="/admin" className="btn-admin" onClick={()=>setOpen(false)}>Admin</Link>
       </div>
     </nav>
@@ -45,8 +40,8 @@ const Home = () => {
     {t:"WE ARE RECRUITING - JOIN US TODAY", d:"SITE INCHARGE: UCE + 3yrs | SUPERVISOR: UACE + Rider Permit + 3yrs"},
     {t:"60+ Sites | 150+ Officers | 24/7 Control Room 0754 139726", d:"hr@pinnaclegroup.co.ug | Free Training | No Fees"},
   ];
-  return (<><div className="hero"><h1>{slides[i].t}</h1><p>{slides[i].d}</p><div className="dots">{[0,1,2].map(n=><span key={n} className={n===i?'dot on':'dot'} onClick={()=>setI(n)}></span>)}</div><Link to="/join" className="btn-yellow big">Apply Now - Free</Link></div>
-    <div className="section"><div className="card"><h3>Who We Are - 4.3 Rated</h3><p>Pinnacle Security Ltd Plot 442 & 443 Masajjagere, Muyenga - URSB Licensed. 60+ sites, 150+ officers, Control Room 0754 139726 24/7.</p></div><div className="card gold"><h3>Core Services</h3><p>Guard Service, Construction Security, CCTV, Mobile Patrol, Event Security, Alarm & Electric Fence.</p></div><div className="card dark"><h3>URGENT RECRUITMENT - No Fees</h3><p>SITE INCHARGE: UCE + 3yrs | SUPERVISOR: UACE + Rider Permit + 3yrs. Free 2 weeks training.</p><Link to="/join" className="btn-yellow">Apply Now</Link></div></div></>)
+  return (<><div className="hero"><h1>{slides[i].t}</h1><p>{slides[i].d}</p><div className="dots">{[0,1,2].map(n=><span key={n} className={n===i?'dot on':'dot'} onClick={()=>setI(n)}></span>)}</div><span onClick={()=>document.getElementById("join")?.scrollIntoView({behavior:'smooth'})} className="btn-yellow big" style={{cursor:'pointer',display:'inline-block'}}>Apply Now - Free</span></div>
+    <div className="section"><div className="card"><h3>Who We Are - 4.3 Rated</h3><p>Pinnacle Security Ltd Plot 442 & 443 Masajjagere, Muyenga - URSB Licensed. 60+ sites, 150+ officers, Control Room 0754 139726 24/7.</p></div><div className="card gold"><h3>Core Services</h3><p>Guard Service, Construction Security, CCTV, Mobile Patrol, Event Security, Alarm & Electric Fence.</p></div><div className="card dark"><h3>URGENT RECRUITMENT - No Fees</h3><p>SITE INCHARGE: UCE + 3yrs | SUPERVISOR: UACE + Rider Permit + 3yrs. Free 2 weeks training.</p><span onClick={()=>document.getElementById("join")?.scrollIntoView({behavior:'smooth'})} className="btn-yellow" style={{cursor:'pointer',display:'inline-block'}}>Apply Now</span></div></div></>)
 }
 
 const About = () => {
@@ -110,7 +105,7 @@ const Blog = () => {
               {open===i && <ul style={{marginTop:'12px'}}>{j.body.map((b,k)=><li key={k}>{b}</li>)}</ul>}
             </div>
           ))}
-          <div className="general-recruit"><h3>How to Apply - No Fees - No Agent</h3><p>Come to HQ Plot 442 & 443 Muyenga with CV, National ID, Academic docs. Or apply online below - FREE.</p><Link to="/join" className="big-recruit-btn">APPLY NOW FREE - ONLINE FORM</Link></div>
+          <div className="general-recruit"><h3>How to Apply - No Fees - No Agent</h3><p>Come to HQ Plot 442 & 443 Muyenga with CV, National ID, Academic docs. Or apply online below - FREE.</p><span onClick={()=>document.getElementById("join")?.scrollIntoView({behavior:'smooth'})} className="big-recruit-btn" style={{cursor:'pointer'}}>APPLY NOW FREE - ONLINE FORM</span></div>
         </div>
       </div>
     </div>
@@ -184,54 +179,19 @@ const Join = () => {
 }
 
 const AdminLogin = () => {
-  const [pass, setPass] = useState(""); const [msg, setMsg] = useState("");
-  const navigate = useNavigate();
+  const [pass, setPass] = useState(""); const [msg, setMsg] = useState(""); const navigate = useNavigate();
   const login = (e) => { e.preventDefault(); if (pass === ADMIN_PASSWORD) { localStorage.setItem("pinnacle_admin_token", pass); navigate("/admin"); } else { setMsg(`Wrong password.`); } };
   return (<div className="section" style={{maxWidth:'520px', margin:'60px auto'}}><div className="form-big light-form" style={{border:'3px solid #ffcc00', textAlign:'center'}}><h2>Admin Login</h2><form onSubmit={login} style={{display:'flex', flexDirection:'column', gap:'15px', marginTop:'20px'}}><input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="Password" required style={{padding:'16px'}} /><button className="big-btn">Login</button>{msg && <p className="msg">{msg}</p>}</form></div></div>)
 }
 
 const Admin = () => {
-  const [contacts, setContacts] = useState([]);
-  const [applicants, setApplicants] = useState([]);
-  const [tab, setTab] = useState("contacts");
-  const [page, setPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(30);
-  const navigate = useNavigate();
-  const token = localStorage.getItem("pinnacle_admin_token");
-
-  const load = async () => {
-    try {
-      const headers = {'x-admin-secret': token, 'Content-Type':'application/json'};
-      const [cRes, aRes] = await Promise.all([fetch(`${API_URL}/api/contact`, {headers}), fetch(`${API_URL}/api/applicants`, {headers})]);
-      if (cRes.status===401) { localStorage.removeItem("pinnacle_admin_token"); navigate("/admin-login"); return; }
-      const cData = await cRes.json(); const aData = await aRes.json();
-      if (Array.isArray(cData)) setContacts(cData);
-      if (Array.isArray(aData)) setApplicants(aData);
-    } catch(err){}
-  }
-  useEffect(()=>{ load(); const interval=setInterval(load, 10000); return()=>clearInterval(interval); },[]);
-  useEffect(()=>{ setPage(1); }, [tab, rowsPerPage]);
-
-  const list = tab==="contacts"? contacts : applicants;
-  const totalPages = Math.max(1, Math.ceil(list.length / rowsPerPage));
-  const start = (page - 1) * rowsPerPage;
-  const paginated = list.slice(start, start + rowsPerPage);
-
-  const handleDelete = async (id, type) => {
-    if (!window.confirm("Delete this?")) return;
-    const url = type==='contacts'? `${API_URL}/api/contact/${id}` : `${API_URL}/api/applicants/${id}`;
-    await fetch(url, {method:'DELETE', headers:{'x-admin-secret': token}});
-    load();
-  }
-  const exportExcel = () => {
-    if (!list.length) return alert(`No data`);
-    const headers = Object.keys(list[0]);
-    const csv = [headers.join(",")].concat(list.map(r=>headers.map(h=>`"${(r[h]||'').toString().replace(/"/g,'""')}"`).join(","))).join("\n");
-    const blob = new Blob([csv], {type:'text/csv'}); const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href=url; a.download=`pinnacle_${tab}.csv`; a.click();
-  }
+  const [contacts, setContacts] = useState([]); const [applicants, setApplicants] = useState([]); const [tab, setTab] = useState("contacts"); const [page, setPage] = useState(1); const [rowsPerPage, setRowsPerPage] = useState(30); const navigate = useNavigate(); const token = localStorage.getItem("pinnacle_admin_token");
+  const load = async () => { try { const headers = {'x-admin-secret': token, 'Content-Type':'application/json'}; const [cRes, aRes] = await Promise.all([fetch(`${API_URL}/api/contact`, {headers}), fetch(`${API_URL}/api/applicants`, {headers})]); if (cRes.status===401) { localStorage.removeItem("pinnacle_admin_token"); navigate("/admin-login"); return; } const cData = await cRes.json(); const aData = await aRes.json(); if (Array.isArray(cData)) setContacts(cData); if (Array.isArray(aData)) setApplicants(aData); } catch(err){} }
+  useEffect(()=>{ load(); const interval=setInterval(load, 10000); return()=>clearInterval(interval); },[]); useEffect(()=>{ setPage(1); }, [tab, rowsPerPage]);
+  const list = tab==="contacts"? contacts : applicants; const totalPages = Math.max(1, Math.ceil(list.length / rowsPerPage)); const start = (page - 1) * rowsPerPage; const paginated = list.slice(start, start + rowsPerPage);
+  const handleDelete = async (id, type) => { if (!window.confirm("Delete this?")) return; const url = type==='contacts'? `${API_URL}/api/contact/${id}` : `${API_URL}/api/applicants/${id}`; await fetch(url, {method:'DELETE', headers:{'x-admin-secret': token}}); load(); }
+  const exportExcel = () => { if (!list.length) return alert(`No data`); const headers = Object.keys(list[0]); const csv = [headers.join(",")].concat(list.map(r=>headers.map(h=>`"${(r[h]||'').toString().replace(/"/g,'""')}"`).join(","))).join("\n"); const blob = new Blob([csv], {type:'text/csv'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download=`pinnacle_${tab}.csv`; a.click(); }
   const logout = () => { localStorage.removeItem("pinnacle_admin_token"); navigate("/admin-login"); }
-
   return (
     <div className="admin-full">
       <div className="admin-top-full">
@@ -263,8 +223,6 @@ const Admin = () => {
           </tbody>
         </table>
         {list.length===0 && <div style={{textAlign:'center', padding:'20px'}}>No {tab} yet</div>}
-
-        {/* LIKE YOUR SCREENSHOT - PAGE + 30 ROWS */}
         <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', padding:'14px 16px', background:'#f8fafc', borderTop:'1px solid #e2e8f0'}}>
           <div style={{display:'flex', alignItems:'center', gap:'8px'}}>
             <span style={{fontSize:'14px'}}>Page</span>
@@ -278,17 +236,23 @@ const Admin = () => {
             <option value={100}>100 rows</option>
           </select>
         </div>
-
       </div>
     </div>
   )
 }
 
-const ProtectedAdmin = () => {
-  const token = localStorage.getItem("pinnacle_admin_token");
-  if (token!== ADMIN_PASSWORD) return <Navigate to="/admin-login" replace />;
-  return <Admin />;
-}
+const ProtectedAdmin = () => { const token = localStorage.getItem("pinnacle_admin_token"); if (token!== ADMIN_PASSWORD) return <Navigate to="/admin-login" replace />; return <Admin />; }
+
+const SinglePage = () => (
+  <>
+    <div id="home"><Home/></div>
+    <div id="about"><About/></div>
+    <div id="services"><Services/></div>
+    <div id="jobs"><Blog/></div>
+    <div id="contact"><Contact/></div>
+    <div id="join"><Join/></div>
+  </>
+)
 
 const Footer = () => (
   <div className="footer-new">
@@ -311,16 +275,17 @@ const Footer = () => (
 const App = () => (
   <BrowserRouter>
     <style>{`
+      html{scroll-behavior:smooth}
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap');
       *{margin:0;padding:0;box-sizing:border-box}
       html,body{width:100%; overflow-x:hidden; background:#f1f5f9; margin:0}
       body{font-family:'Inter', sans-serif; font-size:15px; line-height:1.7; color:#1e293b}
       h1,h2,h3,h4,.logo{font-family:'Poppins', sans-serif; line-height:1.3}
-.nav{background:#0a1931; padding:14px 16px; position:sticky; top:0; z-index:999; width:100%}.nav-top{display:flex; justify-content:space-between; align-items:center}.logo{color:#ffcc00; font-weight:800; font-size:16px}.menu-btn{color:#fff; font-size:26px; cursor:pointer; display:none}.links{display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap}.links a{color:#e2e8f0; text-decoration:none; font-size:14px; font-weight:600; padding:8px 10px}.btn-yellow{background:#ffcc00!important; color:#0a1931!important; padding:9px 18px!important; border-radius:25px!important; font-weight:800!important; text-decoration:none}.btn-yellow.big{padding:13px 26px!important; font-size:15px}.btn-admin{border:2px solid #ffcc00!important; color:#ffcc00!important; padding:7px 16px!important; border-radius:25px!important; font-weight:800!important; text-decoration:none; font-size:12px}
+.nav{background:#0a1931; padding:14px 16px; position:sticky; top:0; z-index:999; width:100%}.nav-top{display:flex; justify-content:space-between; align-items:center}.logo{color:#ffcc00; font-weight:800; font-size:16px}.menu-btn{color:#fff; font-size:26px; cursor:pointer; display:none}.links{display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap}.links a,.links span{color:#e2e8f0; text-decoration:none; font-size:14px; font-weight:600; padding:8px 10px; cursor:pointer}.btn-yellow{background:#ffcc00!important; color:#0a1931!important; padding:9px 18px!important; border-radius:25px!important; font-weight:800!important; text-decoration:none}.btn-yellow.big{padding:13px 26px!important; font-size:15px}.btn-admin{border:2px solid #ffcc00!important; color:#ffcc00!important; padding:7px 16px!important; border-radius:25px!important; font-weight:800!important; text-decoration:none; font-size:12px}
 .hero{background:linear-gradient(135deg,#0a1931 0%,#1e3a8a 100%); color:#fff; padding:40px 16px; text-align:center; width:100%}.hero h1{color:#ffcc00; font-size:24px; margin-bottom:10px; font-weight:800}.hero p{font-size:14px; color:#cbd5e1}.dots{margin:14px 0}.dot{width:9px; height:9px; background:#475569; border-radius:50%; display:inline-block; margin:0 4px; cursor:pointer}.dot.on{background:#ffcc00}
 .section{padding:18px 14px; max-width:1250px; margin:auto; width:100%}.section h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:8px; margin-bottom:16px; font-size:22px; font-weight:800}.card{background:#fff; padding:18px; border-radius:14px; margin-bottom:12px; box-shadow:0 4px 12px rgba(0,0,0,0.05); border-left:4px solid #0a1931}.card.gold{border-left-color:#ffcc00; background:#fffbeb}.card.dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; border-left-color:#ffcc00}.card h3{font-size:17px; margin-bottom:8px}
 .about-hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:22px; border-radius:14px; margin-bottom:14px; border:2px solid #ffcc00}.service-box{background:#fff; border-radius:12px; margin-bottom:10px; box-shadow:0 3px 10px rgba(0,0,0,0.04); border-left:4px solid #0a1931}.service-head{display:flex; justify-content:space-between; align-items:center; padding:14px; cursor:pointer}.service-short{font-size:13px; color:#64748b}.expand-btn{background:#0a1931; color:#ffcc00; padding:6px 12px; border-radius:20px; font-size:11px; font-weight:800}.service-body{background:#f8fafc; padding:12px; border-top:1px solid #e2e8f0}
-.memo{background:#fff; border-radius:14px; padding:18px; border:2px solid #0a1931}.memo-head{background:#0a1931; color:#fff; padding:16px; border-radius:12px; margin:-18px -18px 16px -18px; text-align:center}.job-card{background:#f8fafc; border:2px solid #e2e8f0; border-radius:12px; padding:14px; margin-bottom:12px}.job-card.gold{background:#fffbeb; border-color:#ffcc00}.big-recruit-btn{background:#ffcc00; color:#0a1931; padding:14px 24px; border-radius:30px; font-weight:800; text-decoration:none; display:inline-block; margin-top:12px; text-align:center}
+.memo{background:#fff; border-radius:14px; padding:18px; border:2px solid #0a1931}.memo-head{background:#0a1931; color:#fff; padding:16px; border-radius:12px; margin:-18px -18px 16px -18px; text-align:center}.job-card{background:#f8fafc; border:2px solid #e2e8f0; border-radius:12px; padding:14px; margin-bottom:12px}.job-card.gold{background:#fffbeb; border-color:#ffcc00}.big-recruit-btn{background:#ffcc00; color:#0a1931; padding:14px 24px; border-radius:30px; font-weight:800; text-decoration:none; display:inline-block; margin-top:12px; text-align:center; cursor:pointer}
 .contact-full{padding:0; margin:0; width:100vw; margin-left:calc(-50vw + 50%); background:#f1f5f9; padding:20px 16px 30px 16px}.contact-full h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:8px; margin-bottom:18px; font-size:22px; font-weight:800; max-width:1250px; margin-left:auto; margin-right:auto}
 .form-big{max-width:900px; margin:14px auto; background:#fff; padding:22px; border-radius:14px; display:flex; flex-direction:column; gap:14px; box-shadow:0 4px 12px rgba(0,0,0,0.06)}.light-form input,.light-form select,.light-form textarea{background:#ffffff!important; color:#0a1931!important; border:2px solid #cbd5e1!important}.light-form input::placeholder,.light-form textarea::placeholder{color:#64748b!important}.form-big input,.form-big select,.form-big textarea{padding:12px 14px; border-radius:10px; font-size:14px; width:100%; font-family:'Inter'}.form-big label{font-size:13px; font-weight:700; color:#0a1931; margin-bottom:4px; display:block}.two-col{display:grid; grid-template-columns:1fr 1fr; gap:12px} @media(max-width:700px){.two-col{grid-template-columns:1fr}}.form-2col{display:grid; grid-template-columns:320px 1fr; gap:16px; max-width:1250px; margin:auto} @media(max-width:900px){.form-2col{grid-template-columns:1fr}}.big-btn{background:#0a1931; color:#ffcc00; padding:14px; border:none; border-radius:10px; font-weight:800; cursor:pointer; font-size:15px}.msg{padding:12px; background:#d4edda; border-radius:10px; font-size:13px; text-align:center; font-weight:700}
 .admin-full{width:100vw; margin-left:calc(-50vw + 50%); margin-right:calc(-50vw + 50%); background:#ffffff; min-height:70vh; padding:0; margin-top:0; margin-bottom:0}
@@ -344,12 +309,7 @@ const App = () => (
     `}</style>
     <Navbar/>
     <Routes>
-      <Route path="/" element={<Home/>}/>
-      <Route path="/about" element={<About/>}/>
-      <Route path="/services" element={<Services/>}/>
-      <Route path="/blog" element={<Blog/>}/>
-      <Route path="/contact" element={<Contact/>}/>
-      <Route path="/join" element={<Join/>}/>
+      <Route path="/" element={<SinglePage/>}/>
       <Route path="/admin-login" element={<AdminLogin/>}/>
       <Route path="/admin" element={<ProtectedAdmin/>}/>
     </Routes>
