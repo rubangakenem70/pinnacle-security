@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate 
 
 const API_URL = "https://pinnacle-security-backend.vercel.app";
 const ADMIN_PASSWORD = "Pinnacle2026!Secure123";
+const KOBO_LINK = "https://ee.kobotoolbox.org/x/ODCdeyaJ";
 
 const Navbar = () => {
   const loc = useLocation();
@@ -10,7 +11,7 @@ const Navbar = () => {
   const [open, setOpen] = useState(false);
   return (
     <nav className="nav">
-      <div className="nav-top"><span className="logo">🛡️ PINNACLE SECURITY LTD</span><span className="menu-btn" onClick={()=>setOpen(!open)}>{open?'✕':'☰'}</span></div>
+      <div className="nav-top"><span className="logo">PINNACLE SECURITY LTD</span><span className="menu-btn" onClick={()=>setOpen(!open)}>{open?'X':'☰'}</span></div>
       <div className={`links ${open?'show':''}`}>
         <Link to="/" style={active("/")} onClick={()=>setOpen(false)}>Home</Link>
         <Link to="/about" style={active("/about")} onClick={()=>setOpen(false)}>About</Link>
@@ -18,7 +19,7 @@ const Navbar = () => {
         <Link to="/blog" style={active("/blog")} onClick={()=>setOpen(false)}>Jobs</Link>
         <Link to="/contact" style={active("/contact")} onClick={()=>setOpen(false)}>Contact</Link>
         <Link to="/join" className="btn-yellow" onClick={()=>setOpen(false)}>Apply Now</Link>
-        <Link to="/admin" className="btn-admin" onClick={()=>setOpen(false)}>🔐 Admin</Link>
+        <Link to="/admin" className="btn-admin" onClick={()=>setOpen(false)}>Admin</Link>
       </div>
     </nav>
   )
@@ -28,26 +29,28 @@ const Home = () => {
   const [i, setI] = useState(0);
   useEffect(()=>{ const t=setInterval(()=>setI(p=>(p+1)%3), 3500); return()=>clearInterval(t) },[]);
   const slides=[
-    {t:"Pinnacle Security Limited - 4.3★ Rated", d:"Plot 442 & 443 Masajjagere, Muyenga - Licensed Security Company"},
-    {t:"🚨 WE ARE RECRUITING - JOIN US TODAY", d:"SITE INCHARGE: UCE + 3yrs experience | SUPERVISOR: UACE + Rider Permit + 3yrs"},
+    {t:"Pinnacle Security Limited - 4.3 Rated", d:"Plot 442 & 443 Masajjagere, Muyenga - Licensed Security Company"},
+    {t:"WE ARE RECRUITING - JOIN US TODAY", d:"SITE INCHARGE: UCE + 3yrs experience | SUPERVISOR: UACE + Rider Permit + 3yrs"},
     {t:"60+ Sites | 150+ Officers | 24/7 Control Room 0754 139726", d:"hr@pinnaclegroup.co.ug | Free Training | No Recruitment Fees"},
   ];
-  return (<><div className="hero"><h1>{slides[i].t}</h1><p>{slides[i].d}</p><div className="dots">{[0,1,2].map(n=><span key={n} className={n===i?'dot on':'dot'} onClick={()=>setI(n)}></span>)}</div><Link to="/join" className="btn-yellow big">Apply Now - Free</Link></div>
-    <div className="section"><div className="card"><h3>🛡️ Who We Are - 4.3★ Rated Security Company</h3><p>Pinnacle Security Ltd at Plot 442 & 443 Masajjagere, Off Kironde Road Muyenga is a URSB Licensed Private Security Organization. We protect 60+ sites in Kampala, Wakiso, Mukono, Entebbe with 150+ disciplined, trained officers. Control Room 0754 139726 is 24/7.</p></div><div className="card gold"><h3>🎯 Our Core Services</h3><p>✅ Security Guard Service - Armed & Unarmed. ✅ Construction Security. ✅ CCTV Installation & Monitoring. ✅ Mobile Patrol & Rapid Response. ✅ Event Security. ✅ Alarm Systems & Electric Fences.</p></div><div className="card dark"><h3>🚨 URGENT RECRUITMENT - No Fees - Free Training 2 Weeks</h3><p><b>SITE INCHARGE:</b> UCE + 3yrs experience. <b>SUPERVISOR:</b> UACE + Rider Permit + 3yrs. Training: 2 weeks free at Muyenga HQ.</p><Link to="/join" className="btn-yellow">Apply Now Online - Free</Link></div></div></>)
+  return (<><div className="hero"><h1>{slides[i].t}</h1><p>{slides[i].d}</p><div className="dots">{[0,1,2].map(n=><span key={n} className={n===i?'dot on':'dot'} onClick={()=>setI(n)}></span>)}</div><Link to="/join" className="btn-yellow big">Apply Now - Free</Link>
+  <a href={KOBO_LINK} target="_blank" rel="noopener noreferrer" className="btn-yellow big" style={{marginLeft:'10px'}}>click to attempt online test</a>
+  </div>
+    <div className="section"><div className="card"><h3>Who We Are - 4.3 Rated Security Company</h3><p>Pinnacle Security Ltd at Plot 442 & 443 Masajjagere, Off Kironde Road Muyenga is a URSB Licensed Private Security Organization. We protect 60+ sites in Kampala, Wakiso, Mukono, Entebbe with 150+ disciplined, trained officers. Control Room 0754 139726 is 24/7.</p></div><div className="card gold"><h3>Our Core Services</h3><p>Security Guard Service - Armed & Unarmed. Construction Security. CCTV Installation & Monitoring. Mobile Patrol & Rapid Response. Event Security. Alarm Systems & Electric Fences.</p></div><div className="card dark"><h3>URGENT RECRUITMENT - No Fees - Free Training 2 Weeks</h3><p><b>SITE INCHARGE:</b> UCE + 3yrs experience. <b>SUPERVISOR:</b> UACE + Rider Permit + 3yrs. Training: 2 weeks free at Muyenga HQ.</p><Link to="/join" className="btn-yellow">Apply Now Online - Free</Link> <a href={KOBO_LINK} target="_blank" rel="noopener noreferrer" className="btn-yellow" style={{marginLeft:'8px'}}>click to attempt online test</a></div></div></>)
 }
 
 const About = () => (
   <div className="section">
     <h2>About Pinnacle Security Ltd</h2>
     <div className="about-hero">
-      <h3>🛡️ Pinnacle Security Ltd - Protecting What Matters Most Since 2018</h3>
+      <h3>Pinnacle Security Ltd - Protecting What Matters Most Since 2018</h3>
       <p>Located at <b>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga Hill, Kampala - Uganda</b>, Pinnacle Security Limited is a fully licensed Private Security Organization registered under URSB and Ministry of Internal Affairs.</p>
-      <p>With <b>4.3★ Google Rating, 60+ Active Sites, 150+ Trained Officers</b> and 24/7 Control Room <b>0754 139726</b>, we are one of the fastest growing security companies in Kampala, Wakiso, Mukono and Entebbe corridor.</p>
+      <p>With <b>4.3 Google Rating, 60+ Active Sites, 150+ Trained Officers</b> and 24/7 Control Room <b>0754 139726</b>, we are one of the fastest growing security companies in Kampala, Wakiso, Mukono and Entebbe corridor.</p>
     </div>
     <div className="about-grid">
-      <div className="card about-card"><div className="about-icon">🎯</div><h3>Our Mission</h3><p>To provide <b>professional, affordable, and reliable security solutions</b> to homes, businesses, construction sites, schools, hotels and events. We are committed to protecting lives, property and investments with discipline, integrity and rapid response. <b>No Hidden Fees, No Exploitation, Free Training for all recruits</b>.</p></div>
-      <div className="card about-card gold"><div className="about-icon">👁️</div><h3>Our Vision</h3><p>To be <b>Uganda's most trusted and most respected security company by 2030</b>. A company where every client feels safe, every guard feels valued, and every site is protected with technology + manpower.</p></div>
-      <div className="card about-card dark-card"><div className="about-icon">💎</div><h3>Core Values</h3><ul className="about-list"><li><b>D</b> - Discipline</li><li><b>I</b> - Integrity</li><li><b>S</b> - Service</li><li><b>C</b> - Courage</li><li><b>P</b> - Professionalism</li></ul></div>
+      <div className="card about-card"><h3>Our Mission</h3><p>To provide <b>professional, affordable, and reliable security solutions</b> to homes, businesses, construction sites, schools, hotels and events. We are committed to protecting lives, property and investments with discipline, integrity and rapid response. <b>No Hidden Fees, No Exploitation, Free Training for all recruits</b>.</p></div>
+      <div className="card about-card gold"><h3>Our Vision</h3><p>To be <b>Uganda's most trusted and most respected security company by 2030</b>. A company where every client feels safe, every guard feels valued, and every site is protected with technology + manpower.</p></div>
+      <div className="card about-card dark-card"><h3>Core Values</h3><ul className="about-list"><li><b>D</b> - Discipline</li><li><b>I</b> - Integrity</li><li><b>S</b> - Service</li><li><b>C</b> - Courage</li><li><b>P</b> - Professionalism</li></ul></div>
     </div>
   </div>
 )
@@ -64,7 +67,7 @@ const Services = () => {
   ];
   return (
     <div className="section"><h2>Our Services - Click + to Expand</h2>
-      {list.map((s,i)=><div key={i} className="service-box"><div className="service-head" onClick={()=>setOpen(open===i?null:i)}><div><strong>{s.n}</strong><p className="service-short">{s.short}</p></div><span className="expand-btn">{open===i?'Close −':'Open +'}</span></div>{open===i&&<div className="service-body">{s.full.map((p,k)=><p key={k}>• {p}</p>)}</div>}</div>)}
+      {list.map((s,i)=><div key={i} className="service-box"><div className="service-head" onClick={()=>setOpen(open===i?null:i)}><div><strong>{s.n}</strong><p className="service-short">{s.short}</p></div><span className="expand-btn">{open===i?'Close -':'Open +'}</span></div>{open===i&&<div className="service-body">{s.full.map((p,k)=><p key={k}>- {p}</p>)}</div>}</div>)}
     </div>
   )
 }
@@ -73,7 +76,7 @@ const Blog = () => (
   <div className="section">
     <div className="memo">
       <div className="memo-head">
-        <h2 style={{border:'none', marginBottom:'5px'}}>📋 INTERNAL MEMO - PINNACLE SECURITY LTD</h2>
+        <h2 style={{border:'none', marginBottom:'5px'}}>INTERNAL MEMO - PINNACLE SECURITY LTD</h2>
         <p><b>From:</b> Human Resource Manager | <b>To:</b> All Applicants | <b>Date:</b> {new Date().toLocaleDateString()} | <b>Ref:</b> PSL/HR/2026/08</p>
         <p><b>Subject: URGENT RECRUITMENT - SITE INCHARGE, SUPERVISOR & GENERAL GUARDS</b></p>
       </div>
@@ -81,39 +84,42 @@ const Blog = () => (
         <p>Management has approved recruitment for immediate deployment. Applications are <b>FREE, No Fees</b>. Training is <b>2 weeks FREE at Muyenga HQ Plot 442/443</b>.</p>
 
         <div className="job-card">
-          <h3>🔹 POSITION 1: SITE INCHARGE</h3>
+          <h3>POSITION 1: SITE INCHARGE</h3>
           <p><b>Requirements:</b></p>
           <ul>
-            <li>✅ Minimum UCE Certificate (S4) with at least 4 passes</li>
-            <li>✅ 3+ Years experience in security (must have recommendation letter)</li>
-            <li>✅ Age 25-45 years, physically fit</li>
-            <li>✅ Can read/write English, can make daily OB reports</li>
-            <li>✅ No criminal record (we shall verify with LC1 & Police)</li>
-            <li>✅ Leadership skills - will manage 5-10 guards</li>
+            <li>Minimum UCE Certificate (S4) with at least 4 passes</li>
+            <li>3+ Years experience in security (must have recommendation letter)</li>
+            <li>Age 25-45 years, physically fit</li>
+            <li>Can read/write English, can make daily OB reports</li>
+            <li>No criminal record (we shall verify with LC1 & Police)</li>
+            <li>Leadership skills - will manage 5-10 guards</li>
           </ul>
           <p><b>Duties:</b> Supervise guards, write daily report, handle client complaints, check attendance, ensure uniform discipline.</p>
+          <a href={KOBO_LINK} target="_blank" rel="noopener noreferrer" className="btn-yellow" style={{marginTop:'10px', display:'inline-block'}}>click to attempt online test</a>
         </div>
 
         <div className="job-card gold">
-          <h3>🔹 POSITION 2: SUPERVISOR</h3>
+          <h3>POSITION 2: SUPERVISOR</h3>
           <p><b>Requirements:</b></p>
           <ul>
-            <li>✅ Minimum UACE Certificate (S6) - 2 principal passes</li>
-            <li>✅ Valid Rider Permit Class A - Must know how to ride motorcycle</li>
-            <li>✅ 3+ Years as security supervisor or site incharge (with proof)</li>
-            <li>✅ Age 27-40, must have smartphone for reports</li>
-            <li>✅ Can ride long distance: Kampala-Entebbe, Kampala-Mukono</li>
-            <li>✅ Honest, not drunkard, no accident history</li>
-            <li>✅ Can train new guards</li>
+            <li>Minimum UACE Certificate (S6) - 2 principal passes</li>
+            <li>Valid Rider Permit Class A - Must know how to ride motorcycle</li>
+            <li>3+ Years as security supervisor or site incharge (with proof)</li>
+            <li>Age 27-40, must have smartphone for reports</li>
+            <li>Can ride long distance: Kampala-Entebbe, Kampala-Mukono</li>
+            <li>Honest, not drunkard, no accident history</li>
+            <li>Can train new guards</li>
           </ul>
           <p><b>Duties:</b> Visit sites per day, check guards, handle emergencies, recruit new guards, report to Operations Manager.</p>
+          <a href={KOBO_LINK} target="_blank" rel="noopener noreferrer" className="btn-yellow" style={{marginTop:'10px', display:'inline-block'}}>click to attempt online test</a>
         </div>
 
         <div className="general-recruit">
-          <h3>🔹 GENERAL RECRUITMENT: SECURITY OFFICER</h3>
+          <h3>GENERAL RECRUITMENT: SECURITY OFFICER</h3>
           <p>We are ALWAYS recruiting disciplined men & women to join our team. You can apply as general guard and be called when vacancy comes.</p>
           <p><b>Requirements:</b> P7/UCE, Age 22-45, No crime, Physically fit, Willing to work day/night, Training FREE.</p>
-          <Link to="/join" className="big-recruit-btn">👮 APPLY NOW FOR GENERAL RECRUITMENT - FREE</Link>
+          <Link to="/join" className="big-recruit-btn"> APPLY NOW FOR GENERAL RECRUITMENT - FREE</Link>
+          <a href={KOBO_LINK} target="_blank" rel="noopener noreferrer" className="big-recruit-btn" style={{background:'#fff', color:'#0a1931', marginTop:'10px'}}>click to attempt online test</a>
         </div>
 
         <p style={{marginTop:'20px', background:'#fff3cd', padding:'12px', borderRadius:'8px'}}><b>How to Apply:</b> Click Apply Now, fill form. Or come physically to Plot 442/443 Masajjagere, Muyenga. Contact HR: <b>hr@pinnaclegroup.co.ug</b> / Control: 0754 139726.</p>
@@ -124,12 +130,12 @@ const Blog = () => (
 
 const Contact = () => {
   const [f,setF]=useState({fullName:"",email:"",phone:"",service:"",message:""}); const [s,setS]=useState("");
-  const send=async(e)=>{ e.preventDefault(); setS("Submitting..."); try{ const r=await fetch(`${API_URL}/api/contact`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(f)}); if(r.ok){ setS("✅ Submitted!"); setF({fullName:"",email:"",phone:"",service:"",message:""}) } else setS("❌ Error"); }catch{ setS("❌ Error") } };
+  const send=async(e)=>{ e.preventDefault(); setS("Submitting..."); try{ const r=await fetch(`${API_URL}/api/contact`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(f)}); if(r.ok){ setS("Submitted!"); setF({fullName:"",email:"",phone:"",service:"",message:""}) } else setS("Error"); }catch{ setS("Error") } };
   return (
     <div className="section"><h2>Contact Us</h2>
       <div className="form-2col">
         <div className="form-left-info">
-          <div className="card"><h3>📍 Visit Us</h3><p>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga Hill, Kampala.<br/>Mon-Sat 8am-6pm. Control Room 24/7.</p><p>📞 0754 139726<br/>📧 hr@pinnaclegroup.co.ug</p></div>
+          <div className="card"><h3>Visit Us</h3><p>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga Hill, Kampala.<br/>Mon-Sat 8am-6pm. Control Room 24/7.</p><p>0754 139726<br/>hr@pinnaclegroup.co.ug</p></div>
         </div>
         <form className="form-big" onSubmit={send}>
           <div className="two-col">
@@ -142,7 +148,6 @@ const Contact = () => {
           </div>
           <textarea rows="5" value={f.message} onChange={e=>setF({...f,message:e.target.value})} required placeholder="Message / Location"></textarea>
           <button className="big-btn">Submit</button>{s&&<p className="msg">{s}</p>}
-          <p style={{fontSize:'12px', textAlign:'center'}}>If you submitted wrong details, you can re-submit again. Only correct one will be considered.</p>
         </form>
       </div>
     </div>
@@ -151,9 +156,13 @@ const Contact = () => {
 
 const Join = () => {
   const [f,setF]=useState({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",position:"SITE INCHARGE",district:""}); const [s,setS]=useState("");
-  const send=async(e)=>{ e.preventDefault(); setS("Submitting..."); try{ const r=await fetch(`${API_URL}/api/applicants`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...f, full_name:f.fullName})}); if(r.ok){ setS("✅ Submitted!"); setF({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",position:"SITE INCHARGE",district:""}) } else setS("❌ Error") }catch{ setS("❌ Error") } };
+  const send=async(e)=>{ e.preventDefault(); setS("Submitting..."); try{ const r=await fetch(`${API_URL}/api/applicants`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...f, full_name:f.fullName})}); if(r.ok){ setS("Submitted!"); setF({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",position:"SITE INCHARGE",district:""}) } else setS("Error") }catch{ setS("Error") } };
   return (
     <div className="section"><h2>Apply Now - Free Training - No Fees</h2>
+      <div style={{textAlign:'center', marginBottom:'15px'}}>
+        <a href={KOBO_LINK} target="_blank" rel="noopener noreferrer" className="btn-yellow big" style={{padding:'16px 28px', fontSize:'18px'}}>click to attempt online test</a>
+        <p style={{fontSize:'12px', marginTop:'6px'}}>Opens in new window - KoboToolbox Online Test</p>
+      </div>
       <form className="form-big" onSubmit={send}>
         <div className="two-col">
           <div><label>Full Name *</label><input value={f.fullName} onChange={e=>setF({...f,fullName:e.target.value})} required placeholder="Enter your fullname"/></div>
@@ -172,7 +181,6 @@ const Join = () => {
           <div><label>Experience *</label><input value={f.experience} onChange={e=>setF({...f,experience:e.target.value})} required placeholder="Years & where you worked"/></div>
         </div>
         <button className="big-btn">Submit</button>{s&&<p className="msg">{s}</p>}
-        <p style={{fontSize:'12px', textAlign:'center', color:'#666'}}>If you submitted wrong detail, you can submit again. Only last submission will be considered.</p>
       </form>
     </div>
   )
@@ -185,16 +193,16 @@ const AdminLogin = () => {
     e.preventDefault();
     if (pass === ADMIN_PASSWORD) {
       localStorage.setItem("pinnacle_admin_token", pass);
-      setMsg("✅ Correct! Opening admin...");
+      setMsg("Correct! Opening admin...");
       setTimeout(()=> navigate("/admin"), 500);
     } else {
-      setMsg(`❌ Wrong password.`);
+      setMsg(`Wrong password.`);
     }
   };
   return (
     <div className="section" style={{maxWidth:'520px', margin:'60px auto'}}>
       <div className="form-big" style={{border:'3px solid #ffcc00', textAlign:'center'}}>
-        <h2>🔐 Admin Login</h2>
+        <h2>Admin Login</h2>
         <p style={{background:'#fff3cd', padding:'10px', borderRadius:'8px', margin:'10px 0'}}>Protected - Manager Only</p>
         <form onSubmit={login} style={{display:'flex', flexDirection:'column', gap:'15px', marginTop:'20px'}}>
           <input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="Enter Admin Password" required style={{padding:'16px'}} />
@@ -207,7 +215,8 @@ const AdminLogin = () => {
 }
 
 const Admin = () => {
-  const [contacts, setContacts] = useState([]); const [applicants, setApplicants] = useState([]);
+  const [contacts, setContacts] = useState([]);
+  const [applicants, setApplicants] = useState([]);
   const [tab, setTab] = useState("contacts");
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
@@ -268,22 +277,22 @@ const Admin = () => {
   return (
     <div className="admin-page">
       <div className="admin-top">
-        <h2>🔐 Admin Dashboard - Secure</h2>
+        <h2>Admin</h2>
         <div className="stats">
-          <span>📩 {contacts.length} Contacts</span>
-          <span>👮 {applicants.length} Applicants</span>
+          <span>{contacts.length} Contacts</span>
+          <span>{applicants.length} Applicants</span>
           <span>Page {page}/{totalPages}</span>
         </div>
         <div className="tabs">
           <button onClick={()=>setTab("contacts")} className={tab==="contacts"?"tab on":"tab"}>Contacts</button>
           <button onClick={()=>setTab("applicants")} className={tab==="applicants"?"tab on":"tab"}>Applicants</button>
-          <button onClick={exportExcel} className="tab white">📊 Export Excel</button>
+          <button onClick={exportExcel} className="tab white">Export Excel</button>
           <button onClick={logout} className="tab red">Logout</button>
         </div>
       </div>
 
       <div className="filter-bar-visible">
-        <input className="search-input-visible" placeholder={tab==="contacts"?"🔍 Search by service, name, phone..." : "🔍 Search by education, name, phone..."} value={search} onChange={e=>setSearch(e.target.value)} />
+        <input className="search-input-visible" placeholder={tab==="contacts"?"Search by service, name, phone..." : "Search by education, name, phone..."} value={search} onChange={e=>setSearch(e.target.value)} />
         <select className="dropdown-filter-visible" value={filterType} onChange={e=>setFilterType(e.target.value)}>
           <option value="all">All {tab==="contacts"?"Services":"Education"}</option>
           {tab==="contacts"? (
@@ -306,39 +315,37 @@ const Admin = () => {
           )}
         </select>
         <div className="filter-btns">
-          <button className="btn-yellow small" onClick={load}>🔄 Refresh</button>
-          <button className="btn-dark small" onClick={()=>setPage(p=>Math.max(1,p-1))}>‹ Prev</button>
-          <button className="btn-dark small" onClick={()=>setPage(p=>Math.min(totalPages,p+1))}>Next ›</button>
+          <button className="btn-yellow small" onClick={load}>Refresh</button>
+          <button className="btn-dark small" onClick={()=>setPage(p=>Math.max(1,p-1))}>Prev</button>
+          <button className="btn-dark small" onClick={()=>setPage(p=>Math.min(totalPages,p+1))}>Next</button>
         </div>
       </div>
 
-      {/* MOBILE CARDS - NO EDIT BUTTON NOW */}
       <div className="mobile-cards">
         {paged.map((item,i)=>(
           <div key={item.id || i} className="m-card">
             <div className="m-head">
               <b>{item.full_name || item.fullName}</b>
-              <small>⏰ {new Date(item.created_at||item.createdAt||Date.now()).toLocaleString()}</small>
+              <small>{new Date(item.created_at||item.createdAt||Date.now()).toLocaleString()}</small>
             </div>
-            <div className="m-line">📧 {item.email || '-'} </div>
-            <div className="m-line">📞 {item.phone || '-'} </div>
+            <div className="m-line">{item.email || '-'} </div>
+            <div className="m-line">{item.phone || '-'} </div>
             <div className="m-tag"><span className="tag blue">{item.service || item.education || item.position || 'General'}</span></div>
             <div className="m-msg">{(item.message||item.interest||item.experience||'').substring(0,120)}</div>
             <div className="m-actions-3">
-              <a href={`tel:${item.phone}`} className="m-btn call">📞 Call</a>
+              <a href={`tel:${item.phone}`} className="m-btn call">Call</a>
               <a href={`https://wa.me/${(item.phone||'').replace(/[^0-9]/g,'')}`} target="_blank" rel="noreferrer" className="m-btn wa">WhatsApp</a>
-              <button onClick={()=>handleDelete(item.id, tab)} className="m-btn del">🗑️ Delete</button>
+              <button onClick={()=>handleDelete(item.id, tab)} className="m-btn del">Delete</button>
             </div>
           </div>
         ))}
         {paged.length===0 && <p className="no-data">No data found</p>}
       </div>
 
-      {/* DESKTOP TABLE - CLEAR */}
       <div className="table-card desktop-only">
         <div className="scroll">
           <table className="clear-table">
-            <thead><tr><th>#</th><th>Name</th><th>Contact Info</th><th>{tab==="contacts"?"Service":"Education / Position"}</th><th>Details</th><th>⏰ Time</th><th>Action</th></tr></thead>
+            <thead><tr><th>#</th><th>Name</th><th>Contact Info</th><th>{tab==="contacts"?"Service":"Education / Position"}</th><th>Details</th><th>Time</th><th>Action</th></tr></thead>
             <tbody>{paged.map((item,i)=>(
               <tr key={item.id}><td>{(page-1)*perPage+i+1}</td><td><b>{item.full_name||item.fullName}</b></td><td>{item.email}<br/><small>{item.phone}</small></td><td><span className="tag blue">{item.service||item.education}</span><br/><small>{item.position||''}</small></td><td style={{maxWidth:'200px'}}><small>{(item.message||item.interest||item.experience||'').substring(0,100)}</small></td><td><small>{new Date(item.created_at||item.createdAt||Date.now()).toLocaleString()}</small></td><td><button onClick={()=>handleDelete(item.id, tab)} className="del-btn">Delete</button></td></tr>
             ))}</tbody>
@@ -355,24 +362,24 @@ const ProtectedAdmin = () => {
   return <Admin />;
 }
 
-const Footer = () => <div className="footer">© 2026 Pinnacle Security Ltd | Plot 442 & 443 Masajjagere, Muyenga | HR: hr@pinnaclegroup.co.ug | Control Room 24/7: 0754 139726</div>
+const Footer = () => <div className="footer">2026 Pinnacle Security Ltd | Plot 442 & 443 Masajjagere, Muyenga | HR: hr@pinnaclegroup.co.ug | Control Room 24/7: 0754 139726</div>
 
 const App = () => (
   <BrowserRouter>
     <style>{`
       *{margin:0;padding:0;box-sizing:border-box} body{font-family:Arial,sans-serif; background:#f4f6f9; line-height:1.6; overflow-x:hidden}
-  .nav{background:#0a1931; padding:14px 15px; position:sticky; top:0; z-index:999}.nav-top{display:flex; justify-content:space-between; align-items:center}.logo{color:#ffcc00; font-weight:900; font-size:16px}.menu-btn{color:#fff; font-size:26px; cursor:pointer; display:none}.links{display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap}.links a{color:#fff; text-decoration:none; font-size:15px; font-weight:700; padding:8px 10px}.btn-yellow{background:#ffcc00!important; color:#0a1931!important; padding:10px 18px!important; border-radius:25px!important; font-weight:900!important; border:none; cursor:pointer; text-decoration:none; display:inline-block; font-size:14px}.btn-yellow.big{padding:14px 26px!important; font-size:16px}.btn-yellow.small{padding:10px 16px!important; font-size:13px}.btn-admin{background:#1e3a8a!important; color:#ffcc00!important; border:2px solid #ffcc00!important; padding:8px 16px!important; border-radius:25px!important; font-weight:900!important; text-decoration:none; font-size:14px}.btn-dark{background:#0a1931; color:#ffcc00; border:none; padding:12px 18px; border-radius:10px; font-weight:800; cursor:pointer; font-size:13px}.btn-dark.small{padding:10px 14px}.hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:35px 15px; text-align:center; border-radius:0 0 20px 20px}.hero h1{color:#ffcc00; font-size:22px; margin-bottom:10px; line-height:1.3}.hero p{font-size:15px}.dots{margin:12px 0}.dot{width:10px; height:10px; background:#555; border-radius:50%; display:inline-block; margin:0 5px; cursor:pointer}.dot.on{background:#ffcc00}.section{padding:18px 12px; max-width:1250px; margin:auto}.section h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:8px; margin-bottom:16px; font-size:22px}.card{background:#fff; padding:18px; border-radius:14px; margin-bottom:14px; box-shadow:0 4px 12px rgba(0,0,0,0.06); border-left:5px solid #0a1931; font-size:15px; line-height:1.7}.card.gold{border-left-color:#ffcc00; background:#fffbeb}.card.dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; border-left-color:#ffcc00}.card h3{font-size:18px; margin-bottom:10px; color:#0a1931}.card.dark h3{color:#ffcc00}
-   .about-hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:22px; border-radius:16px; margin-bottom:16px; border:2px solid #ffcc00}.about-hero h3{color:#ffcc00; font-size:20px; margin-bottom:12px}.about-hero p{margin-bottom:10px; line-height:1.8}.about-grid{display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:16px}.about-card{text-align:center}.about-list{list-style:none; text-align:left; margin-top:10px}.about-list li{padding:4px 0; font-size:14px}
-   .service-box{background:#fff; border-radius:12px; margin-bottom:10px; box-shadow:0 2px 8px rgba(0,0,0,0.05); border-left:4px solid #0a1931; overflow:hidden}.service-head{display:flex; justify-content:space-between; align-items:center; padding:14px; cursor:pointer; background:#fff}.service-short{font-size:12px; color:#666; margin-top:3px}.expand-btn{background:#0a1931; color:#ffcc00; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:800}.service-body{background:#f8fafc; padding:14px; border-top:1px solid #e2e8f0}.service-body p{margin-bottom:8px; font-size:14px}
-   .memo{background:#fff; border-radius:16px; padding:20px; box-shadow:0 6px 20px rgba(0,0,0,0.08); border:3px solid #0a1931}.memo-head{background:#0a1931; color:#fff; padding:16px; border-radius:12px; margin:-20px -20px 20px -20px; text-align:center}.memo-head h2{color:#ffcc00; font-size:18px}.memo-head p{font-size:12px; margin-top:4px}.memo-body{line-height:1.7}.job-card{background:#f0f7ff; border-left:5px solid #1e40af; padding:16px; border-radius:12px; margin-bottom:14px}.job-card.gold{background:#fffbeb; border-left-color:#ffcc00}.job-card h3{color:#0a1931; font-size:16px; margin-bottom:8px}.job-card ul{margin-left:20px; margin-top:8px}.job-card li{font-size:13px; margin-bottom:4px}.general-recruit{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:18px; border-radius:14px; text-align:center; border:2px solid #ffcc00}.general-recruit h3{color:#ffcc00}.big-recruit-btn{display:block; background:#ffcc00; color:#0a1931; padding:16px; border-radius:12px; font-weight:900; text-decoration:none; margin-top:12px; font-size:16px}
-   .form-big{max-width:900px; margin:16px auto; background:#fff; padding:22px; border-radius:16px; display:flex; flex-direction:column; gap:14px; box-shadow:0 6px 20px rgba(0,0,0,0.08)}.form-big input,.form-big select,.form-big textarea{padding:14px; border:2px solid #0a1931; border-radius:10px; font-size:16px; width:100%; outline:none}.form-big label{font-size:13px; font-weight:800; color:#0a1931; margin-bottom:4px; display:block}.two-col{display:grid; grid-template-columns:1fr 1fr; gap:14px} @media(max-width:700px){.two-col{grid-template-columns:1fr}}.form-2col{display:grid; grid-template-columns:300px 1fr; gap:16px} @media(max-width:900px){.form-2col{grid-template-columns:1fr}}.big-btn{background:#0a1931; color:#ffcc00; padding:16px; border:none; border-radius:12px; font-weight:900; cursor:pointer; font-size:17px}.msg{padding:12px; background:#d4edda; border-radius:10px; font-size:14px; text-align:center; font-weight:700}
-   .admin-page{padding:10px; max-width:1300px; margin:auto}
-   .admin-top{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:16px; border-radius:16px; text-align:center; margin-bottom:10px; border:2px solid #ffcc00}.admin-top h2{color:#ffcc00; border:none; margin-bottom:6px; font-size:18px}.stats{display:flex; gap:8px; justify-content:center; margin:10px 0; flex-wrap:wrap}.stats span{background:rgba(255,204,0,0.15); border:1.5px solid #ffcc00; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:800; color:#ffcc00}.tabs{display:flex; gap:8px; justify-content:center; margin-top:10px; flex-wrap:wrap}.tab{padding:8px 16px; border-radius:20px; border:1.5px solid #ffcc00; background:transparent; color:#ffcc00; font-weight:800; font-size:12px; cursor:pointer}.tab.on{background:#ffcc00; color:#0a1931}.tab.white{background:#fff; color:#0a1931}.tab.red{border-color:#ff4444; color:#ff4444}
-   .filter-bar-visible{display:flex; gap:8px; margin-bottom:12px; background:#ffffff; padding:14px; border-radius:14px; flex-wrap:wrap; align-items:center; border:3px solid #0a1931; box-shadow:0 4px 12px rgba(0,0,0,0.1)}.search-input-visible{flex:1; padding:14px 16px; border-radius:10px; border:3px solid #0a1931; font-size:14px; min-width:200px; background:#ffffff; color:#0a1931; font-weight:800}.dropdown-filter-visible{padding:14px; border-radius:10px; border:3px solid #0a1931; font-size:13px; font-weight:800; background:#fffbeb; min-width:150px; color:#0a1931}.filter-btns{display:flex; gap:6px; flex-wrap:wrap}
-   .mobile-cards{display:flex; flex-direction:column; gap:10px}.m-card{background:#fff; border-radius:12px; padding:14px; box-shadow:0 2px 10px rgba(0,0,0,0.07); border-left:4px solid #ffcc00; border-top:2px solid #0a1931; border-right:2px solid #0a1931; border-bottom:2px solid #0a1931}.m-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:4px}.m-head b{font-size:14px; color:#0a1931}.m-head small{font-size:10px; color:#0a1931; background:#ffcc00; padding:4px 8px; border-radius:10px; font-weight:800}.m-line{font-size:12px; color:#334155; margin:2px 0; word-break:break-all}.m-tag{margin:6px 0}.m-msg{font-size:12px; color:#475569; background:#f8fafc; padding:8px; border-radius:8px; margin:6px 0; border:1px solid #cbd5e1}.m-actions-3{display:grid; grid-template-columns:1fr 1fr 0.8fr; gap:6px; margin-top:8px}.m-btn{text-align:center; padding:10px 8px; border-radius:8px; font-size:11px; font-weight:800; text-decoration:none; border:none; cursor:pointer}.m-btn.call{background:#0a1931; color:#ffcc00}.m-btn.wa{background:#22c55e; color:#fff}.m-btn.del{background:#fee2e2; color:#dc2626}
-   .table-card{background:#fff; border-radius:14px; padding:12px; box-shadow:0 4px 14px rgba(0,0,0,0.06); border:3px solid #0a1931}.scroll{overflow-x:auto}.clear-table{width:100%; border-collapse:collapse; font-size:13px; min-width:950px}.clear-table th{background:#0a1931; color:#ffcc00; padding:14px 10px; text-align:left; border:2px solid #0a1931}.clear-table td{padding:12px 10px; border:2px solid #94a3b8; vertical-align:top}.clear-table tr:nth-child(even){background:#f8fafc}.tag{padding:4px 10px; border-radius:12px; font-size:11px; font-weight:800}.tag.blue{background:#dbeafe; color:#1e40af}.del-btn{background:#e11d48; color:#fff; border:none; padding:7px 12px; border-radius:6px; cursor:pointer; font-weight:800; font-size:12px}.no-data{text-align:center; padding:20px; color:#888}
-   .desktop-only{display:none} @media(min-width:768px){.mobile-cards{display:none}.desktop-only{display:block}.about-grid{grid-template-columns:1fr 1fr 1fr}}
-   .footer{background:#0a1931; color:#aaa; text-align:center; padding:16px; font-size:11px; margin-top:20px; line-height:1.6} @media(max-width:850px){.menu-btn{display:block}.links{display:none; flex-direction:column; align-items:flex-start; padding-top:12px}.links.show{display:flex} }
+ .nav{background:#0a1931; padding:14px 15px; position:sticky; top:0; z-index:999}.nav-top{display:flex; justify-content:space-between; align-items:center}.logo{color:#ffcc00; font-weight:900; font-size:16px}.menu-btn{color:#fff; font-size:26px; cursor:pointer; display:none}.links{display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap}.links a{color:#fff; text-decoration:none; font-size:15px; font-weight:700; padding:8px 10px}.btn-yellow{background:#ffcc00!important; color:#0a1931!important; padding:10px 18px!important; border-radius:25px!important; font-weight:900!important; border:none; cursor:pointer; text-decoration:none; display:inline-block; font-size:14px}.btn-yellow.big{padding:14px 26px!important; font-size:16px}.btn-yellow.small{padding:10px 16px!important; font-size:13px}.btn-admin{background:#1e3a8a!important; color:#ffcc00!important; border:2px solid #ffcc00!important; padding:8px 16px!important; border-radius:25px!important; font-weight:900!important; text-decoration:none; font-size:14px}.btn-dark{background:#0a1931; color:#ffcc00; border:none; padding:12px 18px; border-radius:10px; font-weight:800; cursor:pointer; font-size:13px}.btn-dark.small{padding:10px 14px}.hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:35px 15px; text-align:center; border-radius:0 0 20px 20px}.hero h1{color:#ffcc00; font-size:22px; margin-bottom:10px; line-height:1.3}.hero p{font-size:15px}.dots{margin:12px 0}.dot{width:10px; height:10px; background:#555; border-radius:50%; display:inline-block; margin:0 5px; cursor:pointer}.dot.on{background:#ffcc00}.section{padding:18px 12px; max-width:1250px; margin:auto}.section h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:8px; margin-bottom:16px; font-size:22px}.card{background:#fff; padding:18px; border-radius:14px; margin-bottom:14px; box-shadow:0 4px 12px rgba(0,0,0,0.06); border-left:5px solid #0a1931; font-size:15px; line-height:1.7}.card.gold{border-left-color:#ffcc00; background:#fffbeb}.card.dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; border-left-color:#ffcc00}.card h3{font-size:18px; margin-bottom:10px; color:#0a1931}.card.dark h3{color:#ffcc00}
+  .about-hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:22px; border-radius:16px; margin-bottom:16px; border:2px solid #ffcc00}.about-hero h3{color:#ffcc00; font-size:20px; margin-bottom:12px}.about-hero p{margin-bottom:10px; line-height:1.8}.about-grid{display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:16px}.about-card{text-align:center}.about-list{list-style:none; text-align:left; margin-top:10px}.about-list li{padding:4px 0; font-size:14px}
+  .service-box{background:#fff; border-radius:12px; margin-bottom:10px; box-shadow:0 2px 8px rgba(0,0,0,0.05); border-left:4px solid #0a1931; overflow:hidden}.service-head{display:flex; justify-content:space-between; align-items:center; padding:14px; cursor:pointer; background:#fff}.service-short{font-size:12px; color:#666; margin-top:3px}.expand-btn{background:#0a1931; color:#ffcc00; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:800}.service-body{background:#f8fafc; padding:14px; border-top:1px solid #e2e8f0}.service-body p{margin-bottom:8px; font-size:14px}
+  .memo{background:#fff; border-radius:16px; padding:20px; box-shadow:0 6px 20px rgba(0,0,0,0.08); border:3px solid #0a1931}.memo-head{background:#0a1931; color:#fff; padding:16px; border-radius:12px; margin:-20px -20px 20px -20px; text-align:center}.memo-head h2{color:#ffcc00; font-size:18px}.memo-head p{font-size:12px; margin-top:4px}.memo-body{line-height:1.7}.job-card{background:#f0f7ff; border-left:5px solid #1e40af; padding:16px; border-radius:12px; margin-bottom:14px}.job-card.gold{background:#fffbeb; border-left-color:#ffcc00}.job-card h3{color:#0a1931; font-size:16px; margin-bottom:8px}.job-card ul{margin-left:20px; margin-top:8px}.job-card li{font-size:13px; margin-bottom:4px}.general-recruit{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:18px; border-radius:14px; text-align:center; border:2px solid #ffcc00}.general-recruit h3{color:#ffcc00}.big-recruit-btn{display:block; background:#ffcc00; color:#0a1931; padding:16px; border-radius:12px; font-weight:900; text-decoration:none; margin-top:12px; font-size:16px}
+  .form-big{max-width:900px; margin:16px auto; background:#fff; padding:22px; border-radius:16px; display:flex; flex-direction:column; gap:14px; box-shadow:0 6px 20px rgba(0,0,0,0.08)}.form-big input,.form-big select,.form-big textarea{padding:14px; border:2px solid #0a1931; border-radius:10px; font-size:16px; width:100%; outline:none}.form-big label{font-size:13px; font-weight:800; color:#0a1931; margin-bottom:4px; display:block}.two-col{display:grid; grid-template-columns:1fr 1fr; gap:14px} @media(max-width:700px){.two-col{grid-template-columns:1fr}}.form-2col{display:grid; grid-template-columns:300px 1fr; gap:16px} @media(max-width:900px){.form-2col{grid-template-columns:1fr}}.big-btn{background:#0a1931; color:#ffcc00; padding:16px; border:none; border-radius:12px; font-weight:900; cursor:pointer; font-size:17px}.msg{padding:12px; background:#d4edda; border-radius:10px; font-size:14px; text-align:center; font-weight:700}
+  .admin-page{padding:10px; max-width:1300px; margin:auto}
+  .admin-top{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:16px; border-radius:16px; text-align:center; margin-bottom:10px; border:2px solid #ffcc00}.admin-top h2{color:#ffcc00; border:none; margin-bottom:6px; font-size:18px}.stats{display:flex; gap:8px; justify-content:center; margin:10px 0; flex-wrap:wrap}.stats span{background:rgba(255,204,0,0.15); border:1.5px solid #ffcc00; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:800; color:#ffcc00}.tabs{display:flex; gap:8px; justify-content:center; margin-top:10px; flex-wrap:wrap}.tab{padding:8px 16px; border-radius:20px; border:1.5px solid #ffcc00; background:transparent; color:#ffcc00; font-weight:800; font-size:12px; cursor:pointer}.tab.on{background:#ffcc00; color:#0a1931}.tab.white{background:#fff; color:#0a1931}.tab.red{border-color:#ff4444; color:#ff4444}
+  .filter-bar-visible{display:flex; gap:8px; margin-bottom:12px; background:#ffffff; padding:14px; border-radius:14px; flex-wrap:wrap; align-items:center; border:3px solid #0a1931; box-shadow:0 4px 12px rgba(0,0,0,0.1)}.search-input-visible{flex:1; padding:14px 16px; border-radius:10px; border:3px solid #0a1931; font-size:14px; min-width:200px; background:#ffffff; color:#0a1931; font-weight:800}.dropdown-filter-visible{padding:14px; border-radius:10px; border:3px solid #0a1931; font-size:13px; font-weight:800; background:#fffbeb; min-width:150px; color:#0a1931}.filter-btns{display:flex; gap:6px; flex-wrap:wrap}
+  .mobile-cards{display:flex; flex-direction:column; gap:10px}.m-card{background:#fff; border-radius:12px; padding:14px; box-shadow:0 2px 10px rgba(0,0,0,0.07); border-left:4px solid #ffcc00; border-top:2px solid #0a1931; border-right:2px solid #0a1931; border-bottom:2px solid #0a1931}.m-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:4px}.m-head b{font-size:14px; color:#0a1931}.m-head small{font-size:10px; color:#0a1931; background:#ffcc00; padding:4px 8px; border-radius:10px; font-weight:800}.m-line{font-size:12px; color:#334155; margin:2px 0; word-break:break-all}.m-tag{margin:6px 0}.m-msg{font-size:12px; color:#475569; background:#f8fafc; padding:8px; border-radius:8px; margin:6px 0; border:1px solid #cbd5e1}.m-actions-3{display:grid; grid-template-columns:1fr 1fr 0.8fr; gap:6px; margin-top:8px}.m-btn{text-align:center; padding:10px 8px; border-radius:8px; font-size:11px; font-weight:800; text-decoration:none; border:none; cursor:pointer}.m-btn.call{background:#0a1931; color:#ffcc00}.m-btn.wa{background:#22c55e; color:#fff}.m-btn.del{background:#fee2e2; color:#dc2626}
+  .table-card{background:#fff; border-radius:14px; padding:12px; box-shadow:0 4px 14px rgba(0,0,0,0.06); border:3px solid #0a1931}.scroll{overflow-x:auto}.clear-table{width:100%; border-collapse:collapse; font-size:13px; min-width:950px}.clear-table th{background:#0a1931; color:#ffcc00; padding:14px 10px; text-align:left; border:2px solid #0a1931}.clear-table td{padding:12px 10px; border:2px solid #94a3b8; vertical-align:top}.clear-table tr:nth-child(even){background:#f8fafc}.tag{padding:4px 10px; border-radius:12px; font-size:11px; font-weight:800}.tag.blue{background:#dbeafe; color:#1e40af}.del-btn{background:#e11d48; color:#fff; border:none; padding:7px 12px; border-radius:6px; cursor:pointer; font-weight:800; font-size:12px}.no-data{text-align:center; padding:20px; color:#888}
+  .desktop-only{display:none} @media(min-width:768px){.mobile-cards{display:none}.desktop-only{display:block}.about-grid{grid-template-columns:1fr 1fr 1fr}}
+  .footer{background:#0a1931; color:#aaa; text-align:center; padding:16px; font-size:11px; margin-top:20px; line-height:1.6} @media(max-width:850px){.menu-btn{display:block}.links{display:none; flex-direction:column; align-items:flex-start; padding-top:12px}.links.show{display:flex} }
     `}</style>
     <Navbar/>
     <Routes>

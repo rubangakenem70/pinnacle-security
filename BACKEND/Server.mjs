@@ -32,7 +32,6 @@ const pool = mysql.createPool({
   waitForConnections: true, connectionLimit: 10
 });
 
-// === PUBLIC - Anyone can submit ===
 app.post('/api/contact', async (req, res) => {
   try {
     const { fullName, email, service, message } = req.body;
@@ -48,7 +47,7 @@ app.post('/api/applicants', async (req, res) => {
   } catch(e){ res.status(500).json({error:e.message}) }
 });
 
-// === ADMIN LOGIN - For frontend ===
+//  ADMIN LOGIN - For frontend 
 app.post('/api/admin/login', (req, res) => {
   const { password } = req.body;
   if (password === ADMIN_SECRET) {
