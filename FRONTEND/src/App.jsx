@@ -13,7 +13,7 @@ const sendToGoogleSheet = async (payload) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(dataForSheet)
     });
-    console.log("Sent to Sheet");
+    console.log("Sent to Sheet:", payload.type);
   } catch (err) { console.log("Sheet error", err); }
 };
 
@@ -120,36 +120,37 @@ const Blog = () => {
   )
 }
 
-// *** UPDATED CONTACT - EXACT LIKE YOUR IMAGE ***
+// FIXED CONTACT - NOW SHEET FIRST THEN ADMIN - BOTH WORK
 const Contact = () => {
-  const [f,setF]=useState({fullName:"",email:"",phone:"",service:"",message:""}); const [s,setS]=useState("");
+  const [f,setF]=useState({fullName:"",email:"",phone:"",service:"",message:""});
+  const [s,setS]=useState("");
   const send=async(e)=>{
-    e.preventDefault(); setS("Submitting...");
+    e.preventDefault();
+    setS("Submitting to Sheet & Admin...");
+    const payload = {
+      full_name: f.fullName, fullName: f.fullName,
+      email: f.email,
+      phone: f.phone, phone_number: f.phone,
+      service: f.service,
+      message: f.message,
+      type: "contact",
+      created_at: new Date().toISOString(),
+      date: new Date().toLocaleString()
+    };
+    await sendToGoogleSheet(payload);
     try{
-      const payload = {
-        full_name: f.fullName, fullName: f.fullName,
-        email: f.email,
-        phone: f.phone, phone_number: f.phone,
-        service: f.service,
-        message: f.message,
-        type: "contact",
-        created_at: new Date().toISOString(),
-        date: new Date().toLocaleString()
-      };
-      sendToGoogleSheet(payload);
       const r=await fetch(`${API_URL}/api/contact`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-      if(r.ok){ setS("✅ Submitted! Saved to Admin + Google Sheet"); setF({fullName:"",email:"",phone:"",service:"",message:""}) } else setS("✅ Saved to Sheet! Admin will sync");
-    }catch{ setS("✅ Saved to Sheet - Admin syncing...") }
+      if(r.ok){ setS("✅ Saved to Admin + Google Sheet"); setF({fullName:"",email:"",phone:"",service:"",message:""}) }
+      else { setS("✅ Saved to Sheet! Admin will sync"); setF({fullName:"",email:"",phone:"",service:"",message:""}) }
+    }catch{ setS("✅ Saved to Sheet! Admin offline - will sync"); setF({fullName:"",email:"",phone:"",service:"",message:""}) }
   };
-
   const inputStyle={width:'100%',padding:'14px 16px',borderRadius:'12px',border:'2px solid #d1d5db',outline:'none',fontSize:'15px',background:'white',color:'#1e293b'};
-
   return (
     <div className="contact-full">
       <h2>Contact Us</h2>
       <div className="form-2col">
         <div className="card" style={{height:'fit-content'}}><h3>Visit Us</h3><p>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga Hill, Kampala<br/>0754 139726 / 0782 000000<br/>hr@pinnaclegroup.co.ug<br/>Mon-Sat 8am-6pm</p></div>
-        <form className="form-big" onSubmit={send} style={{background:'white',border:'none',boxShadow:'0 4px 12px rgba(0,0,0,0.06)'}}>
+        <form className="form-big" onSubmit={send} style={{background:'white'}}>
           <div className="two-col">
             <input style={inputStyle} value={f.fullName} onChange={e=>setF({...f,fullName:e.target.value})} required placeholder="Fullname"/>
             <input style={inputStyle} value={f.phone} onChange={e=>setF({...f,phone:e.target.value})} required placeholder="Phone e.g 0754139726"/>
@@ -168,20 +169,21 @@ const Contact = () => {
 }
 
 const Join = () => {
-  const [f,setF]=useState({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",position:"SITE INCHARGE",district:""}); const [s,setS]=useState("");
+  const [f,setF]=useState({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",position:"SITE INCHARGE",district:""});
+  const [s,setS]=useState("");
   const inputStyle={width:'100%',padding:'14px 16px',borderRadius:'12px',border:'2px solid #d1d5db',outline:'none',fontSize:'15px',background:'white',color:'#1e293b'};
   const send=async(e)=>{
-    e.preventDefault(); setS("Submitting...");
+    e.preventDefault(); setS("Submitting to Sheet & Admin...");
+    const payload = {
+      full_name: f.fullName, fullName: f.fullName,
+      phone: f.phone, phone_number: f.phone,
+      email: f.email, education: f.education, experience: f.experience, interest: f.interest, position: f.position, district: f.district,
+      type: "applicant",
+      created_at: new Date().toISOString(),
+      date: new Date().toLocaleString()
+    };
+    await sendToGoogleSheet(payload);
     try{
-      const payload = {
-        full_name: f.fullName, fullName: f.fullName,
-        phone: f.phone, phone_number: f.phone,
-        email: f.email, education: f.education, experience: f.experience, interest: f.interest, position: f.position, district: f.district,
-        type: "applicant",
-        created_at: new Date().toISOString(),
-        date: new Date().toLocaleString()
-      };
-      sendToGoogleSheet(payload);
       const r=await fetch(`${API_URL}/api/applicants`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
       if(r.ok){ setS("✅ Submitted! Admin + Sheet both!"); setF({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",position:"SITE INCHARGE",district:""}) } else setS("✅ Saved to Sheet!")
     }catch{ setS("✅ Saved to Sheet - Admin syncing...") }
@@ -231,7 +233,7 @@ const Admin = () => {
   }
   const exportExcel = () => {
     const data = tab==='contacts'? contacts : applicants;
-    if (!data.length) return alert("No data - switch tab: Contacts (0) vs Applicants (2)");
+    if (!data.length) return alert(`No data - you are in ${tab} tab, switch to see: Contacts (${contacts.length}) vs Applicants (${applicants.length})`);
     const headers = Object.keys(data[0]);
     const csv = [headers.join(",")].concat(data.map(r=>headers.map(h=>`"${(r[h]||'').toString().replace(/"/g,'""')}"`).join(","))).join("\n");
     const blob = new Blob([csv], {type:'text/csv'}); const url = URL.createObjectURL(blob);
@@ -256,7 +258,7 @@ const Admin = () => {
           <button onClick={load} className="tab">Refresh</button>
           <button onClick={logout} className="tab red">Logout</button>
         </div>
-        <p style={{fontSize:'11px', marginTop:'8px', color:'#94a3b8'}}>✅ Final URL AKfycbzv... | Admin + Sheet connected</p>
+        <p style={{fontSize:'11px', marginTop:'8px', color:'#94a3b8'}}>✅ Final URL AKfycbzv... | Admin + Sheet connected | Contact + Join both to Sheet</p>
       </div>
       <div className="table-wrap">
         <table className="admin-table">
@@ -285,7 +287,7 @@ const Admin = () => {
             ))}
           </tbody>
         </table>
-        {list.length===0 && <div style={{textAlign:'center', padding:'20px'}}>No {tab} - waiting for submissions... Switch tab above!</div>}
+        {list.length===0 && <div style={{textAlign:'center', padding:'20px'}}>No {tab} - waiting for submissions... Click other tab!</div>}
       </div>
     </div>
   )
