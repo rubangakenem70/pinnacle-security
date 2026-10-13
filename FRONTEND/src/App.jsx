@@ -2,33 +2,16 @@ import React, { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom'
 
 const API_URL = "https://pinnacle-security-backend.vercel.app";
+const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbz0Fx9gSfPwPXZdi8pivw9IdQ_fzj707fPk22GBECuGYhGzwePtEPZV47TyXk8TN8bggQ/exec";
 
-// YOUR NEW FINAL LINKS - BOTH TABLES
-const GOOGLE_SHEET_APPLICANTS_URL = "https://script.google.com/macros/s/AKfycbz0Fx9gSfPwPXZdi8pivw9IdQ_fzj707fPk22GBECuGYhGzwePtEPZV47TyXk8TN8bggQ/exec";
-const GOOGLE_SHEET_CONTACTS_URL = "https://script.google.com/macros/s/AKfycbz0Fx9gSfPwPXZdi8pivw9IdQ_fzj707fPk22GBECuGYhGzwePtEPZV47TyXk8TN8bggQ/exec";
-
-const sendToApplicantsSheet = async (payload) => {
+const sendToSheet = async (payload) => {
   try {
-    await fetch(GOOGLE_SHEET_APPLICANTS_URL, {
+    await fetch(GOOGLE_SHEET_URL, {
       method: 'POST',
       mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({...payload, date: new Date().toLocaleString()})
+      body: JSON.stringify(payload)
     });
-    console.log("Applicant → Sheet");
-  } catch (e) { console.log("Applicants Sheet error", e); }
-};
-
-const sendToContactsSheet = async (payload) => {
-  try {
-    await fetch(GOOGLE_SHEET_CONTACTS_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({...payload, date: new Date().toLocaleString()})
-    });
-    console.log("Contact → Sheet");
-  } catch (e) { console.log("Contacts Sheet error", e); }
+  } catch (e) {}
 };
 
 const ADMIN_PASSWORD = "Pinnacle2026!Secure123";
@@ -138,23 +121,15 @@ const Contact = () => {
   const [f,setF]=useState({fullName:"",email:"",phone:"",service:"",message:""});
   const [s,setS]=useState("");
   const send=async(e)=>{
-    e.preventDefault(); setS("Submitting to Contact Sheet & Admin...");
-    const payload = {
-      full_name: f.fullName, fullName: f.fullName,
-      email: f.email,
-      phone: f.phone, phone_number: f.phone,
-      service: f.service,
-      message: f.message,
-      type: "contact",
-      created_at: new Date().toISOString(),
-      date: new Date().toLocaleString()
-    };
-    await sendToContactsSheet(payload);
+    e.preventDefault(); setS("Submitting...");
+    const payload = { type: "contact", date: new Date().toLocaleString(), fullName: f.fullName, email: f.email, phone: f.phone, service: f.service, message: f.message };
+    await sendToSheet(payload);
     try{
       const r=await fetch(`${API_URL}/api/contact`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-      if(r.ok){ setS("✅ Contact saved to Admin + Google Sheet"); setF({fullName:"",email:"",phone:"",service:"",message:""}) }
-      else { setS("✅ Saved to Sheet! Admin syncing"); setF({fullName:"",email:"",phone:"",service:"",message:""}) }
-    }catch{ setS("✅ Saved to Contact Sheet! Admin offline"); setF({fullName:"",email:"",phone:"",service:"",message:""}) }
+      if(r.ok) setS("✅ Saved to Admin + Sheet");
+      else setS("✅ Saved to Sheet!");
+      setF({fullName:"",email:"",phone:"",service:"",message:""})
+    }catch{ setS("✅ Saved to Sheet!"); setF({fullName:"",email:"",phone:"",service:"",message:""}) }
   };
   const inputStyle={width:'100%',padding:'14px 16px',borderRadius:'12px',border:'2px solid #d1d5db',outline:'none',fontSize:'15px',background:'white',color:'#1e293b'};
   return (
@@ -172,7 +147,7 @@ const Contact = () => {
             <select style={inputStyle} value={f.service} onChange={e=>setF({...f,service:e.target.value})} required><option value="">Choose Service</option><option>Security Guard Service</option><option>Construction Security</option><option>CCTV Installation</option><option>Mobile Patrol</option><option>Event Security</option><option>Alarm System</option></select>
           </div>
           <textarea style={{...inputStyle,minHeight:'130px',resize:'vertical'}} rows="5" value={f.message} onChange={e=>setF({...f,message:e.target.value})} required placeholder="Message - I need to..."></textarea>
-          <button type="submit" style={{width:'100%',padding:'16px',borderRadius:'12px',border:'none',background:'#0a1931',color:'#ffcc00',fontWeight:'800',fontSize:'18px',cursor:'pointer'}}>Submit - Admin + Sheet</button>
+          <button type="submit" style={{width:'100%',padding:'16px',borderRadius:'12px',border:'none',background:'#0a1931',color:'#ffcc00',fontWeight:'800',fontSize:'18px',cursor:'pointer'}}>Submit</button>
           {s&&<p className="msg">{s}</p>}
         </form>
       </div>
@@ -181,24 +156,19 @@ const Contact = () => {
 }
 
 const Join = () => {
-  const [f,setF]=useState({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",position:"SITE INCHARGE",district:""});
+  const [f,setF]=useState({fullName:"",phone:"",email:"",education:"",position:"SITE INCHARGE",district:"",experience:""});
   const [s,setS]=useState("");
   const inputStyle={width:'100%',padding:'14px 16px',borderRadius:'12px',border:'2px solid #d1d5db',outline:'none',fontSize:'15px',background:'white',color:'#1e293b'};
   const send=async(e)=>{
-    e.preventDefault(); setS("Submitting to Applicant Sheet & Admin...");
-    const payload = {
-      full_name: f.fullName, fullName: f.fullName,
-      phone: f.phone, phone_number: f.phone,
-      email: f.email, education: f.education, experience: f.experience, interest: f.interest, position: f.position, district: f.district,
-      type: "applicant",
-      created_at: new Date().toISOString(),
-      date: new Date().toLocaleString()
-    };
-    await sendToApplicantsSheet(payload);
+    e.preventDefault(); setS("Submitting...");
+    const payload = { type: "applicant", date: new Date().toLocaleString(), fullName: f.fullName, phone: f.phone, email: f.email, education: f.education, position: f.position, district: f.district, experience: f.experience };
+    await sendToSheet(payload);
     try{
       const r=await fetch(`${API_URL}/api/applicants`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-      if(r.ok){ setS("✅ Applicant saved to Admin + Google Sheet!"); setF({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",position:"SITE INCHARGE",district:""}) } else setS("✅ Saved to Applicant Sheet!")
-    }catch{ setS("✅ Saved to Applicant Sheet - Admin syncing...") }
+      if(r.ok) setS("✅ Saved to Admin + Sheet!");
+      else setS("✅ Saved to Sheet!");
+      setF({fullName:"",phone:"",email:"",education:"",position:"SITE INCHARGE",district:"",experience:""})
+    }catch{ setS("✅ Saved to Sheet!") }
   };
   return (
     <div className="section"><h2>Apply Now - Free Training - No Fees</h2>
@@ -206,7 +176,8 @@ const Join = () => {
         <div className="two-col"><div><label>Full Name *</label><input style={inputStyle} value={f.fullName} onChange={e=>setF({...f,fullName:e.target.value})} required placeholder="Fullname"/></div><div><label>Phone *</label><input style={inputStyle} value={f.phone} onChange={e=>setF({...f,phone:e.target.value})} required placeholder="0754..."/></div></div>
         <div className="two-col"><div><label>Email *</label><input style={inputStyle} type="email" value={f.email} onChange={e=>setF({...f,email:e.target.value})} required placeholder="Email"/></div><div><label>Education *</label><select style={inputStyle} value={f.education} onChange={e=>setF({...f,education:e.target.value})} required><option value="">Choose</option><option>P7</option><option>UCE</option><option>UACE</option><option>Diploma</option><option>Degree</option></select></div></div>
         <div className="two-col"><div><label>Position *</label><select style={inputStyle} value={f.position} onChange={e=>setF({...f,position:e.target.value})} required><option>SITE INCHARGE</option><option>SUPERVISOR</option><option>SECURITY OFFICER - General</option></select></div><div><label>District *</label><input style={inputStyle} value={f.district} onChange={e=>setF({...f,district:e.target.value})} required placeholder="District"/></div></div>
-        <button style={{width:'100%',padding:'16px',borderRadius:'12px',border:'none',background:'#0a1931',color:'#ffcc00',fontWeight:'800',fontSize:'18px',cursor:'pointer'}}>Submit - Goes to Admin + Sheet</button>{s&&<p className="msg">{s}</p>}
+        <div><label>Experience *</label><input style={inputStyle} value={f.experience} onChange={e=>setF({...f,experience:e.target.value})} placeholder="e.g 3 years"/></div>
+        <button style={{width:'100%',padding:'16px',borderRadius:'12px',border:'none',background:'#0a1931',color:'#ffcc00',fontWeight:'800',fontSize:'18px',cursor:'pointer'}}>Submit</button>{s&&<p className="msg">{s}</p>}
       </form>
     </div>
   )
@@ -223,8 +194,11 @@ const Admin = () => {
   const [contacts, setContacts] = useState([]);
   const [applicants, setApplicants] = useState([]);
   const [tab, setTab] = useState("contacts");
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(30);
   const navigate = useNavigate();
   const token = localStorage.getItem("pinnacle_admin_token");
+
   const load = async () => {
     try {
       const headers = {'x-admin-secret': token, 'Content-Type':'application/json'};
@@ -236,6 +210,13 @@ const Admin = () => {
     } catch(err){}
   }
   useEffect(()=>{ load(); const interval=setInterval(load, 10000); return()=>clearInterval(interval); },[]);
+  useEffect(()=>{ setPage(1); }, [tab, rowsPerPage]);
+
+  const list = tab==="contacts"? contacts : applicants;
+  const totalPages = Math.max(1, Math.ceil(list.length / rowsPerPage));
+  const start = (page - 1) * rowsPerPage;
+  const paginated = list.slice(start, start + rowsPerPage);
+
   const handleDelete = async (id, type) => {
     if (!window.confirm("Delete this?")) return;
     const url = type==='contacts'? `${API_URL}/api/contact/${id}` : `${API_URL}/api/applicants/${id}`;
@@ -243,16 +224,14 @@ const Admin = () => {
     load();
   }
   const exportExcel = () => {
-    const data = tab==='contacts'? contacts : applicants;
-    if (!data.length) return alert(`No data - you are in ${tab} tab, switch to see: Contacts (${contacts.length}) vs Applicants (${applicants.length})`);
-    const headers = Object.keys(data[0]);
-    const csv = [headers.join(",")].concat(data.map(r=>headers.map(h=>`"${(r[h]||'').toString().replace(/"/g,'""')}"`).join(","))).join("\n");
+    if (!list.length) return alert(`No data`);
+    const headers = Object.keys(list[0]);
+    const csv = [headers.join(",")].concat(list.map(r=>headers.map(h=>`"${(r[h]||'').toString().replace(/"/g,'""')}"`).join(","))).join("\n");
     const blob = new Blob([csv], {type:'text/csv'}); const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href=url; a.download=`pinnacle_${tab}_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+    const a = document.createElement('a'); a.href=url; a.download=`pinnacle_${tab}.csv`; a.click();
   }
-  const exportGoogleSheet = () => { window.open("https://docs.google.com/spreadsheets/", "_blank"); }
   const logout = () => { localStorage.removeItem("pinnacle_admin_token"); navigate("/admin-login"); }
-  const list = tab==="contacts"? contacts : applicants;
+
   return (
     <div className="admin-full">
       <div className="admin-top-full">
@@ -261,39 +240,56 @@ const Admin = () => {
           <button onClick={()=>setTab("contacts")} className={tab==="contacts"?"tab on":"tab"}>Contacts ({contacts.length})</button>
           <button onClick={()=>setTab("applicants")} className={tab==="applicants"?"tab on":"tab"}>Applicants ({applicants.length})</button>
           <button onClick={exportExcel} className="tab white">Export Excel</button>
-          <button onClick={exportGoogleSheet} className="tab white">Open Google Sheet</button>
           <button onClick={load} className="tab">Refresh</button>
           <button onClick={logout} className="tab red">Logout</button>
         </div>
-        <p style={{fontSize:'11px', marginTop:'8px', color:'#94a3b8'}}>✅ Final Script:...8bggQ | Both forms → Admin + Sheet</p>
       </div>
       <div className="table-wrap">
         <table className="admin-table">
-          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>{tab==='contacts'?'Service':'Position / Education'}</th><th>Message</th><th>Date</th><th>Action</th></tr></thead>
+          <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>{tab==='contacts'?'Service':'Position'}</th><th>Message</th><th>Date</th><th>Action</th></tr></thead>
           <tbody>
-            {list.map((item)=>(
+            {paginated.map((item, idx)=>(
               <tr key={item.id}>
+                <td>{start + idx + 1}</td>
                 <td><b>{item.full_name||item.fullName||'-'}</b></td>
                 <td>{item.email||'-'}</td>
                 <td style={{color:'#0a1931', fontWeight:'800'}}>{item.phone||item.phone_number||'-'}</td>
                 <td>{item.service||item.education||item.position||'-'} {item.district?`(${item.district})`:''}</td>
-                <td className="msg-cell">{item.message||item.interest||item.experience||'-'}</td>
-                <td>{new Date(item.created_at||item.createdAt||Date.now()).toLocaleString()}</td>
-                <td><div className="row-actions"><a href={`tel:${item.phone||item.phone_number}`} className="mini-btn call">Call</a><a href={`https://wa.me/${(item.phone||item.phone_number||'').toString().replace(/[^0-9]/g,'')}`} target="_blank" rel="noreferrer" className="mini-btn wa">WA</a><button onClick={()=>handleDelete(item.id,tab)} className="mini-btn del">X</button></div></td>
+                <td className="msg-cell">{item.message||item.experience||'-'}</td>
+                <td>{new Date(item.created_at||Date.now()).toLocaleString()}</td>
+                <td><div className="row-actions"><a href={`tel:${item.phone||item.phone_number}`} className="mini-btn call">Call</a><a href={`https://wa.me/${(item.phone||'').toString().replace(/[^0-9]/g,'')}`} target="_blank" rel="noreferrer" className="mini-btn wa">WA</a><button onClick={()=>handleDelete(item.id,tab)} className="mini-btn del">X</button></div></td>
               </tr>
             ))}
           </tbody>
         </table>
-        {list.length===0 && <div style={{textAlign:'center', padding:'20px'}}>No {tab} - waiting for submissions... Click other tab!</div>}
+        {list.length===0 && <div style={{textAlign:'center', padding:'20px'}}>No {tab} yet</div>}
+
+        {/* LIKE YOUR SCREENSHOT - PAGE + 30 ROWS */}
+        <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', padding:'14px 16px', background:'#f8fafc', borderTop:'1px solid #e2e8f0'}}>
+          <div style={{display:'flex', alignItems:'center', gap:'8px'}}>
+            <span style={{fontSize:'14px'}}>Page</span>
+            <input type="number" value={page} min={1} max={totalPages} onChange={e=>setPage(Math.min(totalPages, Math.max(1, Number(e.target.value)||1)))} style={{width:'65px', padding:'8px', borderRadius:'8px', border:'1.5px solid #cbd5e1', textAlign:'center', fontWeight:'800'}}/>
+            <span style={{fontSize:'14px'}}>of {totalPages}</span>
+          </div>
+          <select value={rowsPerPage} onChange={e=>setRowsPerPage(Number(e.target.value))} style={{padding:'8px 12px', borderRadius:'8px', border:'1.5px solid #cbd5e1', fontWeight:'800'}}>
+            <option value={10}>10 rows</option>
+            <option value={30}>30 rows</option>
+            <option value={50}>50 rows</option>
+            <option value={100}>100 rows</option>
+          </select>
+        </div>
+
       </div>
     </div>
   )
 }
+
 const ProtectedAdmin = () => {
   const token = localStorage.getItem("pinnacle_admin_token");
   if (token!== ADMIN_PASSWORD) return <Navigate to="/admin-login" replace />;
   return <Admin />;
 }
+
 const Footer = () => (
   <div className="footer-new">
     <div className="footer-inner">
