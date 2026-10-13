@@ -42,13 +42,8 @@ const About = () => (
     <h2>About Pinnacle Security Ltd</h2>
     <div className="about-hero">
       <h3>Pinnacle Security Ltd - Protecting What Matters Most Since 2018</h3>
-      <p>Located at <b>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga Hill, Kampala - Uganda</b>, Pinnacle Security Limited is a fully licensed Private Security Organization registered under URSB and Ministry of Internal Affairs.</p>
-      <p>With <b>4.3 Google Rating, 60+ Active Sites, 150+ Trained Officers</b> and 24/7 Control Room <b>0754 139726</b>, we are one of the fastest growing security companies in Kampala, Wakiso, Mukono and Entebbe corridor.</p>
-    </div>
-    <div className="about-grid">
-      <div className="card about-card"><h3>Our Mission</h3><p>To provide <b>professional, affordable, and reliable security solutions</b> to homes, businesses, construction sites, schools, hotels and events.</p></div>
-      <div className="card about-card gold"><h3>Our Vision</h3><p>To be <b>Uganda's most trusted and most respected security company by 2030</b>.</p></div>
-      <div className="card about-card dark-card"><h3>Core Values</h3><ul className="about-list"><li><b>D</b> - Discipline</li><li><b>I</b> - Integrity</li><li><b>S</b> - Service</li><li><b>C</b> - Courage</li><li><b>P</b> - Professionalism</li></ul></div>
+      <p>Located at <b>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga Hill, Kampala - Uganda</b>, Pinnacle Security Limited is a fully licensed Private Security Organization.</p>
+      <p>With <b>4.3 Google Rating, 60+ Active Sites, 150+ Trained Officers</b> and 24/7 Control Room <b>0754 139726</b>.</p>
     </div>
   </div>
 )
@@ -56,16 +51,16 @@ const About = () => (
 const Services = () => {
   const [open,setOpen]=useState(null);
   const list=[
-    {n:"1. Security Guard Service", short:"Armed & Unarmed guards for homes, shops, offices", full:["We deploy disciplined guards with uniform, ID, radio.", "Includes supervisor visits 3x a week, free replacement, monthly report."]},
-    {n:"2. Construction Site Security", short:"Special guards for building sites", full:["Check materials in/out, store management, night torch patrol."]},
-    {n:"3. CCTV Installation & Monitoring", short:"4 cameras from 2.5M with phone viewing", full:["DVR, 4 HD cameras, 1TB HDD, cables. Hikvision, Dahua - 2 years warranty."]},
-    {n:"4. Mobile Patrol & Rapid Response", short:"Our car patrols your area every 2 hours", full:["3 visits day, 3 visits night. Random timing, 10-min rapid response."]},
-    {n:"5. Event Security & Bouncers", short:"Weddings, concerts, conferences", full:["Crowd control, gate, VIP protection, parking control."]},
-    {n:"6. Alarm Systems & Electric Fences", short:"Intruder alarm and electric fence", full:["Magnetic sensors, motion, loud siren + call to your phone + control room."]},
+    {n:"1. Security Guard Service", short:"Armed & Unarmed guards", full:["Disciplined guards with uniform, ID, radio.", "Supervisor visits 3x week."]},
+    {n:"2. Construction Site Security", short:"Special guards for building sites", full:["Check materials in/out, store management."]},
+    {n:"3. CCTV Installation", short:"4 cameras from 2.5M", full:["DVR, 4 HD cameras, 1TB HDD."]},
+    {n:"4. Mobile Patrol", short:"Car patrols every 2 hours", full:["3 visits day, 3 night."]},
+    {n:"5. Event Security", short:"Weddings, concerts", full:["Crowd control, VIP protection."]},
+    {n:"6. Alarm Systems", short:"Intruder alarm", full:["Sensors, siren + phone call."]},
   ];
   return (
-    <div className="section"><h2>Our Services - Click + to Expand</h2>
-      {list.map((s,i)=><div key={i} className="service-box"><div className="service-head" onClick={()=>setOpen(open===i?null:i)}><div><strong>{s.n}</strong><p className="service-short">{s.short}</p></div><span className="expand-btn">{open===i?'Close -':'Open +'}</span></div>{open===i&&<div className="service-body">{s.full.map((p,k)=><p key={k}>- {p}</p>)}</div>}</div>)}
+    <div className="section"><h2>Our Services</h2>
+      {list.map((s,i)=><div key={i} className="service-box"><div className="service-head" onClick={()=>setOpen(open===i?null:i)}><div><strong>{s.n}</strong><p className="service-short">{s.short}</p></div><span className="expand-btn">{open===i?'Close':'Open +'}</span></div>{open===i&&<div className="service-body">{s.full.map((p,k)=><p key={k}>- {p}</p>)}</div>}</div>)}
     </div>
   )
 }
@@ -75,14 +70,12 @@ const Blog = () => (
     <div className="memo">
       <div className="memo-head">
         <h2 style={{border:'none', marginBottom:'5px'}}>INTERNAL MEMO - PINNACLE SECURITY LTD</h2>
-        <p><b>From:</b> HR Manager | <b>Date:</b> {new Date().toLocaleDateString()} | <b>Ref:</b> PSL/HR/2026/08</p>
-        <p><b>Subject: URGENT RECRUITMENT - SITE INCHARGE, SUPERVISOR & GENERAL GUARDS</b></p>
+        <p><b>From:</b> HR Manager | <b>Date:</b> {new Date().toLocaleDateString()}</p>
       </div>
       <div className="memo-body">
-        <p>Management has approved recruitment. Applications are <b>FREE, No Fees</b>. Training is <b>2 weeks FREE at Muyenga HQ</b>.</p>
-        <div className="job-card"><h3>POSITION 1: SITE INCHARGE</h3><ul><li>UCE + 3yrs experience</li><li>Age 25-45, physically fit</li><li>No criminal record</li></ul></div>
-        <div className="job-card gold"><h3>POSITION 2: SUPERVISOR</h3><ul><li>UACE + Rider Permit Class A</li><li>3+ Years supervisor experience</li><li>Smartphone for reports</li></ul></div>
-        <div className="general-recruit"><h3>GENERAL RECRUITMENT: SECURITY OFFICER</h3><p>P7/UCE, Age 22-45, No crime, Training FREE.</p><Link to="/join" className="big-recruit-btn"> APPLY NOW FOR GENERAL RECRUITMENT - FREE</Link></div>
+        <div className="job-card"><h3>POSITION 1: SITE INCHARGE</h3><ul><li>UCE + 3yrs experience</li></ul></div>
+        <div className="job-card gold"><h3>POSITION 2: SUPERVISOR</h3><ul><li>UACE + Rider Permit</li></ul></div>
+        <div className="general-recruit"><h3>GENERAL RECRUITMENT</h3><Link to="/join" className="big-recruit-btn">APPLY NOW FREE</Link></div>
       </div>
     </div>
   </div>
@@ -94,11 +87,11 @@ const Contact = () => {
   return (
     <div className="section"><h2>Contact Us</h2>
       <div className="form-2col">
-        <div className="form-left-info"><div className="card"><h3>Visit Us</h3><p>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga Hill, Kampala.<br/>0754 139726<br/>hr@pinnaclegroup.co.ug</p></div></div>
+        <div className="form-left-info"><div className="card"><h3>Visit Us</h3><p>Plot 442 & 443 Masajjagere, Muyenga<br/>0754 139726<br/>hr@pinnaclegroup.co.ug</p></div></div>
         <form className="form-big" onSubmit={send}>
-          <div className="two-col"><input value={f.fullName} onChange={e=>setF({...f,fullName:e.target.value})} required placeholder="Enter your fullname"/><input value={f.phone} onChange={e=>setF({...f,phone:e.target.value})} required placeholder="Enter your phone number"/></div>
-          <div className="two-col"><input type="email" value={f.email} onChange={e=>setF({...f,email:e.target.value})} required placeholder="Enter your email"/><select value={f.service} onChange={e=>setF({...f,service:e.target.value})} required><option value="">Choose Service</option><option>Security Guard Service</option><option>Construction Security</option><option>CCTV Installation</option><option>Mobile Patrol</option><option>Event Security</option><option>Alarm System</option></select></div>
-          <textarea rows="5" value={f.message} onChange={e=>setF({...f,message:e.target.value})} required placeholder="Message / Location"></textarea>
+          <div className="two-col"><input value={f.fullName} onChange={e=>setF({...f,fullName:e.target.value})} required placeholder="Fullname"/><input value={f.phone} onChange={e=>setF({...f,phone:e.target.value})} required placeholder="Phone"/></div>
+          <div className="two-col"><input type="email" value={f.email} onChange={e=>setF({...f,email:e.target.value})} required placeholder="Email"/><select value={f.service} onChange={e=>setF({...f,service:e.target.value})} required><option value="">Choose Service</option><option>Security Guard Service</option><option>Construction Security</option><option>CCTV Installation</option><option>Mobile Patrol</option><option>Event Security</option><option>Alarm System</option></select></div>
+          <textarea rows="5" value={f.message} onChange={e=>setF({...f,message:e.target.value})} required placeholder="Message"></textarea>
           <button className="big-btn">Submit</button>{s&&<p className="msg">{s}</p>}
         </form>
       </div>
@@ -110,12 +103,12 @@ const Join = () => {
   const [f,setF]=useState({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",position:"SITE INCHARGE",district:""}); const [s,setS]=useState("");
   const send=async(e)=>{ e.preventDefault(); setS("Submitting..."); try{ const r=await fetch(`${API_URL}/api/applicants`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...f, full_name:f.fullName})}); if(r.ok){ setS("Submitted!"); setF({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",position:"SITE INCHARGE",district:""}) } else setS("Error") }catch{ setS("Error") } };
   return (
-    <div className="section"><h2>Apply Now - Free Training - No Fees</h2>
+    <div className="section"><h2>Apply Now - Free Training</h2>
       <form className="form-big" onSubmit={send}>
-        <div className="two-col"><div><label>Full Name *</label><input value={f.fullName} onChange={e=>setF({...f,fullName:e.target.value})} required placeholder="Enter your fullname"/></div><div><label>Phone *</label><input value={f.phone} onChange={e=>setF({...f,phone:e.target.value})} required placeholder="Enter your phone number"/></div></div>
-        <div className="two-col"><div><label>Email *</label><input type="email" value={f.email} onChange={e=>setF({...f,email:e.target.value})} required placeholder="Enter your email"/></div><div><label>Education *</label><select value={f.education} onChange={e=>setF({...f,education:e.target.value})} required><option value="">Choose Education</option><option>P7</option><option>UCE</option><option>UACE</option><option>Diploma</option><option>Degree</option></select></div></div>
-        <div className="two-col"><div><label>Position *</label><select value={f.position} onChange={e=>setF({...f,position:e.target.value})} required><option>SITE INCHARGE</option><option>SUPERVISOR</option><option>SECURITY OFFICER - General</option></select></div><div><label>District *</label><input value={f.district} onChange={e=>setF({...f,district:e.target.value})} required placeholder="Enter your district"/></div></div>
-        <div className="two-col"><div><label>Why Interested? *</label><input value={f.interest} onChange={e=>setF({...f,interest:e.target.value})} required placeholder="Why interested?"/></div><div><label>Experience *</label><input value={f.experience} onChange={e=>setF({...f,experience:e.target.value})} required placeholder="Years & where"/></div></div>
+        <div className="two-col"><div><label>Full Name *</label><input value={f.fullName} onChange={e=>setF({...f,fullName:e.target.value})} required placeholder="Fullname"/></div><div><label>Phone *</label><input value={f.phone} onChange={e=>setF({...f,phone:e.target.value})} required placeholder="Phone"/></div></div>
+        <div className="two-col"><div><label>Email *</label><input type="email" value={f.email} onChange={e=>setF({...f,email:e.target.value})} required placeholder="Email"/></div><div><label>Education *</label><select value={f.education} onChange={e=>setF({...f,education:e.target.value})} required><option value="">Choose</option><option>P7</option><option>UCE</option><option>UACE</option><option>Diploma</option><option>Degree</option></select></div></div>
+        <div className="two-col"><div><label>Position *</label><select value={f.position} onChange={e=>setF({...f,position:e.target.value})} required><option>SITE INCHARGE</option><option>SUPERVISOR</option><option>SECURITY OFFICER - General</option></select></div><div><label>District *</label><input value={f.district} onChange={e=>setF({...f,district:e.target.value})} required placeholder="District"/></div></div>
+        <div className="two-col"><div><label>Why Interested? *</label><input value={f.interest} onChange={e=>setF({...f,interest:e.target.value})} required placeholder="Why?"/></div><div><label>Experience *</label><input value={f.experience} onChange={e=>setF({...f,experience:e.target.value})} required placeholder="Experience"/></div></div>
         <button className="big-btn">Submit</button>{s&&<p className="msg">{s}</p>}
       </form>
     </div>
@@ -146,10 +139,6 @@ const Admin = () => {
   const [contacts, setContacts] = useState([]);
   const [applicants, setApplicants] = useState([]);
   const [tab, setTab] = useState("contacts");
-  const [search, setSearch] = useState("");
-  const [filterType, setFilterType] = useState("all");
-  const [sortBy, setSortBy] = useState("date_new");
-  const [page, setPage] = useState(1); const perPage = 10;
   const navigate = useNavigate();
   const token = localStorage.getItem("pinnacle_admin_token");
   const load = async () => {
@@ -158,11 +147,11 @@ const Admin = () => {
       const [cRes, aRes] = await Promise.all([fetch(`${API_URL}/api/contact`, {headers}), fetch(`${API_URL}/api/applicants`, {headers})]);
       if (cRes.status===401) { localStorage.removeItem("pinnacle_admin_token"); navigate("/admin-login"); return; }
       const cData = await cRes.json(); const aData = await aRes.json();
-      if (Array.isArray(cData)) setContacts(cData); if (Array.isArray(aData)) setApplicants(aData);
+      if (Array.isArray(cData)) setContacts(cData);
+      if (Array.isArray(aData)) setApplicants(aData);
     } catch(err){}
   }
   useEffect(()=>{ load(); },[]);
-  useEffect(()=>{ setPage(1); },[tab, search, filterType, sortBy]);
   const handleDelete = async (id, type) => {
     if (!window.confirm("Delete this?")) return;
     const url = type==='contacts'? `${API_URL}/api/contact/${id}` : `${API_URL}/api/applicants/${id}`;
@@ -178,69 +167,32 @@ const Admin = () => {
     const a = document.createElement('a'); a.href=url; a.download=`pinnacle_${tab}.csv`; a.click();
   }
   const logout = () => { localStorage.removeItem("pinnacle_admin_token"); navigate("/admin-login"); }
-
-  const applyFilterSort = (list) => {
-    let filtered = list.filter(c => {
-      const q = search.toLowerCase();
-      const match = (c.full_name||c.fullName||"").toLowerCase().includes(q) || (c.email||"").toLowerCase().includes(q) || (c.phone||"").toLowerCase().includes(q) || (c.service||c.education||"").toLowerCase().includes(q);
-      if (filterType==="all") return match;
-      return match && ((c.service||"").toLowerCase().includes(filterType.toLowerCase()) || (c.education||"").toLowerCase()===filterType.toLowerCase());
-    });
-    filtered.sort((a,b)=>{
-      const nameA=(a.full_name||a.fullName||"").toLowerCase(); const nameB=(b.full_name||b.fullName||"").toLowerCase();
-      const dateA=new Date(a.created_at||a.createdAt||0); const dateB=new Date(b.created_at||b.createdAt||0);
-      if(sortBy==="az") return nameA.localeCompare(nameB);
-      if(sortBy==="za") return nameB.localeCompare(nameA);
-      if(sortBy==="date_new") return dateB-dateA;
-      if(sortBy==="date_old") return dateA-dateB;
-      if(sortBy==="small_large") return (a.id||0)-(b.id||0);
-      if(sortBy==="large_small") return (b.id||0)-(a.id||0);
-      return 0;
-    });
-    return filtered;
-  }
-  const filteredContacts = applyFilterSort(contacts);
-  const filteredApplicants = applyFilterSort(applicants);
-  const currentList = tab==="contacts"? filteredContacts : filteredApplicants;
-  const totalPages = Math.ceil(currentList.length / perPage) || 1;
-  const paged = currentList.slice((page-1)*perPage, page*perPage);
+  const list = tab==="contacts"? contacts : applicants;
 
   return (
-    <div className="admin-page">
+    <div style={{padding:'0', margin:'0'}}>
       <div className="admin-top">
-        <h2>Admin Dashboard</h2>
-        <div className="stats"><span>{contacts.length} Contacts</span><span>{applicants.length} Applicants</span><span>Page {page}/{totalPages}</span></div>
+        <h2>Admin - {contacts.length} Contacts | {applicants.length} Applicants</h2>
         <div className="tabs">
-          <button onClick={()=>setTab("contacts")} className={tab==="contacts"?"tab on":"tab"}>Contacts</button>
-          <button onClick={()=>setTab("applicants")} className={tab==="applicants"?"tab on":"tab"}>Applicants</button>
-          <button onClick={exportExcel} className="tab white">Export Excel</button>
+          <button onClick={()=>setTab("contacts")} className={tab==="contacts"?"tab on":"tab"}>Contacts ({contacts.length})</button>
+          <button onClick={()=>setTab("applicants")} className={tab==="applicants"?"tab on":"tab"}>Applicants ({applicants.length})</button>
+          <button onClick={exportExcel} className="tab white">Export CSV</button>
+          <button onClick={load} className="tab">Refresh</button>
           <button onClick={logout} className="tab red">Logout</button>
         </div>
       </div>
-      <div className="filter-bar-visible">
-        <input className="search-input-visible" placeholder="Search name, phone..." value={search} onChange={e=>setSearch(e.target.value)} />
-        <select className="dropdown-filter-visible" value={filterType} onChange={e=>setFilterType(e.target.value)}><option value="all">All</option>{tab==="contacts"? (<><option>Security Guard Service</option><option>Construction Security</option><option>CCTV Installation</option><option>Mobile Patrol</option><option>Event Security</option><option>Alarm System</option></>):(<><option>P7</option><option>UCE</option><option>UACE</option><option>Diploma</option><option>Degree</option></>)}</select>
-        <select className="dropdown-filter-visible" value={sortBy} onChange={e=>setSortBy(e.target.value)} style={{background:'#e0f2fe'}}>
-          <option value="date_new">Date: New → Old</option>
-          <option value="date_old">Date: Old → New</option>
-          <option value="az">A to Z</option>
-          <option value="za">Z to A</option>
-          <option value="small_large">Small to Large (ID)</option>
-          <option value="large_small">Large to Small (ID)</option>
-        </select>
-        <div className="filter-btns"><button className="btn-yellow small" onClick={load}>Refresh</button><button className="btn-dark small" onClick={()=>setPage(p=>Math.max(1,p-1))}>Prev</button><button className="btn-dark small" onClick={()=>setPage(p=>Math.min(totalPages,p+1))}>Next</button></div>
-      </div>
-      <div className="mobile-cards">
-        {paged.map((item,i)=>(
+      <div style={{display:'flex', flexDirection:'column', gap:'10px', padding:'10px'}}>
+        {list.map((item,i)=>(
           <div key={item.id||i} className="m-card">
-            <div className="m-head"><b>{item.full_name||item.fullName}</b><small>{new Date(item.created_at||item.createdAt||Date.now()).toLocaleString()}</small></div>
-            <div className="m-line">{item.email||'-'}</div><div className="m-line">{item.phone||'-'}</div>
-            <div className="m-tag"><span className="tag blue">{item.service||item.education||item.position||'General'}</span></div>
-            <div className="m-msg">{(item.message||item.interest||item.experience||'').substring(0,120)}</div>
+            <div className="m-head"><b>{item.full_name||item.fullName||'No Name'}</b><small>ID:{item.id} | {new Date(item.created_at||item.createdAt||Date.now()).toLocaleString()}</small></div>
+            <div className="m-line"><b>Email:</b> {item.email||'-'}</div>
+            <div className="m-line"><b>Phone:</b> {item.phone||'-'}</div>
+            <div className="m-line"><b>Info:</b> {item.service||item.education||item.position||'-'} | {item.district||''}</div>
+            <div className="m-msg">{item.message||item.interest||item.experience||'No message'}</div>
             <div className="m-actions-3"><a href={`tel:${item.phone}`} className="m-btn call">Call</a><a href={`https://wa.me/${(item.phone||'').replace(/[^0-9]/g,'')}`} target="_blank" rel="noreferrer" className="m-btn wa">WhatsApp</a><button onClick={()=>handleDelete(item.id,tab)} className="m-btn del">Delete</button></div>
           </div>
         ))}
-        {paged.length===0 && <p className="no-data">No data found</p>}
+        {list.length===0 && <div className="card" style={{textAlign:'center', margin:'10px'}}>No {tab} found — Click Refresh</div>}
       </div>
     </div>
   )
@@ -256,7 +208,7 @@ const Footer = () => (
   <div className="footer-new">
     <div className="footer-inner">
       <h4>PINNACLE SECURITY LTD</h4>
-      <p>Plot 442 & 443 Masajjagere, Muyenga | HR: hr@pinnaclegroup.co.ug | Control Room 24/7: 0754 139726</p>
+      <p>Plot 442 & 443 Masajjagere, Muyenga | hr@pinnaclegroup.co.ug | 0754 139726</p>
       <a href={KOBO_LINK} target="_blank" rel="noopener noreferrer" className="footer-test-btn">Click to Attempt Online Test</a>
       <div className="footer-socials">
         <a href="https://facebook.com" target="_blank" rel="noreferrer" className="social-icon fb">f</a>
@@ -275,30 +227,26 @@ const App = () => (
     <style>{`
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap');
       *{margin:0;padding:0;box-sizing:border-box}
-      body{font-family:'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#f4f6f9; line-height:1.75; overflow-x:hidden; font-size:15.5px; color:#1e293b; letter-spacing:0.15px; -webkit-font-smoothing:antialiased}
-      h1,h2,h3,h4,.logo{font-family:'Poppins','Inter', sans-serif; letter-spacing:-0.3px; line-height:1.3}
-      p{line-height:1.75}
-    .nav{background:#0a1931; padding:16px 18px; position:sticky; top:0; z-index:999; box-shadow:0 4px 20px rgba(0,0,0,0.15)}.nav-top{display:flex; justify-content:space-between; align-items:center}.logo{color:#ffcc00; font-weight:800; font-size:17px; letter-spacing:0.8px}.menu-btn{color:#fff; font-size:26px; cursor:pointer; display:none}.links{display:flex; gap:12px; align-items:center; justify-content:center; flex-wrap:wrap}.links a{color:#e2e8f0; text-decoration:none; font-size:14.5px; font-weight:600; padding:8px 12px; transition:0.2s}.links a:hover{color:#ffcc00}.btn-yellow{background:#ffcc00!important; color:#0a1931!important; padding:10px 20px!important; border-radius:25px!important; font-weight:800!important; border:none; cursor:pointer; text-decoration:none; display:inline-block; font-size:14.5px; letter-spacing:0.3px}.btn-yellow.big{padding:14px 28px!important; font-size:16px}.btn-yellow.small{padding:10px 16px!important; font-size:13.5px}.btn-admin{background:transparent!important; color:#ffcc00!important; border:2px solid #ffcc00!important; padding:8px 18px!important; border-radius:25px!important; font-weight:800!important; text-decoration:none; font-size:13px}.btn-dark{background:#0a1931; color:#ffcc00; border:none; padding:12px 18px; border-radius:10px; font-weight:700; cursor:pointer; font-size:13.5px}.btn-dark.small{padding:10px 14px}.hero{background:linear-gradient(135deg,#0a1931 0%,#1e3a8a 100%); color:#fff; padding:45px 18px; text-align:center; border-radius:0 0 24px 24px}.hero h1{color:#ffcc00; font-size:26px; margin-bottom:12px; line-height:1.25; font-weight:800}.hero p{font-size:15.5px; color:#cbd5e1}.dots{margin:16px 0}.dot{width:10px; height:10px; background:#475569; border-radius:50%; display:inline-block; margin:0 5px; cursor:pointer; transition:0.2s}.dot.on{background:#ffcc00; transform:scale(1.3)}.section{padding:22px 14px; max-width:1250px; margin:auto}.section h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:10px; margin-bottom:20px; font-size:26px; font-weight:800}.card{background:#fff; padding:20px 22px; border-radius:16px; margin-bottom:16px; box-shadow:0 6px 18px rgba(0,0,0,0.06); border-left:5px solid #0a1931; font-size:15px; line-height:1.75}.card.gold{border-left-color:#ffcc00; background:#fffbeb}.card.dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; border-left-color:#ffcc00}.card h3{font-size:19px; margin-bottom:10px; color:#0a1931; font-weight:700}.card.dark h3{color:#ffcc00}
-    .about-hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:26px; border-radius:18px; margin-bottom:18px; border:2px solid #ffcc00}.about-hero h3{color:#ffcc00; font-size:21px; margin-bottom:14px; line-height:1.35}.about-hero p{margin-bottom:12px; line-height:1.8; font-size:15.5px; color:#e2e8f0}.about-grid{display:grid; grid-template-columns:1fr; gap:16px; margin-bottom:16px}.about-card{text-align:center}.about-list{list-style:none; text-align:left; margin-top:12px}.about-list li{padding:5px 0; font-size:15px}
-    .service-box{background:#fff; border-radius:14px; margin-bottom:12px; box-shadow:0 4px 12px rgba(0,0,0,0.05); border-left:4px solid #0a1931; overflow:hidden}.service-head{display:flex; justify-content:space-between; align-items:center; padding:16px; cursor:pointer; background:#fff}.service-head strong{font-size:15.5px}.service-short{font-size:14px; color:#64748b; margin-top:4px}.expand-btn{background:#0a1931; color:#ffcc00; padding:7px 14px; border-radius:20px; font-size:12.5px; font-weight:800}.service-body{background:#f8fafc; padding:16px; border-top:1px solid #e2e8f0}.service-body p{margin-bottom:8px; font-size:15px}
-    .memo{background:#fff; border-radius:18px; padding:22px; box-shadow:0 8px 24px rgba(0,0,0,0.08); border:3px solid #0a1931}.memo-head{background:#0a1931; color:#fff; padding:18px; border-radius:14px; margin:-22px -22px 22px -22px; text-align:center}.memo-head h2{color:#ffcc00; font-size:19px}.memo-head p{font-size:14px; margin-top:5px; color:#cbd5e1}.memo-body{line-height:1.75; font-size:15px}.job-card{background:#f0f7ff; border-left:5px solid #1e40af; padding:18px; border-radius:14px; margin-bottom:16px}.job-card.gold{background:#fffbeb; border-left-color:#ffcc00}.job-card h3{color:#0a1931; font-size:17px; margin-bottom:10px}.job-card ul{margin-left:20px; margin-top:10px}.job-card li{font-size:15px; margin-bottom:5px}.general-recruit{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:20px; border-radius:16px; text-align:center; border:2px solid #ffcc00}.general-recruit h3{color:#ffcc00}.big-recruit-btn{display:block; background:#ffcc00; color:#0a1931; padding:16px; border-radius:14px; font-weight:800; text-decoration:none; margin-top:14px; font-size:16px}
-    .form-big{max-width:900px; margin:18px auto; background:#fff; padding:26px; border-radius:18px; display:flex; flex-direction:column; gap:16px; box-shadow:0 8px 24px rgba(0,0,0,0.08)}.form-big input,.form-big select,.form-big textarea{padding:14px 16px; border:2px solid #cbd5e1; border-radius:12px; font-size:15px; width:100%; outline:none; font-family:'Inter', sans-serif; transition:0.2s}.form-big input:focus,.form-big select:focus,.form-big textarea:focus{border-color:#0a1931; box-shadow:0 0 0 3px rgba(10,25,49,0.1)}.form-big label{font-size:14px; font-weight:700; color:#0a1931; margin-bottom:5px; display:block}.two-col{display:grid; grid-template-columns:1fr 1fr; gap:16px} @media(max-width:700px){.two-col{grid-template-columns:1fr}}.form-2col{display:grid; grid-template-columns:300px 1fr; gap:18px} @media(max-width:900px){.form-2col{grid-template-columns:1fr}}.big-btn{background:#0a1931; color:#ffcc00; padding:16px; border:none; border-radius:12px; font-weight:800; cursor:pointer; font-size:16px; letter-spacing:0.3px}.msg{padding:14px; background:#d4edda; border-radius:12px; font-size:14.5px; text-align:center; font-weight:700}
-    .admin-page{padding:12px; max-width:1300px; margin:auto}
-    .admin-top{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:18px; border-radius:18px; text-align:center; margin-bottom:12px; border:2px solid #ffcc00}.admin-top h2{color:#ffcc00; border:none; margin-bottom:8px; font-size:20px}.stats{display:flex; gap:8px; justify-content:center; margin:12px 0; flex-wrap:wrap}.stats span{background:rgba(255,204,0,0.15); border:1.5px solid #ffcc00; padding:7px 14px; border-radius:20px; font-size:13px; font-weight:700; color:#ffcc00}.tabs{display:flex; gap:8px; justify-content:center; margin-top:12px; flex-wrap:wrap}.tab{padding:9px 18px; border-radius:22px; border:1.5px solid #ffcc00; background:transparent; color:#ffcc00; font-weight:700; font-size:13px; cursor:pointer}.tab.on{background:#ffcc00; color:#0a1931}.tab.white{background:#fff; color:#0a1931}.tab.red{border-color:#ff4444; color:#ff4444}
-    .filter-bar-visible{display:flex; gap:10px; margin-bottom:14px; background:#ffffff; padding:16px; border-radius:16px; flex-wrap:wrap; align-items:center; border:3px solid #0a1931; box-shadow:0 6px 16px rgba(0,0,0,0.08)}.search-input-visible{flex:1; padding:14px 18px; border-radius:12px; border:2.5px solid #0a1931; font-size:14.5px; min-width:220px; background:#ffffff; color:#0a1931; font-weight:600}.dropdown-filter-visible{padding:14px; border-radius:12px; border:2.5px solid #0a1931; font-size:14px; font-weight:600; background:#fffbeb; min-width:160px; color:#0a1931}.filter-btns{display:flex; gap:8px; flex-wrap:wrap}
-    .mobile-cards{display:flex; flex-direction:column; gap:12px}.m-card{background:#fff; border-radius:14px; padding:16px; box-shadow:0 4px 14px rgba(0,0,0,0.07); border-left:5px solid #ffcc00; border-top:2px solid #e2e8f0; border-right:2px solid #e2e8f0; border-bottom:2px solid #e2e8f0}.m-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px}.m-head b{font-size:15px; color:#0a1931; font-family:'Poppins'}.m-head small{font-size:11px; color:#0a1931; background:#ffcc00; padding:5px 10px; border-radius:12px; font-weight:800}.m-line{font-size:14.5px; color:#334155; margin:3px 0; word-break:break-all}.m-tag{margin:8px 0}.m-msg{font-size:14px; color:#475569; background:#f8fafc; padding:10px; border-radius:10px; margin:8px 0; border:1px solid #e2e8f0; line-height:1.6}.m-actions-3{display:grid; grid-template-columns:1fr 1fr 0.8fr; gap:8px; margin-top:10px}.m-btn{text-align:center; padding:11px 8px; border-radius:10px; font-size:14px; font-weight:700; text-decoration:none; border:none; cursor:pointer}.m-btn.call{background:#0a1931; color:#ffcc00}.m-btn.wa{background:#22c55e; color:#fff}.m-btn.del{background:#fee2e2; color:#dc2626}
-    .desktop-only{display:none} @media(min-width:768px){.mobile-cards{display:none}.desktop-only{display:block}.about-grid{grid-template-columns:1fr 1fr 1fr}}
-    .footer-new{background:#0a1931; color:#fff; margin-top:30px; border-top:4px solid #ffcc00; text-align:center}
-    .footer-inner{max-width:1250px; margin:auto; padding:32px 18px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; text-align:center}
-    .footer-inner h4{color:#ffcc00; font-size:19px; letter-spacing:1px; font-weight:800}
-    .footer-inner p{font-size:14.5px; color:#94a3b8; max-width:650px; line-height:1.7}
-    .footer-test-btn{display:inline-block; margin-top:10px; background:#ffcc00; color:#0a1931; padding:14px 28px; border-radius:30px; font-weight:800; text-decoration:none; font-size:15px; letter-spacing:0.3px; transition:0.2s}
-    .footer-test-btn:hover{transform:translateY(-2px); box-shadow:0 8px 20px rgba(255,204,0,0.3)}
-    .footer-socials{display:flex; gap:14px; justify-content:center; align-items:center; margin-top:12px}
-    .social-icon{width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; text-decoration:none; font-weight:800; font-size:15px; color:#fff; transition:0.2s}
-    .social-icon:hover{transform:scale(1.1)}
-    .social-icon.fb{background:#1877f2}.social-icon.wa{background:#25d366}.social-icon.ig{background:linear-gradient(45deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5)}.social-icon.li{background:#0a66c2}.social-icon.tw{background:#111}
-    .footer-copy{text-align:center; font-size:13px; color:#64748b; padding:16px; border-top:1px solid rgba(255,255,255,0.08); letter-spacing:0.3px}
+      body{font-family:'Inter', system-ui, sans-serif; background:#f4f6f9; line-height:1.75; overflow-x:hidden; font-size:15.5px; color:#1e293b; letter-spacing:0.15px}
+      h1,h2,h3,h4,.logo{font-family:'Poppins','Inter', sans-serif; line-height:1.3; letter-spacing:-0.3px}
+     .nav{background:#0a1931; padding:16px 18px; position:sticky; top:0; z-index:999}.nav-top{display:flex; justify-content:space-between; align-items:center}.logo{color:#ffcc00; font-weight:800; font-size:17px}.menu-btn{color:#fff; font-size:26px; cursor:pointer; display:none}.links{display:flex; gap:12px; align-items:center; justify-content:center; flex-wrap:wrap}.links a{color:#e2e8f0; text-decoration:none; font-size:14.5px; font-weight:600; padding:8px 12px}.btn-yellow{background:#ffcc00!important; color:#0a1931!important; padding:10px 20px!important; border-radius:25px!important; font-weight:800!important; border:none; cursor:pointer; text-decoration:none; display:inline-block; font-size:14.5px}.btn-yellow.big{padding:14px 28px!important; font-size:16px}.btn-admin{background:transparent!important; color:#ffcc00!important; border:2px solid #ffcc00!important; padding:8px 18px!important; border-radius:25px!important; font-weight:800!important; text-decoration:none; font-size:13px}.btn-dark{background:#0a1931; color:#ffcc00; border:none; padding:12px 18px; border-radius:10px; font-weight:700; cursor:pointer; font-size:13.5px}
+     .hero{background:linear-gradient(135deg,#0a1931 0%,#1e3a8a 100%); color:#fff; padding:45px 18px; text-align:center; border-radius:0 0 24px 24px}.hero h1{color:#ffcc00; font-size:26px; margin-bottom:12px; font-weight:800}.hero p{font-size:15.5px; color:#cbd5e1}.dots{margin:16px 0}.dot{width:10px; height:10px; background:#475569; border-radius:50%; display:inline-block; margin:0 5px; cursor:pointer}.dot.on{background:#ffcc00; transform:scale(1.3)}
+     .section{padding:22px 14px; max-width:1250px; margin:auto}.section h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:10px; margin-bottom:20px; font-size:26px; font-weight:800}.card{background:#fff; padding:20px 22px; border-radius:16px; margin-bottom:16px; box-shadow:0 6px 18px rgba(0,0,0,0.06); border-left:5px solid #0a1931; font-size:15px; line-height:1.75}.card.gold{border-left-color:#ffcc00; background:#fffbeb}.card.dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; border-left-color:#ffcc00}.card h3{font-size:19px; margin-bottom:10px; color:#0a1931; font-weight:700}.card.dark h3{color:#ffcc00}
+     .about-hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:26px; border-radius:18px; margin-bottom:18px; border:2px solid #ffcc00}.about-hero h3{color:#ffcc00; font-size:21px; margin-bottom:14px}
+     .service-box{background:#fff; border-radius:14px; margin-bottom:12px; box-shadow:0 4px 12px rgba(0,0,0,0.05); border-left:4px solid #0a1931; overflow:hidden}.service-head{display:flex; justify-content:space-between; align-items:center; padding:16px; cursor:pointer}.service-short{font-size:14px; color:#64748b}.expand-btn{background:#0a1931; color:#ffcc00; padding:7px 14px; border-radius:20px; font-size:12.5px; font-weight:800}.service-body{background:#f8fafc; padding:16px; border-top:1px solid #e2e8f0}
+     .memo{background:#fff; border-radius:18px; padding:22px; box-shadow:0 8px 24px rgba(0,0,0,0.08); border:3px solid #0a1931}.memo-head{background:#0a1931; color:#fff; padding:18px; border-radius:14px; margin:-22px -22px 22px -22px; text-align:center}.memo-head h2{color:#ffcc00; font-size:19px}
+     .form-big{max-width:900px; margin:18px auto; background:#fff; padding:26px; border-radius:18px; display:flex; flex-direction:column; gap:16px; box-shadow:0 8px 24px rgba(0,0,0,0.08)}.form-big input,.form-big select,.form-big textarea{padding:14px 16px; border:2px solid #cbd5e1; border-radius:12px; font-size:15px; width:100%; outline:none; font-family:'Inter'}.form-big label{font-size:14px; font-weight:700; color:#0a1931; margin-bottom:5px; display:block}.two-col{display:grid; grid-template-columns:1fr 1fr; gap:16px} @media(max-width:700px){.two-col{grid-template-columns:1fr}}.form-2col{display:grid; grid-template-columns:300px 1fr; gap:18px} @media(max-width:900px){.form-2col{grid-template-columns:1fr}}.big-btn{background:#0a1931; color:#ffcc00; padding:16px; border:none; border-radius:12px; font-weight:800; cursor:pointer; font-size:16px}.msg{padding:14px; background:#d4edda; border-radius:12px; font-size:14.5px; text-align:center; font-weight:700}
+     .admin-top{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:18px; border-radius:0; text-align:center; border-bottom:4px solid #ffcc00}.admin-top h2{color:#ffcc00; border:none; margin-bottom:8px; font-size:20px}.tabs{display:flex; gap:8px; justify-content:center; margin-top:12px; flex-wrap:wrap}.tab{padding:9px 18px; border-radius:22px; border:1.5px solid #ffcc00; background:transparent; color:#ffcc00; font-weight:700; font-size:13px; cursor:pointer}.tab.on{background:#ffcc00; color:#0a1931}.tab.white{background:#fff; color:#0a1931}.tab.red{border-color:#ff4444; color:#ff4444}
+     .m-card{background:#fff; border-radius:14px; padding:16px; box-shadow:0 4px 14px rgba(0,0,0,0.07); border-left:5px solid #ffcc00; border-top:2px solid #e2e8f0; border-right:2px solid #e2e8f0; border-bottom:2px solid #e2e8f0}.m-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px}.m-head b{font-size:15px; color:#0a1931; font-family:'Poppins'}.m-head small{font-size:11px; color:#0a1931; background:#ffcc00; padding:5px 10px; border-radius:12px; font-weight:800}.m-line{font-size:14.5px; color:#334155; margin:3px 0}.m-msg{font-size:14px; color:#475569; background:#f8fafc; padding:10px; border-radius:10px; margin:8px 0; border:1px solid #e2e8f0}.m-actions-3{display:grid; grid-template-columns:1fr 1fr 0.8fr; gap:8px; margin-top:10px}.m-btn{text-align:center; padding:11px 8px; border-radius:10px; font-size:14px; font-weight:700; text-decoration:none; border:none; cursor:pointer}.m-btn.call{background:#0a1931; color:#ffcc00}.m-btn.wa{background:#22c55e; color:#fff}.m-btn.del{background:#fee2e2; color:#dc2626}
+     .footer-new{background:#0a1931; color:#fff; margin-top:20px; border-top:4px solid #ffcc00; text-align:center}
+     .footer-inner{max-width:1250px; margin:auto; padding:32px 18px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; text-align:center}
+     .footer-inner h4{color:#ffcc00; font-size:19px; letter-spacing:1px; font-weight:800}
+     .footer-inner p{font-size:14.5px; color:#94a3b8; max-width:650px; line-height:1.7}
+     .footer-test-btn{display:inline-block; background:#ffcc00; color:#0a1931; padding:14px 28px; border-radius:30px; font-weight:800; text-decoration:none; font-size:15px}
+     .footer-socials{display:flex; gap:14px; justify-content:center; align-items:center; margin-top:12px}
+     .social-icon{width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; text-decoration:none; font-weight:800; font-size:15px; color:#fff}
+     .social-icon.fb{background:#1877f2}.social-icon.wa{background:#25d366}.social-icon.ig{background:linear-gradient(45deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5)}.social-icon.li{background:#0a66c2}.social-icon.tw{background:#111}
+     .footer-copy{text-align:center; font-size:13px; color:#64748b; padding:16px; border-top:1px solid rgba(255,255,255,0.08)}
       @media(max-width:850px){.menu-btn{display:block}.links{display:none; flex-direction:column; align-items:flex-start; padding-top:14px}.links.show{display:flex}}
     `}</style>
     <Navbar/>
