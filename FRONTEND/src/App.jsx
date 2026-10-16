@@ -5,7 +5,7 @@ const API_URL = "https://pinnacle-security-backend.vercel.app";
 const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbz0Fx9gSfPwPXZdi8pivw9IdQ_fzj707fPk22GBECuGYhGzwePtEPZV47TyXk8TN8bggQ/exec";
 const sendToSheet = async (payload) => { try { await fetch(GOOGLE_SHEET_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) }); } catch (e) {} };
 const ADMIN_PASSWORD = "Pinnacle2026!Secure123";
-const KOBO_LINK = "https://ee.kobotoolbox.org/x/ODCdeyaJ";
+const GOOGLE_FORM_LINK = "https://forms.gle/D22puuuUKNtAzPEE6";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
@@ -29,7 +29,7 @@ const Navbar = () => {
           <span onClick={()=>scroll("services")}>Mission</span>
           <span onClick={()=>scroll("jobs")}>Blog</span>
           <span onClick={()=>scroll("contact")}>Contact</span>
-          <span onClick={()=>scroll("join")} className="btn-register">Register</span>
+          <Link to="/online-test" className="btn-register" onClick={()=>setOpen(false)}>Online Test</Link>
         </div>
       </div>
     </nav>
@@ -44,8 +44,13 @@ const Home = () => {
     {t:"WE ARE RECRUITING - JOIN US TODAY", d:"SITE INCHARGE: UCE + 3yrs | SUPERVISOR: UACE + Rider Permit + 3yrs"},
     {t:"60+ Sites | 150+ Officers | 24/7 Control Room 0754 139726", d:"hr@pinnaclegroup.co.ug | Free Training | No Fees"},
   ];
-  return (<><div className="hero"><h1>{slides[i].t}</h1><p>{slides[i].d}</p><div className="dots">{[0,1,2].map(n=><span key={n} className={n===i?'dot on':'dot'} onClick={()=>setI(n)}></span>)}</div><span onClick={()=>document.getElementById("join")?.scrollIntoView({behavior:'smooth'})} className="btn-yellow big" style={{cursor:'pointer',display:'inline-block'}}>Apply Now - Free</span></div>
-    <div className="section"><div className="card"><h3>Who We Are - 4.3 Rated</h3><p>Pinnacle Security Ltd Plot 442 & 443 Masajjagere, Muyenga - URSB Licensed. 60+ sites, 150+ officers, Control Room 0754 139726 24/7.</p></div><div className="card gold"><h3>Core Services</h3><p>Guard Service, Construction Security, CCTV, Mobile Patrol, Event Security, Alarm & Electric Fence.</p></div><div className="card dark"><h3>URGENT RECRUITMENT - No Fees</h3><p>SITE INCHARGE: UCE + 3yrs | SUPERVISOR: UACE + Rider Permit + 3yrs. Free 2 weeks training.</p><span onClick={()=>document.getElementById("join")?.scrollIntoView({behavior:'smooth'})} className="btn-yellow" style={{cursor:'pointer',display:'inline-block'}}>Apply Now</span></div></div></>)
+  return (<><div className="hero"><h1>{slides[i].t}</h1><p>{slides[i].d}</p><div className="dots">{[0,1,2].map(n=><span key={n} className={n===i?'dot on':'dot'} onClick={()=>setI(n)}></span>)}</div>
+  <div style={{display:'flex', gap:'12px', justifyContent:'center', flexWrap:'wrap'}}>
+    <span onClick={()=>document.getElementById("join")?.scrollIntoView({behavior:'smooth'})} className="btn-yellow big" style={{cursor:'pointer',display:'inline-block'}}>Apply Now - Free</span>
+    <Link to="/online-test" className="btn-white big" style={{textDecoration:'none'}}>Take Online Test</Link>
+  </div>
+  </div>
+    <div className="section"><div className="card"><h3>Who We Are - 4.3 Rated</h3><p>Pinnacle Security Ltd Plot 442 & 443 Masajjagere, Muyenga - URSB Licensed. 60+ sites, 150+ officers, Control Room 0754 139726 24/7.</p></div><div className="card gold"><h3>Core Services</h3><p>Guard Service, Construction Security, CCTV, Mobile Patrol, Event Security, Alarm & Electric Fence.</p></div><div className="card dark"><h3>URGENT RECRUITMENT - No Fees</h3><p>SITE INCHARGE: UCE + 3yrs | SUPERVISOR: UACE + Rider Permit + 3yrs. Free 2 weeks training.</p><div style={{display:'flex', gap:'10px', flexWrap:'wrap', marginTop:'10px'}}><span onClick={()=>document.getElementById("join")?.scrollIntoView({behavior:'smooth'})} className="btn-yellow" style={{cursor:'pointer',display:'inline-block'}}>Apply Now</span><Link to="/online-test" className="btn-white" style={{textDecoration:'none'}}>Online Test</Link></div></div></div></>)
 }
 
 const About = () => {
@@ -109,8 +114,58 @@ const Blog = () => {
               {open===i && <ul style={{marginTop:'12px'}}>{j.body.map((b,k)=><li key={k}>{b}</li>)}</ul>}
             </div>
           ))}
-          <div className="general-recruit"><h3>How to Apply - No Fees - No Agent</h3><p>Come to HQ Plot 442 & 443 Muyenga with CV, National ID, Academic docs. Or apply online below - FREE.</p><span onClick={()=>document.getElementById("join")?.scrollIntoView({behavior:'smooth'})} className="big-recruit-btn" style={{cursor:'pointer'}}>APPLY NOW FREE - ONLINE FORM</span></div>
+          <div className="general-recruit">
+            <h3>How to Apply - No Fees - No Agent</h3>
+            <p>Come to HQ Plot 442 & 443 Muyenga with CV, National ID, Academic docs. Or apply online below - FREE.</p>
+            <div style={{display:'flex', gap:'12px', flexWrap:'wrap', justifyContent:'center', marginTop:'12px'}}>
+              <span onClick={()=>document.getElementById("join")?.scrollIntoView({behavior:'smooth'})} className="big-recruit-btn" style={{cursor:'pointer'}}>APPLY NOW FREE - ONLINE FORM</span>
+              <Link to="/online-test" className="big-test-btn" style={{textDecoration:'none'}}>REGISTER FOR ONLINE TEST</Link>
+            </div>
+          </div>
         </div>
+      </div>
+    </div>
+  )
+}
+
+const OnlineTestRegister = () => {
+  const [f,setF]=useState({fullName:"",phone:"",email:"",education:""});
+  const [s,setS]=useState("");
+  const inputStyle={width:'100%',padding:'14px 16px',borderRadius:'12px',border:'2px solid #d1d5db',outline:'none',fontSize:'15px',background:'white',color:'#1e293b'};
+  const send=async(e)=>{
+    e.preventDefault();
+    setS("Registering you...");
+    const payload = { type: "online_test", date: new Date().toLocaleString(), fullName: f.fullName, phone: f.phone, email: f.email, education: f.education, link: GOOGLE_FORM_LINK };
+    await sendToSheet(payload);
+    try{
+      await fetch(`${API_URL}/api/applicants`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    }catch{}
+    setS("✅ Registered! Redirecting to Online Test...");
+    setTimeout(()=>{
+      window.open(GOOGLE_FORM_LINK, "_blank");
+      window.location.href = GOOGLE_FORM_LINK;
+    }, 1200);
+  };
+  return (
+    <div className="section" style={{maxWidth:'700px'}}>
+      <h2>Register for Online Test</h2>
+      <div className="form-big" style={{background:'white', border:'2px solid #0a1931'}}>
+        <div style={{background:'#f1f5f9', padding:'14px', borderRadius:'10px', textAlign:'center'}}>
+          <h3 style={{color:'#0a1931'}}>Pinnacle Security - Online Recruitment Test</h3>
+          <p style={{fontSize:'13px', marginTop:'6px'}}>Fill this form, then you will be redirected to the official test: <b>{GOOGLE_FORM_LINK}</b></p>
+          <p style={{fontSize:'12px', color:'#64748b', marginTop:'4px'}}>15 Questions | Auto-marked | Result shows instantly</p>
+        </div>
+        <form onSubmit={send} style={{display:'flex', flexDirection:'column', gap:'14px'}}>
+          <div><label>Full Name *</label><input style={inputStyle} value={f.fullName} onChange={e=>setF({...f,fullName:e.target.value})} required placeholder="Your full name"/></div>
+          <div className="two-col">
+            <div><label>Phone *</label><input style={inputStyle} value={f.phone} onChange={e=>setF({...f,phone:e.target.value})} required placeholder="0754..."/></div>
+            <div><label>Email *</label><input style={inputStyle} type="email" value={f.email} onChange={e=>setF({...f,email:e.target.value})} required placeholder="Email"/></div>
+          </div>
+          <div><label>Education *</label><select style={inputStyle} value={f.education} onChange={e=>setF({...f,education:e.target.value})} required><option value="">Choose</option><option>P7</option><option>UCE</option><option>UACE</option><option>Diploma</option><option>Degree</option></select></div>
+          <button style={{width:'100%',padding:'16px',borderRadius:'12px',border:'none',background:'#1746a2',color:'#fff',fontWeight:'800',fontSize:'18px',cursor:'pointer'}}>Register & Start Test Now</button>
+          {s&&<p className="msg">{s}</p>}
+        </form>
+        <p style={{textAlign:'center', fontSize:'12px', color:'#64748b', marginTop:'8px'}}>Already registered? <a href={GOOGLE_FORM_LINK} target="_blank" rel="noreferrer" style={{color:'#1746a2', fontWeight:'700'}}>Click here to go directly to test</a></p>
       </div>
     </div>
   )
@@ -135,7 +190,7 @@ const Contact = () => {
     <div className="contact-full">
       <h2>Contact Us</h2>
       <div className="form-2col">
-        <div className="card" style={{height:'fit-content'}}><h3>Visit Us</h3><p>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga Hill, Kampala<br/>0754 139726 / 0782 000000<br/>hr@pinnaclegroup.co.ug<br/>Mon-Sat 8am-6pm</p></div>
+        <div className="card" style={{height:'fit-content'}}><h3>Visit Us</h3><p>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga Hill, Kampala<br/>0754 139726 / 0782 000000<br/>hr@pinnaclegroup.co.ug<br/>Mon-Sat 8am-6pm</p><Link to="/online-test" className="btn-yellow" style={{textDecoration:'none', display:'inline-block', marginTop:'10px'}}>Take Online Test</Link></div>
         <form className="form-big" onSubmit={send} style={{background:'white'}}>
           <div className="two-col">
             <input style={inputStyle} value={f.fullName} onChange={e=>setF({...f,fullName:e.target.value})} required placeholder="Fullname"/>
@@ -177,6 +232,7 @@ const Join = () => {
         <div className="two-col"><div><label>Position *</label><select style={inputStyle} value={f.position} onChange={e=>setF({...f,position:e.target.value})} required><option>SITE INCHARGE</option><option>SUPERVISOR</option><option>SECURITY OFFICER - General</option></select></div><div><label>District *</label><input style={inputStyle} value={f.district} onChange={e=>setF({...f,district:e.target.value})} required placeholder="District"/></div></div>
         <div><label>Experience *</label><input style={inputStyle} value={f.experience} onChange={e=>setF({...f,experience:e.target.value})} placeholder="e.g 3 years"/></div>
         <button style={{width:'100%',padding:'16px',borderRadius:'12px',border:'none',background:'#0a1931',color:'#ffcc00',fontWeight:'800',fontSize:'18px',cursor:'pointer'}}>Submit</button>{s&&<p className="msg">{s}</p>}
+        <div style={{textAlign:'center', marginTop:'8px'}}><Link to="/online-test" style={{color:'#1746a2', fontWeight:'700', fontSize:'14px'}}>Or Register for Online Test →</Link></div>
       </form>
     </div>
   )
@@ -264,13 +320,14 @@ const Footer = () => (
       <div className="f-col">
         <h4 className="f-logo"><span style={{color:'#fff'}}>ODC</span><span style={{color:'#38bdf8'}}>deyaJ</span></h4>
         <p>A BIST Final Year Project — Secure, Simple, Working. Built with passion by Rubangakene Moses.</p>
+        <a href={GOOGLE_FORM_LINK} target="_blank" rel="noreferrer" className="footer-test-btn" style={{marginTop:'8px', display:'inline-block', textDecoration:'none', background:'#38bdf8', color:'#0f172a', padding:'10px 18px', borderRadius:'20px', fontWeight:'800', fontSize:'13px'}}>Take Online Test</a>
       </div>
       <div className="f-col">
         <h4>Quick Links</h4>
         <span onClick={()=>document.getElementById("home")?.scrollIntoView({behavior:'smooth'})}>Home</span>
         <span onClick={()=>document.getElementById("about")?.scrollIntoView({behavior:'smooth'})}>About Us</span>
         <span onClick={()=>document.getElementById("services")?.scrollIntoView({behavior:'smooth'})}>Mission</span>
-        <span onClick={()=>document.getElementById("jobs")?.scrollIntoView({behavior:'smooth'})}>Blog</span>
+        <Link to="/online-test" style={{color:'#38bdf8', fontWeight:'700', textDecoration:'none'}}>Online Test</Link>
       </div>
       <div className="f-col">
         <h4>Services</h4>
@@ -287,7 +344,7 @@ const Footer = () => (
         <p>© 2026 ODCdeyaJ</p>
       </div>
     </div>
-    <div className="footer-copy">© 2026 ODCdeyaJ | Built by Moses | All Rights Reserved | No more product key stress — we build solutions</div>
+    <div className="footer-copy">© 2026 ODCdeyaJ | Built by Moses | All Rights Reserved | Online Test: {GOOGLE_FORM_LINK}</div>
   </div>
 )
 
@@ -300,57 +357,53 @@ const App = () => (
       html,body{width:100%; overflow-x:hidden; background:#f1f5f9; margin:0}
       body{font-family:'Inter', sans-serif; font-size:15px; line-height:1.7; color:#1e293b; padding-top:68px}
       h1,h2,h3,h4,.logo{font-family:'Poppins', sans-serif; line-height:1.3}
-
-      /* HEADER - FIXED WHEN SCROLLING */
-     .nav{background:#ffffff; padding:0 16px; position:fixed; top:0; left:0; width:100%; z-index:9999; box-shadow:0 2px 16px rgba(0,0,0,0.08); border-bottom:1px solid #e2e8f0; height:68px; display:flex; align-items:center}
-     .nav-inner{max-width:1250px; margin:auto; display:flex; justify-content:space-between; align-items:center; width:100%}
-     .logo{font-weight:800; font-size:22px; cursor:pointer}
-     .menu-btn{color:#0a1931; font-size:26px; cursor:pointer; display:none; font-weight:800}
-     .links{display:flex; gap:4px; align-items:center}
-     .links span{color:#334155; text-decoration:none; font-size:14.5px; font-weight:600; padding:8px 14px; cursor:pointer; border-radius:8px}
-     .links span:hover{color:#0a1931; background:#f1f5f9}
-     .btn-register{background:#1746a2!important; color:#fff!important; padding:10px 22px!important; border-radius:25px!important; font-weight:700!important; margin-left:10px!important}
-     .btn-register:hover{background:#12367e!important}
-     .btn-admin{border:1.5px solid #e2e8f0!important; color:#334155!important; padding:6px 14px!important; border-radius:20px!important; font-weight:700!important; text-decoration:none; font-size:12px; margin-left:6px}
-     .btn-yellow{background:#ffcc00!important; color:#0a1931!important; padding:9px 18px!important; border-radius:25px!important; font-weight:800!important; text-decoration:none}.btn-yellow.big{padding:13px 26px!important; font-size:15px}
-
-     .hero{background:linear-gradient(135deg,#0a1931 0%,#1e3a8a 100%); color:#fff; padding:40px 16px; text-align:center; width:100%}.hero h1{color:#ffcc00; font-size:24px; margin-bottom:10px; font-weight:800}.hero p{font-size:14px; color:#cbd5e1}.dots{margin:14px 0}.dot{width:9px; height:9px; background:#475569; border-radius:50%; display:inline-block; margin:0 4px; cursor:pointer}.dot.on{background:#ffcc00}
-     .section{padding:18px 14px; max-width:1250px; margin:auto; width:100%}.section h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:8px; margin-bottom:16px; font-size:22px; font-weight:800}.card{background:#fff; padding:18px; border-radius:14px; margin-bottom:12px; box-shadow:0 4px 12px rgba(0,0,0,0.05); border-left:4px solid #0a1931}.card.gold{border-left-color:#ffcc00; background:#fffbeb}.card.dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; border-left-color:#ffcc00}.card h3{font-size:17px; margin-bottom:8px}
-     .about-hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:22px; border-radius:14px; margin-bottom:14px; border:2px solid #ffcc00}.service-box{background:#fff; border-radius:12px; margin-bottom:10px; box-shadow:0 3px 10px rgba(0,0,0,0.04); border-left:4px solid #0a1931}.service-head{display:flex; justify-content:space-between; align-items:center; padding:14px; cursor:pointer}.service-short{font-size:13px; color:#64748b}.expand-btn{background:#0a1931; color:#ffcc00; padding:6px 12px; border-radius:20px; font-size:11px; font-weight:800}.service-body{background:#f8fafc; padding:12px; border-top:1px solid #e2e8f0}
-     .memo{background:#fff; border-radius:14px; padding:18px; border:2px solid #0a1931}.memo-head{background:#0a1931; color:#fff; padding:16px; border-radius:12px; margin:-18px -18px 16px -18px; text-align:center}.job-card{background:#f8fafc; border:2px solid #e2e8f0; border-radius:12px; padding:14px; margin-bottom:12px}.job-card.gold{background:#fffbeb; border-color:#ffcc00}.big-recruit-btn{background:#ffcc00; color:#0a1931; padding:14px 24px; border-radius:30px; font-weight:800; text-decoration:none; display:inline-block; margin-top:12px; text-align:center; cursor:pointer}
-     .contact-full{padding:0; margin:0; width:100vw; margin-left:calc(-50vw + 50%); background:#f1f5f9; padding:20px 16px 30px 16px}.contact-full h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:8px; margin-bottom:18px; font-size:22px; font-weight:800; max-width:1250px; margin-left:auto; margin-right:auto}
-     .form-big{max-width:900px; margin:14px auto; background:#fff; padding:22px; border-radius:14px; display:flex; flex-direction:column; gap:14px; box-shadow:0 4px 12px rgba(0,0,0,0.06)}.light-form input,.light-form select,.light-form textarea{background:#ffffff!important; color:#0a1931!important; border:2px solid #cbd5e1!important}.light-form input::placeholder,.light-form textarea::placeholder{color:#64748b!important}.form-big input,.form-big select,.form-big textarea{padding:12px 14px; border-radius:10px; font-size:14px; width:100%; font-family:'Inter'}.form-big label{font-size:13px; font-weight:700; color:#0a1931; margin-bottom:4px; display:block}.two-col{display:grid; grid-template-columns:1fr 1fr; gap:12px} @media(max-width:700px){.two-col{grid-template-columns:1fr}}.form-2col{display:grid; grid-template-columns:320px 1fr; gap:16px; max-width:1250px; margin:auto} @media(max-width:900px){.form-2col{grid-template-columns:1fr}}.big-btn{background:#0a1931; color:#ffcc00; padding:14px; border:none; border-radius:10px; font-weight:800; cursor:pointer; font-size:15px}.msg{padding:12px; background:#d4edda; border-radius:10px; font-size:13px; text-align:center; font-weight:700}
-     .admin-full{width:100vw; margin-left:calc(-50vw + 50%); margin-right:calc(-50vw + 50%); background:#ffffff; min-height:70vh; padding:0; margin-top:0; margin-bottom:0}
-     .admin-top-full{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:16px 10px; text-align:center; border-bottom:4px solid #ffcc00; width:100%}.admin-top-full h2{color:#ffcc00; font-size:16px; border:none; margin-bottom:10px}
-     .tabs{display:flex; gap:6px; justify-content:center; flex-wrap:wrap}.tab{padding:8px 12px; border-radius:20px; border:1.5px solid #ffcc00; background:transparent; color:#ffcc00; font-weight:700; font-size:11px; cursor:pointer}.tab.on{background:#ffcc00; color:#0a1931}.tab.white{background:#fff; color:#0a1931; border-color:#fff}.tab.red{border-color:#ff4444; color:#ff4444}
-     .table-wrap{width:100%; overflow-x:auto; background:#fff; -webkit-overflow-scrolling:touch}
-     .admin-table{width:100%; border-collapse:collapse; min-width:900px; font-size:13px}
-     .admin-table th{background:#0a1931; color:#ffcc00; padding:11px 8px; text-align:left; font-weight:800; font-size:11.5px; text-transform:uppercase; position:sticky; top:0; white-space:nowrap}
-     .admin-table td{padding:9px 8px; border-bottom:1px solid #e2e8f0; vertical-align:top; max-width:220px; word-wrap:break-word}
-     .admin-table tr:hover{background:#f8fafc}.admin-table tr:nth-child(even){background:#fffbeb}
-     .msg-cell{max-width:220px; font-size:12px; color:#334155}.row-actions{display:flex; gap:4px}.mini-btn{padding:5px 9px; border-radius:7px; font-size:10px; font-weight:800; text-decoration:none; border:none; cursor:pointer}.mini-btn.call{background:#0a1931; color:#ffcc00}.mini-btn.wa{background:#22c55e; color:#fff}.mini-btn.del{background:#fee2e2; color:#dc2626}
-
-      /* FOOTER LIKE IMAGE */
-     .footer-new{background:#0f172a; color:#94a3b8; width:100vw; margin-left:calc(-50vw + 50%); border-top:1px solid #1e293b; padding:0}
-     .footer-inner-odc{max-width:1250px; margin:auto; padding:44px 20px 30px 20px; display:grid; grid-template-columns:1.6fr 1fr 1fr 1fr; gap:32px}
-     .f-col{display:flex; flex-direction:column; gap:10px}
-     .f-col h4{color:#fff; font-size:15px; font-weight:700; margin-bottom:4px}
-     .f-col p,.f-col span{font-size:13.5px; color:#94a3b8; line-height:1.7; cursor:pointer; text-decoration:none}
-     .f-col span:hover{color:#e2e8f0}
-     .f-logo{font-size:22px!important; font-weight:800; letter-spacing:-0.5px}
-     .footer-copy{text-align:center; font-size:12px; color:#64748b; padding:18px 16px; border-top:1px solid rgba(255,255,255,0.07)}
-
+    .nav{background:#ffffff; padding:0 16px; position:fixed; top:0; left:0; width:100%; z-index:9999; box-shadow:0 2px 16px rgba(0,0,0,0.08); border-bottom:1px solid #e2e8f0; height:68px; display:flex; align-items:center}
+    .nav-inner{max-width:1250px; margin:auto; display:flex; justify-content:space-between; align-items:center; width:100%}
+    .logo{font-weight:800; font-size:22px; cursor:pointer}
+    .menu-btn{color:#0a1931; font-size:26px; cursor:pointer; display:none; font-weight:800}
+    .links{display:flex; gap:4px; align-items:center}
+    .links span,.links a{color:#334155; text-decoration:none; font-size:14.5px; font-weight:600; padding:8px 14px; cursor:pointer; border-radius:8px}
+    .links span:hover{color:#0a1931; background:#f1f5f9}
+    .btn-register{background:#1746a2!important; color:#fff!important; padding:10px 22px!important; border-radius:25px!important; font-weight:700!important; margin-left:10px!important; text-decoration:none!important}
+    .btn-register:hover{background:#12367e!important}
+    .btn-yellow{background:#ffcc00!important; color:#0a1931!important; padding:9px 18px!important; border-radius:25px!important; font-weight:800!important; text-decoration:none}.btn-yellow.big{padding:13px 26px!important; font-size:15px}
+    .btn-white{background:#fff!important; color:#0a1931!important; padding:9px 18px!important; border-radius:25px!important; font-weight:800!important; border:2px solid #0a1931}.btn-white.big{padding:11px 24px!important}
+    .big-test-btn{background:#1746a2; color:#fff; padding:14px 24px; border-radius:30px; font-weight:800; text-decoration:none; display:inline-block; text-align:center; cursor:pointer}
+    .hero{background:linear-gradient(135deg,#0a1931 0%,#1e3a8a 100%); color:#fff; padding:40px 16px; text-align:center; width:100%}.hero h1{color:#ffcc00; font-size:24px; margin-bottom:10px; font-weight:800}.hero p{font-size:14px; color:#cbd5e1}.dots{margin:14px 0}.dot{width:9px; height:9px; background:#475569; border-radius:50%; display:inline-block; margin:0 4px; cursor:pointer}.dot.on{background:#ffcc00}
+    .section{padding:18px 14px; max-width:1250px; margin:auto; width:100%}.section h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:8px; margin-bottom:16px; font-size:22px; font-weight:800}.card{background:#fff; padding:18px; border-radius:14px; margin-bottom:12px; box-shadow:0 4px 12px rgba(0,0,0,0.05); border-left:4px solid #0a1931}.card.gold{border-left-color:#ffcc00; background:#fffbeb}.card.dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; border-left-color:#ffcc00}.card h3{font-size:17px; margin-bottom:8px}
+    .about-hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:22px; border-radius:14px; margin-bottom:14px; border:2px solid #ffcc00}.service-box{background:#fff; border-radius:12px; margin-bottom:10px; box-shadow:0 3px 10px rgba(0,0,0,0.04); border-left:4px solid #0a1931}.service-head{display:flex; justify-content:space-between; align-items:center; padding:14px; cursor:pointer}.service-short{font-size:13px; color:#64748b}.expand-btn{background:#0a1931; color:#ffcc00; padding:6px 12px; border-radius:20px; font-size:11px; font-weight:800}.service-body{background:#f8fafc; padding:12px; border-top:1px solid #e2e8f0}
+    .memo{background:#fff; border-radius:14px; padding:18px; border:2px solid #0a1931}.memo-head{background:#0a1931; color:#fff; padding:16px; border-radius:12px; margin:-18px -18px 16px -18px; text-align:center}.job-card{background:#f8fafc; border:2px solid #e2e8f0; border-radius:12px; padding:14px; margin-bottom:12px}.job-card.gold{background:#fffbeb; border-color:#ffcc00}.big-recruit-btn{background:#ffcc00; color:#0a1931; padding:14px 24px; border-radius:30px; font-weight:800; text-decoration:none; display:inline-block; text-align:center; cursor:pointer}
+    .contact-full{padding:0; margin:0; width:100vw; margin-left:calc(-50vw + 50%); background:#f1f5f9; padding:20px 16px 30px 16px}.contact-full h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:8px; margin-bottom:18px; font-size:22px; font-weight:800; max-width:1250px; margin-left:auto; margin-right:auto}
+    .form-big{max-width:900px; margin:14px auto; background:#fff; padding:22px; border-radius:14px; display:flex; flex-direction:column; gap:14px; box-shadow:0 4px 12px rgba(0,0,0,0.06)}.light-form input,.light-form select,.light-form textarea{background:#ffffff!important; color:#0a1931!important; border:2px solid #cbd5e1!important}.form-big input,.form-big select,.form-big textarea{padding:12px 14px; border-radius:10px; font-size:14px; width:100%; font-family:'Inter'}.form-big label{font-size:13px; font-weight:700; color:#0a1931; margin-bottom:4px; display:block}.two-col{display:grid; grid-template-columns:1fr 1fr; gap:12px} @media(max-width:700px){.two-col{grid-template-columns:1fr}}.form-2col{display:grid; grid-template-columns:320px 1fr; gap:16px; max-width:1250px; margin:auto} @media(max-width:900px){.form-2col{grid-template-columns:1fr}}.big-btn{background:#0a1931; color:#ffcc00; padding:14px; border:none; border-radius:10px; font-weight:800; cursor:pointer; font-size:15px}.msg{padding:12px; background:#d4edda; border-radius:10px; font-size:13px; text-align:center; font-weight:700}
+    .admin-full{width:100vw; margin-left:calc(-50vw + 50%); margin-right:calc(-50vw + 50%); background:#ffffff; min-height:70vh; padding:0; margin-top:0; margin-bottom:0}
+    .admin-top-full{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:16px 10px; text-align:center; border-bottom:4px solid #ffcc00; width:100%}.admin-top-full h2{color:#ffcc00; font-size:16px; border:none; margin-bottom:10px}
+    .tabs{display:flex; gap:6px; justify-content:center; flex-wrap:wrap}.tab{padding:8px 12px; border-radius:20px; border:1.5px solid #ffcc00; background:transparent; color:#ffcc00; font-weight:700; font-size:11px; cursor:pointer}.tab.on{background:#ffcc00; color:#0a1931}.tab.white{background:#fff; color:#0a1931; border-color:#fff}.tab.red{border-color:#ff4444; color:#ff4444}
+    .table-wrap{width:100%; overflow-x:auto; background:#fff; -webkit-overflow-scrolling:touch}
+    .admin-table{width:100%; border-collapse:collapse; min-width:900px; font-size:13px}
+    .admin-table th{background:#0a1931; color:#ffcc00; padding:11px 8px; text-align:left; font-weight:800; font-size:11.5px; text-transform:uppercase; position:sticky; top:0; white-space:nowrap}
+    .admin-table td{padding:9px 8px; border-bottom:1px solid #e2e8f0; vertical-align:top; max-width:220px; word-wrap:break-word}
+    .admin-table tr:hover{background:#f8fafc}.admin-table tr:nth-child(even){background:#fffbeb}
+    .msg-cell{max-width:220px; font-size:12px; color:#334155}.row-actions{display:flex; gap:4px}.mini-btn{padding:5px 9px; border-radius:7px; font-size:10px; font-weight:800; text-decoration:none; border:none; cursor:pointer}.mini-btn.call{background:#0a1931; color:#ffcc00}.mini-btn.wa{background:#22c55e; color:#fff}.mini-btn.del{background:#fee2e2; color:#dc2626}
+    .footer-new{background:#0f172a; color:#94a3b8; width:100vw; margin-left:calc(-50vw + 50%); border-top:1px solid #1e293b; padding:0}
+    .footer-inner-odc{max-width:1250px; margin:auto; padding:44px 20px 30px 20px; display:grid; grid-template-columns:1.6fr 1fr 1fr 1fr; gap:32px}
+    .f-col{display:flex; flex-direction:column; gap:10px}
+    .f-col h4{color:#fff; font-size:15px; font-weight:700; margin-bottom:4px}
+    .f-col p,.f-col span{font-size:13.5px; color:#94a3b8; line-height:1.7; cursor:pointer; text-decoration:none}
+    .f-col span:hover{color:#e2e8f0}
+    .f-logo{font-size:22px!important; font-weight:800; letter-spacing:-0.5px}
+    .footer-copy{text-align:center; font-size:12px; color:#64748b; padding:18px 16px; border-top:1px solid rgba(255,255,255,0.07)}
       @media(max-width:900px){
-       .menu-btn{display:block}
-       .links{display:none; flex-direction:column; align-items:flex-start; background:#fff; position:absolute; top:68px; left:0; width:100%; padding:14px 16px; box-shadow:0 8px 24px rgba(0,0,0,0.12); border-top:1px solid #e2e8f0}
-       .links.show{display:flex}
-       .footer-inner-odc{grid-template-columns:1fr 1fr; gap:28px}
+      .menu-btn{display:block}
+      .links{display:none; flex-direction:column; align-items:flex-start; background:#fff; position:absolute; top:68px; left:0; width:100%; padding:14px 16px; box-shadow:0 8px 24px rgba(0,0,0,0.12); border-top:1px solid #e2e8f0}
+      .links.show{display:flex}
+      .footer-inner-odc{grid-template-columns:1fr 1fr; gap:28px}
       }
       @media(max-width:560px){.footer-inner-odc{grid-template-columns:1fr; gap:24px}.nav{height:60px} body{padding-top:60px}.links{top:60px} }
     `}</style>
     <Navbar/>
     <Routes>
       <Route path="/" element={<SinglePage/>}/>
+      <Route path="/online-test" element={<OnlineTestRegister/>}/>
       <Route path="/admin-login" element={<AdminLogin/>}/>
       <Route path="/admin" element={<ProtectedAdmin/>}/>
     </Routes>
