@@ -247,14 +247,16 @@ const Contact = () => {
   const [s, setS] = useState("");
   const send = async (e) => {
     e.preventDefault();
-    setS("Submitting to Google Sheet...");
+    setS("Submitting...");
     const payload = { type: 'contact', fullName: f.fullName, phone: f.phone, email: f.email, service: f.service, message: f.message, timestamp: new Date().toISOString() };
     try {
       await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
-      setS("✅ Submitted! Check Google Sheet - Opening...");
+      setS("✅ Thank you! We will contact you soon.");
       setF({ fullName: "", email: "", phone: "", service: "", message: "" });
-      setTimeout(() => { window.open(GOOGLE_SHEET_VIEW_URL, '_blank'); }, 1200);
-    } catch { setS("✅ Submitted! Check Google Sheet"); }
+    } catch { 
+      setS("✅ Thank you! We will contact you soon."); 
+      setF({ fullName: "", email: "", phone: "", service: "", message: "" });
+    }
   };
   return (
     <div className="section">
@@ -298,14 +300,16 @@ const Join = () => {
   const [s, setS] = useState("");
   const send = async (e) => {
     e.preventDefault();
-    setS("Submitting to Google Sheet...");
+    setS("Submitting...");
     const payload = { type: 'applicant', fullName: f.fullName, phone: f.phone, email: f.email, education: f.education, experience: f.experience, interest: f.interest, position: f.position, district: f.district, timestamp: new Date().toISOString() };
     try {
       await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
-      setS("✅ Submitted! Check Google Sheet - Opening...");
+      setS("✅ Thank you! We will contact you soon.");
       setF({ fullName: "", phone: "", email: "", education: "", experience: "", interest: "", position: "SITE INCHARGE", district: "" });
-      setTimeout(() => { window.open(GOOGLE_SHEET_VIEW_URL, '_blank'); }, 1200);
-    } catch { setS("✅ Submitted! Check Google Sheet"); }
+    } catch { 
+      setS("✅ Thank you! We will contact you soon."); 
+      setF({ fullName: "", phone: "", email: "", education: "", experience: "", interest: "", position: "SITE INCHARGE", district: "" });
+    }
   };
   return (
     <div className="section">
