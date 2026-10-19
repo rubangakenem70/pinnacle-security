@@ -31,10 +31,7 @@ const Navbar = () => {
 
 const Home = () => {
   const [i, setI] = useState(0);
-  useEffect(() => {
-    const t = setInterval(() => setI(p => (p + 1) % 3), 3500);
-    return () => clearInterval(t)
-  }, []);
+  useEffect(() => { const t = setInterval(() => setI(p => (p + 1) % 3), 3500); return () => clearInterval(t) }, []);
   const slides = [
     { t: "Pinnacle Security Limited", d: "Plot 442 & 443 Masajjagere, Muyenga - Licensed Security Company" },
     { t: "WE ARE RECRUITING - JOIN US TODAY", d: "SITE INCHARGE: UCE + 3yrs | SUPERVISOR: UACE + Rider Permit + 3yrs" },
@@ -81,6 +78,155 @@ const Home = () => {
   )
 }
 
+const MissionPage = () => (
+  <div className="section">
+    <h2>Our Mission, Vision & Values</h2>
+    <div className="mission-grid">
+      <div className="mission-card">
+        <div className="m-icon">🎯</div>
+        <h3>Our Mission</h3>
+        <p>To provide <b>professional, affordable, and reliable security solutions</b> to homes, businesses, construction sites, schools, hotels and events in Uganda.</p>
+        <p>We are committed to protecting lives, property and investments with discipline, integrity and rapid response.</p>
+        <p><b>No Hidden Fees, No Exploitation, Free Training for all recruits.</b></p>
+      </div>
+      <div className="mission-card gold">
+        <div className="m-icon">👁️</div>
+        <h3>Our Vision</h3>
+        <p>To be <b>Uganda's most trusted and most respected security company by 2030</b>.</p>
+        <p>A company where every client feels safe, every guard feels valued, and every site is protected with technology + manpower.</p>
+        <p>We want to expand from 60+ sites to 500+ sites across Uganda while maintaining quality.</p>
+      </div>
+      <div className="mission-card dark">
+        <div className="m-icon">⭐</div>
+        <h3>Core Values - DISCIPLINE</h3>
+        <div className="values-list">
+          <div><b>D - Discipline:</b> We follow orders, keep time, wear uniform properly.</div>
+          <div><b>I - Integrity:</b> We are honest. We don't steal, we protect client property.</div>
+          <div><b>S - Service:</b> We serve clients with respect and humility, 24/7.</div>
+          <div><b>C - Courage:</b> We stand firm at night, we confront thieves.</div>
+          <div><b>P - Professionalism:</b> We are trained, licensed, and accountable.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+)
+
+const Services = () => {
+  return (
+    <div className="section">
+      <h2>Our Security Services</h2>
+      <p style={{textAlign:'center', color:'#0a1931', fontWeight:'800', marginBottom:'18px', fontSize:'18px'}}>
+        We provide complete security solutions for homes, businesses, construction sites and events
+      </p>
+      <div className="services-grid">
+        <div className="service-card-full">
+          <h3>1. Security Guard Service - Armed & Unarmed</h3>
+          <p className="svc-desc">Best for homes, shops, offices, schools, hotels. We deploy disciplined guards with full uniform, ID, radio, baton, torch.</p>
+          <div className="svc-details">
+            <div><b>Duties:</b> Gate control, visitor register, patrol every hour, night vigilance.</div>
+            <div><b>What you get:</b> Supervisor visits 3x a week, free replacement, monthly report, 10 min rapid response 0754 139726.</div>
+            <div><b>Price:</b> From 450k per guard per month. No hidden costs.</div>
+          </div>
+        </div>
+        <div className="service-card-full">
+          <h3>2. Construction Site Security</h3>
+          <p className="svc-desc">Special guards trained for building sites - we understand theft of cement, D12/D16 iron bars, timber, tools.</p>
+          <div className="svc-details">
+            <div><b>How we protect:</b> Check all materials in/out with book, manage store, night torch patrol every 30 minutes.</div>
+            <div><b>Special:</b> Guards know how to count cement bags, measure iron bars. We have protected 40+ sites in Muyenga, Buziga, Munyonyo.</div>
+          </div>
+        </div>
+        <div className="service-card-full">
+          <h3>3. CCTV Installation & Monitoring</h3>
+          <p className="svc-desc">Watch your home/business on phone from anywhere. From 2.5M for 4 cameras full set.</p>
+          <div className="svc-details">
+            <div><b>What we install:</b> DVR recorder, 4 HD cameras (night vision 30M), 1TB HDD (30 days recording).</div>
+            <div><b>Features:</b> View on phone app, motion alert, night vision, playback. Brands: Hikvision, Dahua - 2 years warranty.</div>
+          </div>
+        </div>
+        <div className="service-card-full">
+          <h3>4. Mobile Patrol & Rapid Response</h3>
+          <p className="svc-desc">Best if you cannot afford full-time guard. Our patrol car with 2 armed officers patrols every 2 hours.</p>
+          <div className="svc-details">
+            <div><b>How it works:</b> 3 visits day, 3 visits night. Random timing so thieves cannot predict.</div>
+            <div><b>Includes:</b> 10-min rapid response. Coverage: Muyenga, Buziga, Munyonyo, Ggaba, Kansanga.</div>
+          </div>
+        </div>
+        <div className="service-card-full">
+          <h3>5. Event Security & Bouncers</h3>
+          <p className="svc-desc">For weddings, introductions, concerts, conferences, corporate events.</p>
+          <div className="svc-details">
+            <div><b>We provide:</b> Crowd control, gate management, VIP protection, parking control.</div>
+            <div><b>Uniform:</b> Smart suits for corporate, black t-shirts branded for concerts.</div>
+          </div>
+        </div>
+        <div className="service-card-full">
+          <h3>6. Alarm Systems & Electric Fences</h3>
+          <p className="svc-desc">Protect your home even when you are away. Intruder alarm calls your phone + control room.</p>
+          <div className="svc-details">
+            <div><b>Alarm:</b> Magnetic sensors on doors/windows, motion sensor, loud siren 120db, calls 3 numbers + control room.</div>
+            <div><b>Electric Fence:</b> 5 lines, energizer, battery backup (works when Yaka off). From 3.5M.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const Blog = () => (
+  <div className="section">
+    <div className="memo-clean">
+      <div className="memo-head">
+        <h2>INTERNAL MEMO - PINNACLE SECURITY LTD</h2>
+        <p><b>From:</b> HR Manager | <b>To:</b> All Applicants | <b>Date:</b> {new Date().toLocaleDateString()} | <b>Ref:</b> PSL/HR/2026/08</p>
+        <p><b>Subject: URGENT RECRUITMENT</b></p>
+      </div>
+      <div className="memo-body-dark">
+        <div className="memo-intro">Management has approved recruitment. Applications are <b>No Fees</b>. Training <b>2 weeks at Muyenga HQ Plot 442/443</b>.</div>
+        <div className="job-box">
+          <div className="job-header">POSITION 1: SITE INCHARGE</div>
+          <div className="job-content">
+            <p className="req-title">Requirements</p>
+            <div className="req-grid">
+              <div><span>Education:</span> UCE Certificate (S4) 4 passes</div>
+              <div><span>Experience:</span> 3+ Years security</div>
+              <div><span>Age:</span> 25-45 years, fit</div>
+              <div><span>Skills:</span> Read/write English, OB reports</div>
+              <div><span>Record:</span> No crime (LC1 & Police verified)</div>
+              <div><span>Leadership:</span> Manage 5-10 guards</div>
+            </div>
+            <p className="duty"><b>Duties:</b> Supervise guards, daily report, handle complaints, attendance, uniform discipline.</p>
+          </div>
+        </div>
+        <div className="job-box gold-border">
+          <div className="job-header gold">POSITION 2: SUPERVISOR</div>
+          <div className="job-content">
+            <p className="req-title">Requirements</p>
+            <div className="req-grid">
+              <div><span>Education:</span> UACE (S6) 2 principal passes</div>
+              <div><span>Rider:</span> Valid Permit Class A</div>
+              <div><span>Experience:</span> 3+ Years supervisor</div>
+              <div><span>Age:</span> 27-40, smartphone</div>
+              <div><span>Distance:</span> Can ride Kampala-Entebbe, Mukono</div>
+              <div><span>Character:</span> Honest, not drunkard</div>
+            </div>
+            <p className="duty"><b>Duties:</b> Visit sites daily, check guards, handle emergencies, recruit, report to Ops Manager.</p>
+          </div>
+        </div>
+        <div className="general-box">
+          <h3>GENERAL RECRUITMENT: SECURITY OFFICER</h3>
+          <p>Always recruiting disciplined men & women.</p>
+          <div className="req-inline">
+            <span>P7/UCE</span><span>Age 22-45</span><span>No Crime</span><span>Fit</span><span>Day/Night</span>
+          </div>
+          <Link to="/join" className="big-recruit-btn">APPLY NOW - Applicant Form</Link>
+        </div>
+        <div className="apply-footer"><b>How to Apply:</b> Click Applicant Form. Or visit Plot 442/443 Masajjagere, Muyenga. HR: <b>hr@pinnaclegroup.co.ug</b> / Control: <b>0754 139726</b>.</div>
+      </div>
+    </div>
+  </div>
+)
+
 const About = () => (
   <div className="section">
     <h2>About Pinnacle Security Ltd</h2>
@@ -102,11 +248,13 @@ const Contact = () => {
   const send = async (e) => {
     e.preventDefault();
     setS("Submitting to Google Sheet...");
+    const payload = { type: 'contact', fullName: f.fullName, phone: f.phone, email: f.email, service: f.service, message: f.message, timestamp: new Date().toISOString() };
     try {
-      await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'contact', ...f, timestamp: new Date().toISOString() }) });
-      setS("✅ Submitted! Saved to Google Sheet");
-      setF({ fullName: "", email: "", phone: "", service: "", message: "" })
-    } catch { setS("✅ Submitted! Saved to Google Sheet") }
+      await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
+      setS("✅ Submitted! Check Google Sheet - Opening...");
+      setF({ fullName: "", email: "", phone: "", service: "", message: "" });
+      setTimeout(() => { window.open(GOOGLE_SHEET_VIEW_URL, '_blank'); }, 1200);
+    } catch { setS("✅ Submitted! Check Google Sheet"); }
   };
   return (
     <div className="section">
@@ -151,11 +299,13 @@ const Join = () => {
   const send = async (e) => {
     e.preventDefault();
     setS("Submitting to Google Sheet...");
+    const payload = { type: 'applicant', fullName: f.fullName, phone: f.phone, email: f.email, education: f.education, experience: f.experience, interest: f.interest, position: f.position, district: f.district, timestamp: new Date().toISOString() };
     try {
-      await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'applicant', ...f, timestamp: new Date().toISOString() }) });
-      setS("✅ Submitted! Saved to Google Sheet");
-      setF({ fullName: "", phone: "", email: "", education: "", experience: "", interest: "", position: "SITE INCHARGE", district: "" })
-    } catch { setS("✅ Submitted! Saved to Google Sheet") }
+      await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
+      setS("✅ Submitted! Check Google Sheet - Opening...");
+      setF({ fullName: "", phone: "", email: "", education: "", experience: "", interest: "", position: "SITE INCHARGE", district: "" });
+      setTimeout(() => { window.open(GOOGLE_SHEET_VIEW_URL, '_blank'); }, 1200);
+    } catch { setS("✅ Submitted! Check Google Sheet"); }
   };
   return (
     <div className="section">
@@ -172,9 +322,7 @@ const Join = () => {
 }
 
 const Footer = () => {
-  const handleLinkClick = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  const handleLinkClick = () => { window.scrollTo({ top: 0, behavior: 'smooth' }); };
   return (
     <div className="footer">
       <div className="footer-quick">
@@ -189,26 +337,14 @@ const Footer = () => {
           <Link to="/join" onClick={handleLinkClick}>Apply Now</Link>
         </div>
       </div>
-      <div className="footer-bottom">
-        © 2026 Pinnacle Security Ltd | Plot 442 & 443 Masajjagere, Muyenga | HR: hr@pinnaclegroup.co.ug | Control 24/7: 0754 139726
-      </div>
+      <div className="footer-bottom">© 2026 Pinnacle Security Ltd | Plot 442 & 443 Masajjagere, Muyenga | HR: hr@pinnaclegroup.co.ug | Control 24/7: 0754 139726</div>
     </div>
   )
 }
 
-// Keep Admin routes for direct access but not in nav
 const AdminLogin = () => {
-  const [pass, setPass] = useState("");
-  const [msg, setMsg] = useState("");
-  const navigate = useNavigate();
-  const login = (e) => {
-    e.preventDefault();
-    if (pass === ADMIN_PASSWORD) {
-      localStorage.setItem("pinnacle_admin_token", pass);
-      setMsg("Correct! Opening...");
-      setTimeout(() => navigate("/admin"), 500);
-    } else setMsg(`❌ Wrong password.`);
-  };
+  const [pass, setPass] = useState(""); const [msg, setMsg] = useState(""); const navigate = useNavigate();
+  const login = (e) => { e.preventDefault(); if (pass === ADMIN_PASSWORD) { localStorage.setItem("pinnacle_admin_token", pass); setMsg("Correct! Opening..."); setTimeout(() => navigate("/admin"), 500); } else setMsg(`❌ Wrong password.`); };
   return (
     <div className="section" style={{ maxWidth: '520px', margin: '60px auto' }}>
       <div className="form-big" style={{ border: '3px solid #ffcc00', textAlign: 'center' }}>
