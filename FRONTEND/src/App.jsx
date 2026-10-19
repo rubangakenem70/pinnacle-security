@@ -4,7 +4,8 @@ import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate 
 const API_URL = "https://pinnacle-security-backend.vercel.app";
 const ADMIN_PASSWORD = "Pinnacle2026!Secure123";
 const GOOGLE_SHEET_WEBHOOK = "https://script.google.com/macros/s/AKfycbz0Fx9gSfPwPXZdi8pivw9IdQ_fzj707fPk22GBECuGYhGzwePtEPZV47TyXk8TN8bggQ/exec";
-const GOOGLE_SHEET_VIEW_URL = "https://docs.google.com/spreadsheets/";
+const KOBO_APTITUDE_TEST = "https://ee.kobotoolbox.org/x/ODCdeyaJ";
+const GOOGLE_APTITUDE_REGISTER = "https://forms.gle/W8JroZ8n8HGArq248";
 
 const Navbar = () => {
   const loc = useLocation();
@@ -22,6 +23,7 @@ const Navbar = () => {
         <Link to="/services" style={active("/services")} onClick={() => setOpen(false)}>Services</Link>
         <Link to="/mission" style={active("/mission")} onClick={() => setOpen(false)}>Mission</Link>
         <Link to="/blog" style={active("/blog")} onClick={() => setOpen(false)}>Jobs</Link>
+        <Link to="/aptitude" style={active("/aptitude")} onClick={() => setOpen(false)}>Aptitude Test</Link>
         <Link to="/contact" style={active("/contact")} onClick={() => setOpen(false)}>Contact</Link>
         <Link to="/join" className="btn-yellow" onClick={() => setOpen(false)}>Apply Now</Link>
       </div>
@@ -47,6 +49,7 @@ const Home = () => {
         </div>
         <div style={{display:'flex', gap:'12px', justifyContent:'center', flexWrap:'wrap', marginTop:'12px'}}>
           <Link to="/join" className="btn-yellow big">Apply Now</Link>
+          <Link to="/aptitude" className="btn-yellow big" style={{background:'#fff !important'}}>Aptitude Test</Link>
         </div>
       </div>
       <div className="section">
@@ -75,6 +78,46 @@ const Home = () => {
         </div>
       </div>
     </>
+  )
+}
+
+// NEW APTITUDE TEST PAGE - SAME DESIGN, OPENS IN SEPARATE WINDOW
+const Aptitude = () => {
+  return (
+    <div className="section">
+      <h2>Online Aptitude Test</h2>
+      <p style={{textAlign:'center', color:'#0a1931', fontWeight:'800', marginBottom:'18px', fontSize:'18px'}}>
+        Pinnacle Security Ltd - Recruitment Aptitude Test - Complete Both Steps
+      </p>
+      <div className="home-grid-3">
+        <div className="card">
+          <h3>Step 1: Register For Aptitude Test</h3>
+          <p>All applicants must first register for aptitude test. Fill your Full Name, Phone, Education, Position you are applying for.</p>
+          <p style={{marginTop:'12px', background:'#fffbeb', padding:'10px', borderRadius:'8px', border:'1px solid #ffcc00'}}><b>Required:</b> Registration is mandatory before taking test. Use same name as in application form.</p>
+          <a href={GOOGLE_APTITUDE_REGISTER} target="_blank" rel="noopener noreferrer" className="btn-yellow big" style={{marginTop:'18px', width:'100%', textAlign:'center', display:'block'}}>
+            Register For Aptitude Test ↗
+          </a>
+          <p style={{marginTop:'10px', fontSize:'13px', textAlign:'center', color:'#666'}}>Opens in separate window - Google Form</p>
+        </div>
+        <div className="card gold">
+          <h3>Step 2: Take Online Aptitude Test</h3>
+          <p><b>Test Contains:</b> Security reasoning, English, Maths, Discipline questions. 20-30 questions. Time: 30 minutes.</p>
+          <p style={{marginTop:'10px'}}><b>Instructions:</b> Answer honestly. No cheating. Pass mark 60%. Attempt only once.</p>
+          <p style={{marginTop:'10px', background:'rgba(10,25,49,0.07)', padding:'10px', borderRadius:'8px'}}><b>Note:</b> Make sure you have registered in Step 1 before taking test.</p>
+          <a href={KOBO_APTITUDE_TEST} target="_blank" rel="noopener noreferrer" className="btn-yellow big" style={{marginTop:'18px', width:'100%', textAlign:'center', display:'block', background:'#0a1931 !important', color:'#ffcc00 !important'}}>
+            Start Aptitude Test Now ↗
+          </a>
+          <p style={{marginTop:'10px', fontSize:'13px', textAlign:'center', color:'#666'}}>Opens in separate window - KoboToolbox</p>
+        </div>
+        <div className="card dark">
+          <h3>🚨 Important Information</h3>
+          <p><b>Who Should Take Test?</b> All applicants for SITE INCHARGE, SUPERVISOR, SECURITY OFFICER.</p>
+          <p style={{marginTop:'10px'}}><b>After Test:</b> Our HR will review your score + application. Shortlisted candidates will be called for interview at Muyenga HQ.</p>
+          <p style={{marginTop:'10px', background:'rgba(255,204,0,0.15)', padding:'10px', borderRadius:'10px'}}>Questions? Call Control 0754 139726 or HR hr@pinnaclegroup.co.ug</p>
+          <Link to="/join" className="btn-yellow big" style={{marginTop:'18px', width:'100%', textAlign:'center', display:'block'}}>Back to Application Form</Link>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -255,7 +298,6 @@ const Contact = () => {
       setF({ fullName: "", email: "", phone: "", service: "", message: "" });
     } catch { 
       setS("✅ Thank you! We will contact you soon."); 
-      setF({ fullName: "", email: "", phone: "", service: "", message: "" });
     }
   };
   return (
@@ -308,7 +350,6 @@ const Join = () => {
       setF({ fullName: "", phone: "", email: "", education: "", experience: "", interest: "", position: "SITE INCHARGE", district: "" });
     } catch { 
       setS("✅ Thank you! We will contact you soon."); 
-      setF({ fullName: "", phone: "", email: "", education: "", experience: "", interest: "", position: "SITE INCHARGE", district: "" });
     }
   };
   return (
@@ -337,6 +378,7 @@ const Footer = () => {
           <Link to="/services" onClick={handleLinkClick}>Services</Link>
           <Link to="/mission" onClick={handleLinkClick}>Mission</Link>
           <Link to="/blog" onClick={handleLinkClick}>Jobs</Link>
+          <Link to="/aptitude" onClick={handleLinkClick}>Aptitude Test</Link>
           <Link to="/contact" onClick={handleLinkClick}>Contact</Link>
           <Link to="/join" onClick={handleLinkClick}>Apply Now</Link>
         </div>
@@ -387,6 +429,7 @@ const App = () => (
       <Route path="/services" element={<Services />} />
       <Route path="/mission" element={<MissionPage />} />
       <Route path="/blog" element={<Blog />} />
+      <Route path="/aptitude" element={<Aptitude />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/join" element={<Join />} />
       <Route path="/admin-login" element={<AdminLogin />} />
