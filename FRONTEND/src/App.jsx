@@ -31,7 +31,7 @@ const Home = () => {
   const slides = [
     { t: "Pinnacle Security Limited", d: "Plot 442 & 443 Masajjagere, Muyenga - Licensed Security Company" },
     { t: "WE ARE RECRUITING - JOIN US TODAY", d: "SITE INCHARGE: UCE + 3yrs | SUPERVISOR: UACE + Rider Permit + 3yrs" },
-    { t: "60+ Sites | 150+ Officers | 24/7 Control Room 0754 139726", d: "hr@pinnaclegroup.co.ug | Free Training | No Recruitment Fees" },
+    { t: "100+ Sites | 150+ Officers | 24/7 Control Room 0754 139726", d: "hr@pinnaclegroup.co.ug | Free Training | No Recruitment Fees" },
   ];
   return (<>
     <div className="hero">
@@ -39,7 +39,7 @@ const Home = () => {
       <div className="dots">{[0, 1, 2].map(n => <span key={n} className={n === i ? 'dot on' : 'dot'} onClick={() => setI(n)}></span>)}</div>
       <div style={{display:'flex', gap:'12px', justifyContent:'center', flexWrap:'wrap', marginTop:'12px', alignItems:'center'}}>
         <Link to="/join" className="btn-yellow big">Apply Now</Link>
-        <a href="https://ee.kobotoolbox.org/your-form-link" target="_blank" rel="noreferrer" className="online-link">Take Online Test →</a>
+        <a href="https://ee.kobotoolbox.org/your-form-link" target="_blank" rel="noreferrer" className="online-link">Uplitude Test </a>
       </div>
       <p style={{fontSize:'14px', marginTop:'10px', color:'#ccc'}}>Applicants who applied must take online test</p>
     </div>
@@ -52,7 +52,7 @@ const Home = () => {
           <p style={{marginTop:'12px'}}>Our <b>24/7 Control Room 0754 139726</b> ensures rapid response day and night. No hidden fees.</p>
         </div>
         <div className="card gold">
-          <h3>🎯 Core Services</h3>
+          <h3> Core Services</h3>
           <p><b>Guard Service:</b> Armed & unarmed guards with supervision and rapid response.</p>
           <p><b>Construction Security:</b> Protect cement, iron bars, tools - material control.</p>
           <p><b>CCTV:</b> Hikvision/Dahua 4-camera system, phone viewing, 2-year warranty.</p>
@@ -60,7 +60,7 @@ const Home = () => {
           <Link to="/services" style={{color:'#0a1931', fontWeight:'900', fontSize:'16px', marginTop:'12px', display:'inline-block'}}>View All Services →</Link>
         </div>
         <div className="card dark">
-          <h3>🚨 URGENT RECRUITMENT</h3>
+          <h3> URGENT RECRUITMENT</h3>
           <p><b>SITE INCHARGE:</b> UCE + 3yrs experience.</p>
           <p style={{marginTop:'10px'}}><b>SUPERVISOR:</b> UACE + Rider Permit + 3yrs.</p>
           <p style={{marginTop:'10px', background:'rgba(255,204,0,0.15)', padding:'10px', borderRadius:'10px'}}>Free 2 weeks training at Muyenga HQ. No fees.</p>
@@ -185,11 +185,11 @@ const About = () => (
     <h2>About Pinnacle Security Ltd</h2>
     <div className="about-hero">
       <h3>Pinnacle Security Ltd - Protecting What Matters Most Since 2018</h3>
-      <p><b>Paragraph 1 - Who We Are:</b> Located at <b>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga Hill, Kampala - Uganda</b>, Pinnacle Security Limited is a fully licensed Private Security Organization registered under URSB and Ministry of Internal Affairs. We started in 2018 with a simple mission to provide professional, affordable and reliable security solutions to homes, businesses and construction sites. Today we have grown into one of the fastest growing security companies in the Kampala, Wakiso, Mukono and Entebbe corridor, trusted by hundreds of clients.</p>
-      <p><b>Paragraph 2 - Our Capacity & Team:</b> With <b>60+ Active Sites, 150+ Trained Officers and 24/7 Control Room 0754 139726</b>, we have the manpower, technology and infrastructure to protect what matters most. Every officer is vetted by LC1 and Police, physically fit, trained for 2 weeks at our Muyenga HQ in guarding, customer care, first aid and report writing. Each guard is equipped with full uniform, company ID, radio, torch and baton, and supervised by experienced site incharges and mobile supervisors.</p>
-      <p><b>Paragraph 3 - What Makes Us Different:</b> Unlike other companies that exploit guards, we believe in <b>No Hidden Fees, No Exploitation, Free Training for all recruits</b>. We do not charge any recruitment fees. We train all recruits for free, provide uniform, and pay on time every month. For clients, we visit sites 3 times a week, provide free replacement if a guard is absent or sick, write monthly security reports, and our control room responds within 10 minutes in case of emergency. Our clients stay with us for years because we are honest, disciplined and transparent.</p>
-      <p><b>Paragraph 4 - Our Services & Coverage:</b> Our core services include Security Guard Service (Armed & Unarmed for homes, shops, offices, schools, hotels), Construction Site Security (we understand cement, D12/D16 iron bars, timber, tools theft and we control materials in/out), CCTV Installation & Monitoring with phone viewing from 2.5M, Mobile Patrol & Rapid Response every 2 hours, Event Security for weddings, introductions, concerts and conferences, and Alarm Systems & Electric Fences. We currently cover Muyenga, Buziga, Munyonyo, Ggaba, Kansanga, Kabalagala, Makindye, Lukuli, Entebbe Road, Mukono and Wakiso.</p>
-      <p><b>Paragraph 5 - Our Promise & Future Vision:</b> Our promise is simple - to protect lives, property and investments with discipline, integrity and courage. We want to be Uganda's most trusted security company by 2030, expanding from 60+ sites to 500+ sites while keeping our quality and values. Our core values are DISCIPLINE: Discipline, Integrity, Service, Courage and Professionalism. When you choose Pinnacle Security Ltd, you choose peace of mind, 24 hours a day, 7 days a week. Contact us today at <b>hr@pinnaclegroup.co.ug or Control Room 0754 139726</b> for a free security assessment.</p>
+      <p><b> Who We Are:</b> Located at <b>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga Hill, Kampala - Uganda</b>, Pinnacle Security Limited is a fully licensed Private Security Organization registered under URSB and Ministry of Internal Affairs. We started in 2018 with a simple mission to provide professional, affordable and reliable security solutions to homes, businesses and construction sites. Today we have grown into one of the fastest growing security companies in the Kampala, Wakiso, Mukono and Entebbe corridor, trusted by hundreds of clients.</p>
+      <p><b> Our Capacity & Team:</b> With <b>60+ Active Sites, 150+ Trained Officers and 24/7 Control Room 0754 139726</b>, we have the manpower, technology and infrastructure to protect what matters most. Every officer is vetted by LC1 and Police, physically fit, trained for 2 weeks at our Muyenga HQ in guarding, customer care, first aid and report writing. Each guard is equipped with full uniform, company ID, radio, torch and baton, and supervised by experienced site incharges and mobile supervisors.</p>
+      <p><b> What Makes Us Different:</b> Unlike other companies that exploit guards, we believe in <b>No Hidden Fees, No Exploitation, Free Training for all recruits</b>. We do not charge any recruitment fees. We train all recruits for free, provide uniform, and pay on time every month. For clients, we visit sites 3 times a week, provide free replacement if a guard is absent or sick, write monthly security reports, and our control room responds within 10 minutes in case of emergency. Our clients stay with us for years because we are honest, disciplined and transparent.</p>
+      <p><b> Our Services & Coverage:</b> Our core services include Security Guard Service (Armed & Unarmed for homes, shops, offices, schools, hotels), Construction Site Security (we understand cement, D12/D16 iron bars, timber, tools theft and we control materials in/out), CCTV Installation & Monitoring with phone viewing from 2.5M, Mobile Patrol & Rapid Response every 2 hours, Event Security for weddings, introductions, concerts and conferences, and Alarm Systems & Electric Fences. We currently cover Muyenga, Buziga, Munyonyo, Ggaba, Kansanga, Kabalagala, Makindye, Lukuli, Entebbe Road, Mukono and Wakiso.</p>
+      <p><b> Our Promise & Future Vision:</b> Our promise is simple - to protect lives, property and investments with discipline, integrity and courage. We want to be Uganda's most trusted security company by 2030, expanding from 60+ sites to 500+ sites while keeping our quality and values. Our core values are DISCIPLINE: Discipline, Integrity, Service, Courage and Professionalism. When you choose Pinnacle Security Ltd, you choose peace of mind, 24 hours a day, 7 days a week. Contact us today at <b>hr@pinnaclegroup.co.ug or Control Room 0754 139726</b> for a free security assessment.</p>
     </div>
   </div>
 )
