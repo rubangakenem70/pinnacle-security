@@ -5,7 +5,6 @@ const API_URL = "https://pinnacle-security-backend.vercel.app";
 const ADMIN_PASSWORD = "Pinnacle2026!Secure123";
 const GOOGLE_SHEET_WEBHOOK = "https://script.google.com/macros/s/AKfycbz0Fx9gSfPwPXZdi8pivw9IdQ_fzj707fPk22GBECuGYhGzwePtEPZV47TyXk8TN8bggQ/exec";
 const GOOGLE_SHEET_VIEW_URL = "https://docs.google.com/spreadsheets/";
-
 const Navbar = () => {
   const loc = useLocation();
   const active = (p) => loc.pathname === p ? { color: '#ffcc00', borderBottom: '3px solid #ffcc00' } : { color: 'white' };
