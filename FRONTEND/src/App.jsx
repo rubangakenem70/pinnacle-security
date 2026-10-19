@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom'
 
 const API_URL = "https://pinnacle-security-backend.vercel.app";
 const ADMIN_PASSWORD = "Pinnacle2026!Secure123";
@@ -8,9 +7,16 @@ const KOBO_APTITUDE_TEST = "https://ee.kobotoolbox.org/x/ODCdeyaJ";
 const GOOGLE_APTITUDE_REGISTER = "https://forms.gle/W8JroZ8n8HGArq248";
 
 const Navbar = () => {
-  const loc = useLocation();
-  const active = (p) => loc.pathname === p ? { color: '#ffcc00', borderBottom: '3px solid #ffcc00' } : { color: 'white' };
   const [open, setOpen] = useState(false);
+  const scrollTo = (id) => {
+    setOpen(false);
+    const el = document.getElementById(id);
+    if (el) {
+      const offset = 75;
+      const top = el.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  };
   return (
     <nav className="nav">
       <div className="nav-top">
@@ -18,14 +24,14 @@ const Navbar = () => {
         <span className="menu-btn" onClick={() => setOpen(!open)}>{open ? '✕' : '☰'}</span>
       </div>
       <div className={`links ${open ? 'show' : ''}`}>
-        <Link to="/" style={active("/")} onClick={() => setOpen(false)}>Home</Link>
-        <Link to="/about" style={active("/about")} onClick={() => setOpen(false)}>About</Link>
-        <Link to="/services" style={active("/services")} onClick={() => setOpen(false)}>Services</Link>
-        <Link to="/mission" style={active("/mission")} onClick={() => setOpen(false)}>Mission</Link>
-        <Link to="/blog" style={active("/blog")} onClick={() => setOpen(false)}>Jobs</Link>
-        <Link to="/aptitude" style={active("/aptitude")} onClick={() => setOpen(false)}>Aptitude Test</Link>
-        <Link to="/contact" style={active("/contact")} onClick={() => setOpen(false)}>Contact</Link>
-        <Link to="/join" className="btn-yellow" onClick={() => setOpen(false)}>Apply Now</Link>
+        <a onClick={() => scrollTo('home')}>Home</a>
+        <a onClick={() => scrollTo('about')}>About</a>
+        <a onClick={() => scrollTo('services')}>Services</a>
+        <a onClick={() => scrollTo('mission')}>Mission</a>
+        <a onClick={() => scrollTo('jobs')}>Jobs</a>
+        <a onClick={() => scrollTo('aptitude')}>Aptitude Test</a>
+        <a onClick={() => scrollTo('contact')}>Contact</a>
+        <a onClick={() => scrollTo('join')} className="btn-yellow">Apply Now</a>
       </div>
     </nav>
   )
@@ -40,7 +46,7 @@ const Home = () => {
     { t: "60+ Sites | 150+ Officers | 24/7 Control Room 0754 139726", d: "hr@pinnaclegroup.co.ug | Free Training | No Recruitment Fees" },
   ];
   return (
-    <>
+    <div className="section" style={{paddingTop:'30px'}}>
       <div className="hero">
         <h1>{slides[i].t}</h1>
         <p>{slides[i].d}</p>
@@ -48,11 +54,11 @@ const Home = () => {
           {[0, 1, 2].map(n => <span key={n} className={n === i ? 'dot on' : 'dot'} onClick={() => setI(n)}></span>)}
         </div>
         <div style={{display:'flex', gap:'12px', justifyContent:'center', flexWrap:'wrap', marginTop:'12px'}}>
-          <Link to="/join" className="btn-yellow big">Apply Now</Link>
-          <Link to="/aptitude" className="btn-yellow big" style={{background:'#fff !important'}}>Aptitude Test</Link>
+          <a onClick={() => document.getElementById('join').scrollIntoView({behavior:'smooth'})} className="btn-yellow big" style={{cursor:'pointer'}}>Apply Now</a>
+          <a onClick={() => document.getElementById('aptitude').scrollIntoView({behavior:'smooth'})} className="btn-yellow big" style={{background:'#fff !important', cursor:'pointer'}}>Aptitude Test</a>
         </div>
       </div>
-      <div className="section">
+      <div style={{marginTop:'22px'}}>
         <div className="home-grid-3">
           <div className="card">
             <h3>Who We Are</h3>
@@ -66,209 +72,20 @@ const Home = () => {
             <p><b>Construction Security:</b> Protect cement, iron bars, tools - material control.</p>
             <p><b>CCTV:</b> Hikvision/Dahua 4-camera system, phone viewing, 2-year warranty.</p>
             <p><b>Mobile Patrol:</b> Patrol car day & night visits, 10min emergency response.</p>
-            <Link to="/services" style={{color:'#0a1931', fontWeight:'900', fontSize:'16px', marginTop:'12px', display:'inline-block'}}>View All Services →</Link>
+            <a onClick={() => document.getElementById('services').scrollIntoView({behavior:'smooth'})} style={{color:'#0a1931', fontWeight:'900', fontSize:'16px', marginTop:'12px', display:'inline-block', cursor:'pointer'}}>View All Services →</a>
           </div>
           <div className="card dark">
             <h3>🚨 URGENT RECRUITMENT</h3>
             <p><b>SITE INCHARGE:</b> UCE + 3yrs experience.</p>
             <p style={{marginTop:'10px'}}><b>SUPERVISOR:</b> UACE + Rider Permit + 3yrs.</p>
             <p style={{marginTop:'10px', background:'rgba(255,204,0,0.15)', padding:'10px', borderRadius:'10px'}}>Free 2 weeks training at Muyenga HQ. No fees.</p>
-            <Link to="/join" className="btn-yellow big" style={{marginTop:'18px', width:'100%', textAlign:'center', display:'block'}}>Apply Now - Applicant Form</Link>
-          </div>
-        </div>
-      </div>
-    </>
-  )
-}
-
-// NEW APTITUDE TEST PAGE - SAME DESIGN, OPENS IN SEPARATE WINDOW
-const Aptitude = () => {
-  return (
-    <div className="section">
-      <h2>Online Aptitude Test</h2>
-      <p style={{textAlign:'center', color:'#0a1931', fontWeight:'800', marginBottom:'18px', fontSize:'18px'}}>
-        Pinnacle Security Ltd - Recruitment Aptitude Test - Complete Both Steps
-      </p>
-      <div className="home-grid-3">
-        <div className="card">
-          <h3>Step 1: Register For Aptitude Test</h3>
-          <p>All applicants must first register for aptitude test. Fill your Full Name, Phone, Education, Position you are applying for.</p>
-          <p style={{marginTop:'12px', background:'#fffbeb', padding:'10px', borderRadius:'8px', border:'1px solid #ffcc00'}}><b>Required:</b> Registration is mandatory before taking test. Use same name as in application form.</p>
-          <a href={GOOGLE_APTITUDE_REGISTER} target="_blank" rel="noopener noreferrer" className="btn-yellow big" style={{marginTop:'18px', width:'100%', textAlign:'center', display:'block'}}>
-            Register For Aptitude Test ↗
-          </a>
-          <p style={{marginTop:'10px', fontSize:'13px', textAlign:'center', color:'#666'}}>Opens in separate window - Google Form</p>
-        </div>
-        <div className="card gold">
-          <h3>Step 2: Take Online Aptitude Test</h3>
-          <p><b>Test Contains:</b> Security reasoning, English, Maths, Discipline questions. 20-30 questions. Time: 30 minutes.</p>
-          <p style={{marginTop:'10px'}}><b>Instructions:</b> Answer honestly. No cheating. Pass mark 60%. Attempt only once.</p>
-          <p style={{marginTop:'10px', background:'rgba(10,25,49,0.07)', padding:'10px', borderRadius:'8px'}}><b>Note:</b> Make sure you have registered in Step 1 before taking test.</p>
-          <a href={KOBO_APTITUDE_TEST} target="_blank" rel="noopener noreferrer" className="btn-yellow big" style={{marginTop:'18px', width:'100%', textAlign:'center', display:'block', background:'#0a1931 !important', color:'#ffcc00 !important'}}>
-            Start Aptitude Test Now ↗
-          </a>
-          <p style={{marginTop:'10px', fontSize:'13px', textAlign:'center', color:'#666'}}>Opens in separate window - KoboToolbox</p>
-        </div>
-        <div className="card dark">
-          <h3>🚨 Important Information</h3>
-          <p><b>Who Should Take Test?</b> All applicants for SITE INCHARGE, SUPERVISOR, SECURITY OFFICER.</p>
-          <p style={{marginTop:'10px'}}><b>After Test:</b> Our HR will review your score + application. Shortlisted candidates will be called for interview at Muyenga HQ.</p>
-          <p style={{marginTop:'10px', background:'rgba(255,204,0,0.15)', padding:'10px', borderRadius:'10px'}}>Questions? Call Control 0754 139726 or HR hr@pinnaclegroup.co.ug</p>
-          <Link to="/join" className="btn-yellow big" style={{marginTop:'18px', width:'100%', textAlign:'center', display:'block'}}>Back to Application Form</Link>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-const MissionPage = () => (
-  <div className="section">
-    <h2>Our Mission, Vision & Values</h2>
-    <div className="mission-grid">
-      <div className="mission-card">
-        <div className="m-icon">🎯</div>
-        <h3>Our Mission</h3>
-        <p>To provide <b>professional, affordable, and reliable security solutions</b> to homes, businesses, construction sites, schools, hotels and events in Uganda.</p>
-        <p>We are committed to protecting lives, property and investments with discipline, integrity and rapid response.</p>
-        <p><b>No Hidden Fees, No Exploitation, Free Training for all recruits.</b></p>
-      </div>
-      <div className="mission-card gold">
-        <div className="m-icon">👁️</div>
-        <h3>Our Vision</h3>
-        <p>To be <b>Uganda's most trusted and most respected security company by 2030</b>.</p>
-        <p>A company where every client feels safe, every guard feels valued, and every site is protected with technology + manpower.</p>
-        <p>We want to expand from 60+ sites to 500+ sites across Uganda while maintaining quality.</p>
-      </div>
-      <div className="mission-card dark">
-        <div className="m-icon">⭐</div>
-        <h3>Core Values - DISCIPLINE</h3>
-        <div className="values-list">
-          <div><b>D - Discipline:</b> We follow orders, keep time, wear uniform properly.</div>
-          <div><b>I - Integrity:</b> We are honest. We don't steal, we protect client property.</div>
-          <div><b>S - Service:</b> We serve clients with respect and humility, 24/7.</div>
-          <div><b>C - Courage:</b> We stand firm at night, we confront thieves.</div>
-          <div><b>P - Professionalism:</b> We are trained, licensed, and accountable.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-)
-
-const Services = () => {
-  return (
-    <div className="section">
-      <h2>Our Security Services</h2>
-      <p style={{textAlign:'center', color:'#0a1931', fontWeight:'800', marginBottom:'18px', fontSize:'18px'}}>
-        We provide complete security solutions for homes, businesses, construction sites and events
-      </p>
-      <div className="services-grid">
-        <div className="service-card-full">
-          <h3>1. Security Guard Service - Armed & Unarmed</h3>
-          <p className="svc-desc">Best for homes, shops, offices, schools, hotels. We deploy disciplined guards with full uniform, ID, radio, baton, torch.</p>
-          <div className="svc-details">
-            <div><b>Duties:</b> Gate control, visitor register, patrol every hour, night vigilance.</div>
-            <div><b>What you get:</b> Supervisor visits 3x a week, free replacement, monthly report, 10 min rapid response 0754 139726.</div>
-            <div><b>Price:</b> From 450k per guard per month. No hidden costs.</div>
-          </div>
-        </div>
-        <div className="service-card-full">
-          <h3>2. Construction Site Security</h3>
-          <p className="svc-desc">Special guards trained for building sites - we understand theft of cement, D12/D16 iron bars, timber, tools.</p>
-          <div className="svc-details">
-            <div><b>How we protect:</b> Check all materials in/out with book, manage store, night torch patrol every 30 minutes.</div>
-            <div><b>Special:</b> Guards know how to count cement bags, measure iron bars. We have protected 40+ sites in Muyenga, Buziga, Munyonyo.</div>
-          </div>
-        </div>
-        <div className="service-card-full">
-          <h3>3. CCTV Installation & Monitoring</h3>
-          <p className="svc-desc">Watch your home/business on phone from anywhere. From 2.5M for 4 cameras full set.</p>
-          <div className="svc-details">
-            <div><b>What we install:</b> DVR recorder, 4 HD cameras (night vision 30M), 1TB HDD (30 days recording).</div>
-            <div><b>Features:</b> View on phone app, motion alert, night vision, playback. Brands: Hikvision, Dahua - 2 years warranty.</div>
-          </div>
-        </div>
-        <div className="service-card-full">
-          <h3>4. Mobile Patrol & Rapid Response</h3>
-          <p className="svc-desc">Best if you cannot afford full-time guard. Our patrol car with 2 armed officers patrols every 2 hours.</p>
-          <div className="svc-details">
-            <div><b>How it works:</b> 3 visits day, 3 visits night. Random timing so thieves cannot predict.</div>
-            <div><b>Includes:</b> 10-min rapid response. Coverage: Muyenga, Buziga, Munyonyo, Ggaba, Kansanga.</div>
-          </div>
-        </div>
-        <div className="service-card-full">
-          <h3>5. Event Security & Bouncers</h3>
-          <p className="svc-desc">For weddings, introductions, concerts, conferences, corporate events.</p>
-          <div className="svc-details">
-            <div><b>We provide:</b> Crowd control, gate management, VIP protection, parking control.</div>
-            <div><b>Uniform:</b> Smart suits for corporate, black t-shirts branded for concerts.</div>
-          </div>
-        </div>
-        <div className="service-card-full">
-          <h3>6. Alarm Systems & Electric Fences</h3>
-          <p className="svc-desc">Protect your home even when you are away. Intruder alarm calls your phone + control room.</p>
-          <div className="svc-details">
-            <div><b>Alarm:</b> Magnetic sensors on doors/windows, motion sensor, loud siren 120db, calls 3 numbers + control room.</div>
-            <div><b>Electric Fence:</b> 5 lines, energizer, battery backup (works when Yaka off). From 3.5M.</div>
+            <a onClick={() => document.getElementById('join').scrollIntoView({behavior:'smooth'})} className="btn-yellow big" style={{marginTop:'18px', width:'100%', textAlign:'center', display:'block', cursor:'pointer'}}>Apply Now - Applicant Form</a>
           </div>
         </div>
       </div>
     </div>
   )
 }
-
-const Blog = () => (
-  <div className="section">
-    <div className="memo-clean">
-      <div className="memo-head">
-        <h2>INTERNAL MEMO - PINNACLE SECURITY LTD</h2>
-        <p><b>From:</b> HR Manager | <b>To:</b> All Applicants | <b>Date:</b> {new Date().toLocaleDateString()} | <b>Ref:</b> PSL/HR/2026/08</p>
-        <p><b>Subject: URGENT RECRUITMENT</b></p>
-      </div>
-      <div className="memo-body-dark">
-        <div className="memo-intro">Management has approved recruitment. Applications are <b>No Fees</b>. Training <b>2 weeks at Muyenga HQ Plot 442/443</b>.</div>
-        <div className="job-box">
-          <div className="job-header">POSITION 1: SITE INCHARGE</div>
-          <div className="job-content">
-            <p className="req-title">Requirements</p>
-            <div className="req-grid">
-              <div><span>Education:</span> UCE Certificate (S4) 4 passes</div>
-              <div><span>Experience:</span> 3+ Years security</div>
-              <div><span>Age:</span> 25-45 years, fit</div>
-              <div><span>Skills:</span> Read/write English, OB reports</div>
-              <div><span>Record:</span> No crime (LC1 & Police verified)</div>
-              <div><span>Leadership:</span> Manage 5-10 guards</div>
-            </div>
-            <p className="duty"><b>Duties:</b> Supervise guards, daily report, handle complaints, attendance, uniform discipline.</p>
-          </div>
-        </div>
-        <div className="job-box gold-border">
-          <div className="job-header gold">POSITION 2: SUPERVISOR</div>
-          <div className="job-content">
-            <p className="req-title">Requirements</p>
-            <div className="req-grid">
-              <div><span>Education:</span> UACE (S6) 2 principal passes</div>
-              <div><span>Rider:</span> Valid Permit Class A</div>
-              <div><span>Experience:</span> 3+ Years supervisor</div>
-              <div><span>Age:</span> 27-40, smartphone</div>
-              <div><span>Distance:</span> Can ride Kampala-Entebbe, Mukono</div>
-              <div><span>Character:</span> Honest, not drunkard</div>
-            </div>
-            <p className="duty"><b>Duties:</b> Visit sites daily, check guards, handle emergencies, recruit, report to Ops Manager.</p>
-          </div>
-        </div>
-        <div className="general-box">
-          <h3>GENERAL RECRUITMENT: SECURITY OFFICER</h3>
-          <p>Always recruiting disciplined men & women.</p>
-          <div className="req-inline">
-            <span>P7/UCE</span><span>Age 22-45</span><span>No Crime</span><span>Fit</span><span>Day/Night</span>
-          </div>
-          <Link to="/join" className="big-recruit-btn">APPLY NOW - Applicant Form</Link>
-        </div>
-        <div className="apply-footer"><b>How to Apply:</b> Click Applicant Form. Or visit Plot 442/443 Masajjagere, Muyenga. HR: <b>hr@pinnaclegroup.co.ug</b> / Control: <b>0754 139726</b>.</div>
-      </div>
-    </div>
-  </div>
-)
 
 const About = () => (
   <div className="section">
@@ -285,6 +102,58 @@ const About = () => (
   </div>
 )
 
+const Services = () => (
+  <div className="section">
+    <h2>Our Security Services</h2>
+    <p style={{textAlign:'center', color:'#0a1931', fontWeight:'800', marginBottom:'18px', fontSize:'18px'}}>We provide complete security solutions for homes, businesses, construction sites and events</p>
+    <div className="services-grid">
+      <div className="service-card-full"><h3>1. Security Guard Service - Armed & Unarmed</h3><p className="svc-desc">Best for homes, shops, offices, schools, hotels. We deploy disciplined guards with full uniform, ID, radio, baton, torch.</p><div className="svc-details"><div><b>Duties:</b> Gate control, visitor register, patrol every hour, night vigilance.</div><div><b>What you get:</b> Supervisor visits 3x a week, free replacement, monthly report, 10 min rapid response 0754 139726.</div><div><b>Price:</b> From 450k per guard per month. No hidden costs.</div></div></div>
+      <div className="service-card-full"><h3>2. Construction Site Security</h3><p className="svc-desc">Special guards trained for building sites - we understand theft of cement, D12/D16 iron bars, timber, tools.</p><div className="svc-details"><div><b>How we protect:</b> Check all materials in/out with book, manage store, night torch patrol every 30 minutes.</div><div><b>Special:</b> Guards know how to count cement bags, measure iron bars. We have protected 40+ sites in Muyenga, Buziga, Munyonyo.</div></div></div>
+      <div className="service-card-full"><h3>3. CCTV Installation & Monitoring</h3><p className="svc-desc">Watch your home/business on phone from anywhere. From 2.5M for 4 cameras full set.</p><div className="svc-details"><div><b>What we install:</b> DVR recorder, 4 HD cameras (night vision 30M), 1TB HDD (30 days recording).</div><div><b>Features:</b> View on phone app, motion alert, night vision, playback. Brands: Hikvision, Dahua - 2 years warranty.</div></div></div>
+      <div className="service-card-full"><h3>4. Mobile Patrol & Rapid Response</h3><p className="svc-desc">Best if you cannot afford full-time guard. Our patrol car with 2 armed officers patrols every 2 hours.</p><div className="svc-details"><div><b>How it works:</b> 3 visits day, 3 visits night. Random timing so thieves cannot predict.</div><div><b>Includes:</b> 10-min rapid response. Coverage: Muyenga, Buziga, Munyonyo, Ggaba, Kansanga.</div></div></div>
+      <div className="service-card-full"><h3>5. Event Security & Bouncers</h3><p className="svc-desc">For weddings, introductions, concerts, conferences, corporate events.</p><div className="svc-details"><div><b>We provide:</b> Crowd control, gate management, VIP protection, parking control.</div><div><b>Uniform:</b> Smart suits for corporate, black t-shirts branded for concerts.</div></div></div>
+      <div className="service-card-full"><h3>6. Alarm Systems & Electric Fences</h3><p className="svc-desc">Protect your home even when you are away. Intruder alarm calls your phone + control room.</p><div className="svc-details"><div><b>Alarm:</b> Magnetic sensors on doors/windows, motion sensor, loud siren 120db, calls 3 numbers + control room.</div><div><b>Electric Fence:</b> 5 lines, energizer, battery backup (works when Yaka off). From 3.5M.</div></div></div>
+    </div>
+  </div>
+)
+
+const MissionPage = () => (
+  <div className="section">
+    <h2>Our Mission, Vision & Values</h2>
+    <div className="mission-grid">
+      <div className="mission-card"><div className="m-icon">🎯</div><h3>Our Mission</h3><p>To provide <b>professional, affordable, and reliable security solutions</b> to homes, businesses, construction sites, schools, hotels and events in Uganda.</p><p>We are committed to protecting lives, property and investments with discipline, integrity and rapid response.</p><p><b>No Hidden Fees, No Exploitation, Free Training for all recruits.</b></p></div>
+      <div className="mission-card gold"><div className="m-icon">👁️</div><h3>Our Vision</h3><p>To be <b>Uganda's most trusted and most respected security company by 2030</b>.</p><p>A company where every client feels safe, every guard feels valued, and every site is protected with technology + manpower.</p><p>We want to expand from 60+ sites to 500+ sites across Uganda while maintaining quality.</p></div>
+      <div className="mission-card dark"><div className="m-icon">⭐</div><h3>Core Values - DISCIPLINE</h3><div className="values-list"><div><b>D - Discipline:</b> We follow orders, keep time, wear uniform properly.</div><div><b>I - Integrity:</b> We are honest. We don't steal, we protect client property.</div><div><b>S - Service:</b> We serve clients with respect and humility, 24/7.</div><div><b>C - Courage:</b> We stand firm at night, we confront thieves.</div><div><b>P - Professionalism:</b> We are trained, licensed, and accountable.</div></div></div>
+    </div>
+  </div>
+)
+
+const Blog = () => (
+  <div className="section">
+    <div className="memo-clean">
+      <div className="memo-head"><h2>INTERNAL MEMO - PINNACLE SECURITY LTD</h2><p><b>From:</b> HR Manager | <b>To:</b> All Applicants | <b>Date:</b> {new Date().toLocaleDateString()} | <b>Ref:</b> PSL/HR/2026/08</p><p><b>Subject: URGENT RECRUITMENT</b></p></div>
+      <div className="memo-body-dark"><div className="memo-intro">Management has approved recruitment. Applications are <b>No Fees</b>. Training <b>2 weeks at Muyenga HQ Plot 442/443</b>.</div>
+        <div className="job-box"><div className="job-header">POSITION 1: SITE INCHARGE</div><div className="job-content"><p className="req-title">Requirements</p><div className="req-grid"><div><span>Education:</span> UCE Certificate (S4) 4 passes</div><div><span>Experience:</span> 3+ Years security</div><div><span>Age:</span> 25-45 years, fit</div><div><span>Skills:</span> Read/write English, OB reports</div><div><span>Record:</span> No crime (LC1 & Police verified)</div><div><span>Leadership:</span> Manage 5-10 guards</div></div><p className="duty"><b>Duties:</b> Supervise guards, daily report, handle complaints, attendance, uniform discipline.</p></div></div>
+        <div className="job-box gold-border"><div className="job-header gold">POSITION 2: SUPERVISOR</div><div className="job-content"><p className="req-title">Requirements</p><div className="req-grid"><div><span>Education:</span> UACE (S6) 2 principal passes</div><div><span>Rider:</span> Valid Permit Class A</div><div><span>Experience:</span> 3+ Years supervisor</div><div><span>Age:</span> 27-40, smartphone</div><div><span>Distance:</span> Can ride Kampala-Entebbe, Mukono</div><div><span>Character:</span> Honest, not drunkard</div></div><p className="duty"><b>Duties:</b> Visit sites daily, check guards, handle emergencies, recruit, report to Ops Manager.</p></div></div>
+        <div className="general-box"><h3>GENERAL RECRUITMENT: SECURITY OFFICER</h3><p>Always recruiting disciplined men & women.</p><div className="req-inline"><span>P7/UCE</span><span>Age 22-45</span><span>No Crime</span><span>Fit</span><span>Day/Night</span></div><a onClick={() => document.getElementById('join').scrollIntoView({behavior:'smooth'})} className="big-recruit-btn" style={{cursor:'pointer', display:'block', textAlign:'center'}}>APPLY NOW - Applicant Form</a></div>
+        <div className="apply-footer"><b>How to Apply:</b> Click Applicant Form. Or visit Plot 442/443 Masajjagere, Muyenga. HR: <b>hr@pinnaclegroup.co.ug</b> / Control: <b>0754 139726</b>.</div>
+      </div>
+    </div>
+  </div>
+)
+
+const Aptitude = () => (
+  <div className="section">
+    <h2>Online Aptitude Test</h2>
+    <p style={{textAlign:'center', color:'#0a1931', fontWeight:'800', marginBottom:'18px', fontSize:'18px'}}>Pinnacle Security Ltd - Recruitment Aptitude Test - Complete Both Steps</p>
+    <div className="home-grid-3">
+      <div className="card"><h3>Step 1: Register For Aptitude Test</h3><p>All applicants must first register for aptitude test. Fill your Full Name, Phone, Education, Position you are applying for.</p><p style={{marginTop:'12px', background:'#fffbeb', padding:'10px', borderRadius:'8px', border:'1px solid #ffcc00'}}><b>Required:</b> Registration is mandatory before taking test. Use same name as in application form.</p><a href={GOOGLE_APTITUDE_REGISTER} target="_blank" rel="noopener noreferrer" className="btn-yellow big" style={{marginTop:'18px', width:'100%', textAlign:'center', display:'block'}}>Register For Aptitude Test ↗</a><p style={{marginTop:'10px', fontSize:'13px', textAlign:'center', color:'#666'}}>Opens in separate window - Google Form</p></div>
+      <div className="card gold"><h3>Step 2: Take Online Aptitude Test</h3><p><b>Test Contains:</b> Security reasoning, English, Maths, Discipline questions. 20-30 questions. Time: 30 minutes.</p><p style={{marginTop:'10px'}}><b>Instructions:</b> Answer honestly. No cheating. Pass mark 60%. Attempt only once.</p><p style={{marginTop:'10px', background:'rgba(10,25,49,0.07)', padding:'10px', borderRadius:'8px'}}><b>Note:</b> Make sure you have registered in Step 1 before taking test.</p><a href={KOBO_APTITUDE_TEST} target="_blank" rel="noopener noreferrer" className="btn-yellow big" style={{marginTop:'18px', width:'100%', textAlign:'center', display:'block', background:'#0a1931 !important', color:'#ffcc00 !important'}}>Start Aptitude Test Now ↗</a><p style={{marginTop:'10px', fontSize:'13px', textAlign:'center', color:'#666'}}>Opens in separate window - KoboToolbox</p></div>
+      <div className="card dark"><h3>🚨 Important Information</h3><p><b>Who Should Take Test?</b> All applicants for SITE INCHARGE, SUPERVISOR, SECURITY OFFICER.</p><p style={{marginTop:'10px'}}><b>After Test:</b> Our HR will review your score + application. Shortlisted candidates will be called for interview at Muyenga HQ.</p><p style={{marginTop:'10px', background:'rgba(255,204,0,0.15)', padding:'10px', borderRadius:'10px'}}>Questions? Call Control 0754 139726 or HR hr@pinnaclegroup.co.ug</p><a onClick={() => document.getElementById('join').scrollIntoView({behavior:'smooth'})} className="btn-yellow big" style={{marginTop:'18px', width:'100%', textAlign:'center', display:'block', cursor:'pointer'}}>Back to Application Form</a></div>
+    </div>
+  </div>
+)
+
 const Contact = () => {
   const [f, setF] = useState({ fullName: "", email: "", phone: "", service: "", message: "" });
   const [s, setS] = useState("");
@@ -296,41 +165,18 @@ const Contact = () => {
       await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
       setS("✅ Thank you! We will contact you soon.");
       setF({ fullName: "", email: "", phone: "", service: "", message: "" });
-    } catch { 
-      setS("✅ Thank you! We will contact you soon."); 
-    }
+    } catch { setS("✅ Thank you! We will contact you soon."); }
   };
   return (
     <div className="section">
       <h2>Contact Us</h2>
       <div className="form-2col">
-        <div className="form-left-info">
-          <div className="card">
-            <h3>Visit Us</h3>
-            <p>Plot 442 & 443 Masajjagere, Muyenga Hill, Kampala.<br />Mon-Sat 8am-6pm. Control 24/7.</p>
-            <p>📞 0754 139726<br />📧 hr@pinnaclegroup.co.ug</p>
-          </div>
-        </div>
+        <div className="form-left-info"><div className="card"><h3>Visit Us</h3><p>Plot 442 & 443 Masajjagere, Muyenga Hill, Kampala.<br />Mon-Sat 8am-6pm. Control 24/7.</p><p>📞 0754 139726<br />📧 hr@pinnaclegroup.co.ug</p></div></div>
         <form className="form-big" onSubmit={send}>
-          <div className="two-col">
-            <input value={f.fullName} onChange={e => setF({ ...f, fullName: e.target.value })} required placeholder="Fullname" />
-            <input value={f.phone} onChange={e => setF({ ...f, phone: e.target.value })} required placeholder="Phone" />
-          </div>
-          <div className="two-col">
-            <input type="email" value={f.email} onChange={e => setF({ ...f, email: e.target.value })} required placeholder="Email" />
-            <select value={f.service} onChange={e => setF({ ...f, service: e.target.value })} required>
-              <option value="">Choose Service</option>
-              <option>Security Guard Service</option>
-              <option>Construction Security</option>
-              <option>CCTV Installation</option>
-              <option>Mobile Patrol</option>
-              <option>Event Security</option>
-              <option>Alarm System</option>
-            </select>
-          </div>
+          <div className="two-col"><input value={f.fullName} onChange={e => setF({ ...f, fullName: e.target.value })} required placeholder="Fullname" /><input value={f.phone} onChange={e => setF({ ...f, phone: e.target.value })} required placeholder="Phone" /></div>
+          <div className="two-col"><input type="email" value={f.email} onChange={e => setF({ ...f, email: e.target.value })} required placeholder="Email" /><select value={f.service} onChange={e => setF({ ...f, service: e.target.value })} required><option value="">Choose Service</option><option>Security Guard Service</option><option>Construction Security</option><option>CCTV Installation</option><option>Mobile Patrol</option><option>Event Security</option><option>Alarm System</option></select></div>
           <textarea rows="5" value={f.message} onChange={e => setF({ ...f, message: e.target.value })} required placeholder="Message / Location"></textarea>
-          <button className="big-btn">Submit</button>
-          {s && <p className="msg">{s}</p>}
+          <button className="big-btn">Submit</button>{s && <p className="msg">{s}</p>}
         </form>
       </div>
     </div>
@@ -348,9 +194,7 @@ const Join = () => {
       await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
       setS("✅ Thank you! We will contact you soon.");
       setF({ fullName: "", phone: "", email: "", education: "", experience: "", interest: "", position: "SITE INCHARGE", district: "" });
-    } catch { 
-      setS("✅ Thank you! We will contact you soon."); 
-    }
+    } catch { setS("✅ Thank you! We will contact you soon."); }
   };
   return (
     <div className="section">
@@ -367,20 +211,27 @@ const Join = () => {
 }
 
 const Footer = () => {
-  const handleLinkClick = () => { window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const scrollTo = (id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      const offset = 75;
+      const top = el.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  };
   return (
     <div className="footer">
       <div className="footer-quick">
         <h4>Quick Links</h4>
         <div className="footer-links">
-          <Link to="/" onClick={handleLinkClick}>Home</Link>
-          <Link to="/about" onClick={handleLinkClick}>About</Link>
-          <Link to="/services" onClick={handleLinkClick}>Services</Link>
-          <Link to="/mission" onClick={handleLinkClick}>Mission</Link>
-          <Link to="/blog" onClick={handleLinkClick}>Jobs</Link>
-          <Link to="/aptitude" onClick={handleLinkClick}>Aptitude Test</Link>
-          <Link to="/contact" onClick={handleLinkClick}>Contact</Link>
-          <Link to="/join" onClick={handleLinkClick}>Apply Now</Link>
+          <a onClick={() => scrollTo('home')}>Home</a>
+          <a onClick={() => scrollTo('about')}>About</a>
+          <a onClick={() => scrollTo('services')}>Services</a>
+          <a onClick={() => scrollTo('mission')}>Mission</a>
+          <a onClick={() => scrollTo('jobs')}>Jobs</a>
+          <a onClick={() => scrollTo('aptitude')}>Aptitude Test</a>
+          <a onClick={() => scrollTo('contact')}>Contact</a>
+          <a onClick={() => scrollTo('join')}>Apply Now</a>
         </div>
       </div>
       <div className="footer-bottom">© 2026 Pinnacle Security Ltd | Plot 442 & 443 Masajjagere, Muyenga | HR: hr@pinnaclegroup.co.ug | Control 24/7: 0754 139726</div>
@@ -388,30 +239,14 @@ const Footer = () => {
   )
 }
 
-const AdminLogin = () => {
-  const [pass, setPass] = useState(""); const [msg, setMsg] = useState(""); const navigate = useNavigate();
-  const login = (e) => { e.preventDefault(); if (pass === ADMIN_PASSWORD) { localStorage.setItem("pinnacle_admin_token", pass); setMsg("Correct! Opening..."); setTimeout(() => navigate("/admin"), 500); } else setMsg(`❌ Wrong password.`); };
-  return (
-    <div className="section" style={{ maxWidth: '520px', margin: '60px auto' }}>
-      <div className="form-big" style={{ border: '3px solid #ffcc00', textAlign: 'center' }}>
-        <h2>Admin Login</h2>
-        <form onSubmit={login} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
-          <input type="password" value={pass} onChange={e => setPass(e.target.value)} placeholder="Enter Admin Password" required style={{ padding: '18px', fontSize:'16px' }} />
-          <button className="big-btn">Login</button>{msg && <p className="msg">{msg}</p>}
-        </form>
-      </div>
-    </div>
-  )
-}
-
 const App = () => (
-  <BrowserRouter>
+  <>
     <style>{`
       *{margin:0;padding:0;box-sizing:border-box; font-family: Arial, Helvetica, sans-serif !important}
       html{scroll-behavior:smooth}
       body{font-family: Arial, Helvetica, sans-serif !important; background:#f4f6f9; line-height:1.8; overflow-x:hidden; padding-top:75px; font-size:17px}
       .nav{background:#0a1931; padding:16px 18px; position:fixed; top:0; left:0; right:0; width:100%; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,0.3)}
-      .nav-top{display:flex; justify-content:space-between; align-items:center}.logo{color:#ffcc00; font-weight:900; font-size:18px}.menu-btn{color:#fff; font-size:28px; cursor:pointer; display:none}.links{display:flex; gap:12px; align-items:center; justify-content:center; flex-wrap:wrap}.links a{color:#fff; text-decoration:none; font-size:16px; font-weight:700; padding:8px 12px}
+      .nav-top{display:flex; justify-content:space-between; align-items:center}.logo{color:#ffcc00; font-weight:900; font-size:18px}.menu-btn{color:#fff; font-size:28px; cursor:pointer; display:none}.links{display:flex; gap:12px; align-items:center; justify-content:center; flex-wrap:wrap}.links a{color:#fff; text-decoration:none; font-size:16px; font-weight:700; padding:8px 12px; cursor:pointer}
       .btn-yellow{background:#ffcc00!important; color:#0a1931!important; padding:11px 20px!important; border-radius:25px!important; font-weight:900!important; border:none; cursor:pointer; text-decoration:none; display:inline-block; font-size:16px}.btn-yellow.big{padding:16px 28px!important; font-size:18px}
       .hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:40px 18px; text-align:center; border-radius:0 0 20px 20px}.hero h1{color:#ffcc00; font-size:28px; margin-bottom:12px; font-weight:900}.hero p{font-size:18px}.dots{margin:14px 0}.dot{width:12px; height:12px; background:#555; border-radius:50%; display:inline-block; margin:0 6px; cursor:pointer}.dot.on{background:#ffcc00}
       .section{padding:22px 14px; max-width:1280px; margin:auto}.section h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:10px; margin-bottom:18px; font-size:26px; font-weight:900}
@@ -419,23 +254,24 @@ const App = () => (
       .home-grid-3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px} @media(max-width:900px){.home-grid-3{grid-template-columns:1fr}}
       .about-hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:24px; border-radius:16px; margin-bottom:18px; border:2px solid #ffcc00}.about-hero h3{color:#ffcc00; font-size:24px; margin-bottom:16px; text-align:center; font-weight:900}.about-hero p{margin-bottom:18px; line-height:1.9; color:#fff; font-size:17px; background:rgba(255,255,255,0.07); padding:14px; border-radius:10px}
       .form-big{max-width:900px; margin:18px auto; background:#fff; padding:24px; border-radius:16px; display:flex; flex-direction:column; gap:16px; box-shadow:0 6px 20px rgba(0,0,0,0.08)}.form-big input,.form-big select,.form-big textarea{padding:16px; border:2px solid #0a1931; border-radius:10px; font-size:17px; width:100%; background:#ffffff !important; color:#0a1931 !important}.form-big label{font-size:15px; font-weight:800; color:#0a1931; margin-bottom:4px; display:block}.two-col{display:grid; grid-template-columns:1fr 1fr; gap:16px} @media(max-width:700px){.two-col{grid-template-columns:1fr}}.form-2col{display:grid; grid-template-columns:300px 1fr; gap:18px} @media(max-width:900px){.form-2col{grid-template-columns:1fr}}.big-btn{background:#0a1931; color:#ffcc00; padding:18px; border:none; border-radius:12px; font-weight:900; cursor:pointer; font-size:19px}.msg{padding:14px; background:#d4edda; border-radius:10px; font-size:16px; text-align:center; font-weight:700}
-      .footer{background:#0a1931; color:#aaa; text-align:center; padding:0; font-size:13px; margin-top:24px; line-height:1.8}.footer-quick{background:#0f2040; padding:20px 18px; border-bottom:1px solid #1e3a5f}.footer-quick h4{color:#ffcc00; font-size:16px; font-weight:900; margin-bottom:12px; letter-spacing:1px}.footer-links{display:flex; gap:14px; justify-content:center; flex-wrap:wrap}.footer-links a{color:#fff; text-decoration:none; font-size:14px; font-weight:700; padding:6px 12px; border:1px solid #1e3a5f; border-radius:20px; transition:all 0.2s}.footer-links a:hover{background:#ffcc00; color:#0a1931; border-color:#ffcc00}.footer-bottom{padding:18px; background:#0a1931}
+      .footer{background:#0a1931; color:#aaa; text-align:center; padding:0; font-size:13px; margin-top:24px; line-height:1.8}.footer-quick{background:#0f2040; padding:20px 18px; border-bottom:1px solid #1e3a5f}.footer-quick h4{color:#ffcc00; font-size:16px; font-weight:900; margin-bottom:12px; letter-spacing:1px}.footer-links{display:flex; gap:14px; justify-content:center; flex-wrap:wrap}.footer-links a{color:#fff; text-decoration:none; font-size:14px; font-weight:700; padding:6px 12px; border:1px solid #1e3a5f; border-radius:20px; transition:all 0.2s; cursor:pointer}.footer-links a:hover{background:#ffcc00; color:#0a1931; border-color:#ffcc00}.footer-bottom{padding:18px; background:#0a1931}
       @media(max-width:850px){.menu-btn{display:block}.links{display:none; flex-direction:column; align-items:flex-start; padding-top:14px}.links.show{display:flex} body{padding-top:68px}}
+      .service-card-full{background:#fff; padding:20px; border-radius:12px; margin-bottom:14px; border-left:5px solid #0a1931}.service-card-full h3{color:#0a1931; font-weight:900; margin-bottom:8px}.svc-desc{color:#333; margin-bottom:8px}.svc-details div{margin-bottom:6px; font-size:15px}
+      .mission-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px} @media(max-width:900px){.mission-grid{grid-template-columns:1fr}}.mission-card{background:#fff; padding:18px; border-radius:12px; border-left:5px solid #0a1931}.mission-card.gold{border-left-color:#ffcc00; background:#fffbeb}.mission-card.dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; border-left-color:#ffcc00}.m-icon{font-size:28px; margin-bottom:8px}.values-list div{margin-bottom:8px; font-size:15px}
+      .memo-clean{max-width:1000px; margin:auto}.memo-head{background:#fff; padding:16px; border-radius:12px 12px 0 0; border:2px solid #0a1931; border-bottom:none; text-align:center}.memo-head h2{font-size:18px; border:none; margin-bottom:8px}.memo-body-dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; padding:18px; border-radius:0 0 12px 12px}.memo-intro{background:rgba(255,255,255,0.08); padding:12px; border-radius:8px; margin-bottom:14px}.job-box{background:#fff; color:#0a1931; border-radius:10px; margin-bottom:14px; overflow:hidden}.job-box.gold-border{border:2px solid #ffcc00}.job-header{background:#0a1931; color:#ffcc00; padding:12px; font-weight:900; text-align:center}.job-header.gold{background:#ffcc00; color:#0a1931}.job-content{padding:14px}.req-title{font-weight:900; margin-bottom:8px; border-bottom:2px solid #ffcc00; padding-bottom:4px}.req-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:14px} @media(max-width:700px){.req-grid{grid-template-columns:1fr}}.req-grid span{font-weight:800}.duty{margin-top:10px; background:#f1f5f9; padding:10px; border-radius:8px; font-size:14px}.general-box{background:#fff; color:#0a1931; padding:14px; border-radius:10px; text-align:center; margin-bottom:14px; border:2px dashed #0a1931}.req-inline{display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin:10px 0}.req-inline span{background:#0a1931; color:#ffcc00; padding:4px 10px; border-radius:15px; font-size:12px; font-weight:800}.big-recruit-btn{background:#ffcc00; color:#0a1931; padding:12px 20px; border-radius:25px; font-weight:900; display:inline-block; margin-top:10px; text-decoration:none}.apply-footer{background:rgba(255,255,255,0.08); padding:12px; border-radius:8px; margin-top:14px; font-size:14px}
+      .services-grid{display:grid; grid-template-columns:1fr; gap:12px}
     `}</style>
     <Navbar />
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/services" element={<Services />} />
-      <Route path="/mission" element={<MissionPage />} />
-      <Route path="/blog" element={<Blog />} />
-      <Route path="/aptitude" element={<Aptitude />} />
-      <Route path="/contact" element={<Contact />} />
-      <Route path="/join" element={<Join />} />
-      <Route path="/admin-login" element={<AdminLogin />} />
-    </Routes>
+    <div id="home"><Home /></div>
+    <div id="about"><About /></div>
+    <div id="services"><Services /></div>
+    <div id="mission"><MissionPage /></div>
+    <div id="jobs"><Blog /></div>
+    <div id="aptitude"><Aptitude /></div>
+    <div id="contact"><Contact /></div>
+    <div id="join"><Join /></div>
     <Footer />
-  </BrowserRouter>
+  </>
 )
 
 export default App
