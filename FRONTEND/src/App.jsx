@@ -39,7 +39,7 @@ const Home = () => {
       <div className="dots">{[0, 1, 2].map(n => <span key={n} className={n === i ? 'dot on' : 'dot'} onClick={() => setI(n)}></span>)}</div>
       <div style={{display:'flex', gap:'12px', justifyContent:'center', flexWrap:'wrap', marginTop:'12px', alignItems:'center'}}>
         <Link to="/join" className="btn-yellow big">Apply </Link>
-        <a href="https://ee.kobotoolbox.org/your-form-link" target="_blank" rel="noreferrer" className="online-link">Uplitude Test </a>
+        <a href="https://ee.kobotoolbox.org/x/ODCdeyaJ" target="_blank" rel="noreferrer" className="online-link">Uplitude Test </a>
       </div>
       <p style={{fontSize:'14px', marginTop:'10px', color:'#ccc'}}>Applicants who applied must take online test</p>
     </div>
@@ -57,7 +57,7 @@ const Home = () => {
           <p><b>Construction Security:</b> Protect cement, iron bars, tools - material control.</p>
           <p><b>CCTV:</b> Hikvision/Dahua 4-camera system, phone viewing, 2-year warranty.</p>
           <p><b>Mobile Patrol:</b> Patrol car day & night visits, 10min emergency response.</p>
-          <Link to="/services" style={{color:'#0a1931', fontWeight:'900', fontSize:'16px', marginTop:'12px', display:'inline-block'}}>View All Services →</Link>
+          <Link to="/services" style={{color:'#0a1931', fontWeight:'900', fontSize:'16px', marginTop:'12px', display:'inline-block'}}>View All Services </Link>
         </div>
         <div className="card dark">
           <h3> URGENT RECRUITMENT</h3>
@@ -160,7 +160,7 @@ const Services = () => {
           </div>
         </div>
       </div>
-      <div style={{textAlign:'center', marginTop:'24px'}}><Link to="/contact" className="btn-yellow big">Request Quote - Contact Us</Link></div>
+      <div style={{textAlign:'center', marginTop:'24px'}}><Link to="/contact" className="btn-yellow big"> Contact Us</Link></div>
     </div>
   )
 }
@@ -173,8 +173,8 @@ const Blog = () => (
         <div className="memo-intro">Management has approved recruitment. Applications are <b>No Fees</b>. Training <b>2 weeks at Muyenga HQ Plot 442/443</b>.</div>
         <div className="job-box"><div className="job-header">POSITION 1: SITE INCHARGE</div><div className="job-content"><p className="req-title">Requirements</p><div className="req-grid"><div><span>Education:</span> UCE Certificate (S4) 4 passes</div><div><span>Experience:</span> 3+ Years security (recommendation letter)</div><div><span>Age:</span> 25-45 years, fit</div><div><span>Skills:</span> Read/write English, OB reports</div><div><span>Record:</span> No crime (LC1 & Police verified)</div><div><span>Leadership:</span> Manage 5-10 guards</div></div><p className="duty"><b>Duties:</b> Supervise guards, daily report, handle complaints, attendance, uniform discipline.</p></div></div>
         <div className="job-box gold-border"><div className="job-header gold">POSITION 2: SUPERVISOR</div><div className="job-content"><p className="req-title">Requirements</p><div className="req-grid"><div><span>Education:</span> UACE (S6) 2 principal passes</div><div><span>Rider:</span> Valid Permit Class A - ride motorcycle</div><div><span>Experience:</span> 3+ Years supervisor (with proof)</div><div><span>Age:</span> 27-40, smartphone</div><div><span>Distance:</span> Can ride Kampala-Entebbe, Mukono</div><div><span>Character:</span> Honest, not drunkard, can train guards</div></div><p className="duty"><b>Duties:</b> Visit sites daily, check guards, handle emergencies, recruit, report to Ops Manager.</p></div></div>
-        <div className="general-box"><h3>GENERAL RECRUITMENT: SECURITY OFFICER</h3><p>Always recruiting disciplined men & women. Apply as general guard, called when vacancy comes.</p><div className="req-inline"><span>P7/UCE</span><span>Age 22-45</span><span>No Crime</span><span>Fit</span><span>Day/Night</span></div><Link to="/join" className="big-recruit-btn">APPLY NOW - Applicant Form</Link></div>
-        <div className="apply-footer"><b>How to Apply:</b> Click Applicant Form. Or visit Plot 442/443 Masajjagere, Muyenga. HR: <b>hr@pinnaclegroup.co.ug</b> / Control: <b>0754 139726</b>.</div>
+        <div className="general-box"><h3>GENERAL RECRUITMENT: SECURITY OFFICER</h3><p>Always recruiting disciplined men & women. Apply as general guard, called when vacancy comes.</p><Link to="/join" className="big-recruit-btn">APPLY NOW </Link></div>
+        <div className="apply-footer"><b>How to Apply:</b> Click Applicant Form. Or visit Plot 442/443 Masajjagere, Muyenga. HR: <b>hr@pinnaclegroup.co.ug</b> / Control Room Entebbe: <b>0776971970</b>.</div>
       </div>
     </div>
   </div>
@@ -184,7 +184,7 @@ const About = () => (
   <div className="section">
     <h2>About Pinnacle Security Ltd</h2>
     <div className="about-hero">
-      <h3>Pinnacle Security Ltd - Protecting What Matters Most Since 2018</h3>
+      <h3>Pinnacle Security Ltd - Protecting What Matters Most Since 2009</h3>
       <p><b> Who We Are:</b> Located at <b>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga Hill, Kampala - Uganda</b>, Pinnacle Security Limited is a fully licensed Private Security Organization registered under URSB and Ministry of Internal Affairs. We started in 2018 with a simple mission to provide professional, affordable and reliable security solutions to homes, businesses and construction sites. Today we have grown into one of the fastest growing security companies in the Kampala, Wakiso, Mukono and Entebbe corridor, trusted by hundreds of clients.</p>
       <p><b> Our Capacity & Team:</b> With <b>60+ Active Sites, 150+ Trained Officers and 24/7 Control Room 0754 139726</b>, we have the manpower, technology and infrastructure to protect what matters most. Every officer is vetted by LC1 and Police, physically fit, trained for 2 weeks at our Muyenga HQ in guarding, customer care, first aid and report writing. Each guard is equipped with full uniform, company ID, radio, torch and baton, and supervised by experienced site incharges and mobile supervisors.</p>
       <p><b> What Makes Us Different:</b> Unlike other companies that exploit guards, we believe in <b>No Hidden Fees, No Exploitation, Free Training for all recruits</b>. We do not charge any recruitment fees. We train all recruits for free, provide uniform, and pay on time every month. For clients, we visit sites 3 times a week, provide free replacement if a guard is absent or sick, write monthly security reports, and our control room responds within 10 minutes in case of emergency. Our clients stay with us for years because we are honest, disciplined and transparent.</p>
@@ -214,7 +214,7 @@ const Join = () => {
         <div className="two-col"><div><label>Position *</label><select value={f.position} onChange={e => setF({ ...f, position: e.target.value })} required><option>SITE INCHARGE</option><option>SUPERVISOR</option><option>SECURITY OFFICER</option></select></div><div><label>District *</label><input value={f.district} onChange={e => setF({ ...f, district: e.target.value })} required placeholder="District" /></div></div>
         <div className="two-col"><div><label>Why Interested? *</label><input value={f.interest} onChange={e => setF({ ...f, interest: e.target.value })} required placeholder="Why interested?" /></div><div><label>Experience *</label><input value={f.experience} onChange={e => setF({ ...f, experience: e.target.value })} required placeholder="Years & where" /></div></div>
         <button className="big-btn">Submit Application</button>{s && <p className="msg">{s}</p>}
-        <div style={{textAlign:'center', marginTop:'12px'}}><a href="https://ee.kobotoolbox.org/x/ODCdeyaJ" target="_blank" rel="noreferrer" style={{color:'#0a1931', fontWeight:'900', fontSize:'16px'}}>After applying, Take Online Test Here</a></div>
+        <div style={{textAlign:'center', marginTop:'12px'}}><a href="https://ee.kobotoolbox.org/x/ODCdeyaJ" target="_blank" rel="noreferrer" style={{color:'#0a1931', fontWeight:'900', fontSize:'16px',textDecoration:'none'}}>After applying, Take Online Test Here</a></div>
       </form>
     </div>
   )
