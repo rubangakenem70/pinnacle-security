@@ -71,7 +71,6 @@ const Home = () => {
   </>)
 }
 
-// NEW MISSION PAGE
 const MissionPage = () => (
   <div className="section">
     <h2>Our Mission, Vision & Values</h2>
@@ -105,13 +104,11 @@ const MissionPage = () => (
   </div>
 )
 
-// NEW SERVICES - FULLY EXPLAINED, NO FAINT TEXT
 const Services = () => {
   return (
     <div className="section">
       <h2>Our Security Services</h2>
       <p style={{textAlign:'center', color:'#0a1931', fontWeight:'700', marginBottom:'16px'}}>We provide complete security solutions for homes, businesses, construction sites and events</p>
-      
       <div className="services-grid">
         <div className="service-card-full">
           <h3>1. Security Guard Service - Armed & Unarmed</h3>
@@ -122,7 +119,6 @@ const Services = () => {
             <div><b>Price:</b> From 450k per guard per month. No hidden costs.</div>
           </div>
         </div>
-
         <div className="service-card-full">
           <h3>2. Construction Site Security</h3>
           <p className="svc-desc">Special guards trained for building sites - we understand theft of cement, D12/D16 iron bars, timber, tools.</p>
@@ -131,7 +127,6 @@ const Services = () => {
             <div><b>Special:</b> Guards know how to count cement bags, measure iron bars, control fundis. We have protected 40+ construction sites in Muyenga, Buziga, Munyonyo.</div>
           </div>
         </div>
-
         <div className="service-card-full">
           <h3>3. CCTV Installation & Monitoring</h3>
           <p className="svc-desc">Watch your home/business on phone from anywhere in the world. From 2.5M for 4 cameras full set.</p>
@@ -140,7 +135,6 @@ const Services = () => {
             <div><b>Features:</b> View on phone app, motion alert, night vision, playback. Brands: Hikvision, Dahua - 2 years warranty + free maintenance 3 months.</div>
           </div>
         </div>
-
         <div className="service-card-full">
           <h3>4. Mobile Patrol & Rapid Response</h3>
           <p className="svc-desc">Best if you cannot afford full-time guard. Our patrol car with 2 armed officers patrols your area every 2 hours.</p>
@@ -149,7 +143,6 @@ const Services = () => {
             <div><b>Includes:</b> 10-min rapid response if you have alarm or call. Coverage: Muyenga, Buziga, Munyonyo, Ggaba, Kansanga, Kabalagala, Kansanga.</div>
           </div>
         </div>
-
         <div className="service-card-full">
           <h3>5. Event Security & Bouncers</h3>
           <p className="svc-desc">For weddings, introductions, concerts, conferences, corporate events.</p>
@@ -158,7 +151,6 @@ const Services = () => {
             <div><b>Uniform:</b> Smart suits for corporate, black t-shirts branded for concerts. All guards disciplined and polite.</div>
           </div>
         </div>
-
         <div className="service-card-full">
           <h3>6. Alarm Systems & Electric Fences</h3>
           <p className="svc-desc">Protect your home even when you are away. Intruder alarm calls your phone + control room.</p>
@@ -188,10 +180,23 @@ const Blog = () => (
   </div>
 )
 
+// UPDATED ABOUT - 5 PARAGRAPHS
 const About = () => (
   <div className="section">
     <h2>About Pinnacle Security Ltd</h2>
-    <div className="about-hero"><h3>Pinnacle Security Ltd - Protecting What Matters Most Since 2018</h3><p>Located at <b>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga Hill, Kampala</b>, licensed by URSB and Ministry of Internal Affairs.</p><p>With <b>60+ Active Sites, 150+ Trained Officers</b> and 24/7 Control Room <b>0754 139726</b>, we are fastest growing in Kampala, Wakiso, Mukono, Entebbe.</p></div>
+    <div className="about-hero">
+      <h3>Pinnacle Security Ltd - Protecting What Matters Most Since 2018</h3>
+      
+      <p><b>Paragraph 1 - Who We Are:</b> Located at <b>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga Hill, Kampala - Uganda</b>, Pinnacle Security Limited is a fully licensed Private Security Organization registered under URSB and Ministry of Internal Affairs. We started in 2018 with a simple mission to provide professional, affordable and reliable security solutions to homes, businesses and construction sites. Today we have grown into one of the fastest growing security companies in the Kampala, Wakiso, Mukono and Entebbe corridor, trusted by hundreds of clients.</p>
+
+      <p><b>Paragraph 2 - Our Capacity & Team:</b> With <b>60+ Active Sites, 150+ Trained Officers and 24/7 Control Room 0754 139726</b>, we have the manpower, technology and infrastructure to protect what matters most. Every officer is vetted by LC1 and Police, physically fit, trained for 2 weeks at our Muyenga HQ in guarding, customer care, first aid and report writing. Each guard is equipped with full uniform, company ID, radio, torch and baton, and supervised by experienced site incharges and mobile supervisors.</p>
+
+      <p><b>Paragraph 3 - What Makes Us Different:</b> Unlike other companies that exploit guards, we believe in <b>No Hidden Fees, No Exploitation, Free Training for all recruits</b>. We do not charge any recruitment fees. We train all recruits for free, provide uniform, and pay on time every month. For clients, we visit sites 3 times a week, provide free replacement if a guard is absent or sick, write monthly security reports, and our control room responds within 10 minutes in case of emergency. Our clients stay with us for years because we are honest, disciplined and transparent.</p>
+
+      <p><b>Paragraph 4 - Our Services & Coverage:</b> Our core services include Security Guard Service (Armed & Unarmed for homes, shops, offices, schools, hotels), Construction Site Security (we understand cement, D12/D16 iron bars, timber, tools theft and we control materials in/out), CCTV Installation & Monitoring with phone viewing from 2.5M, Mobile Patrol & Rapid Response every 2 hours, Event Security for weddings, introductions, concerts and conferences, and Alarm Systems & Electric Fences. We currently cover Muyenga, Buziga, Munyonyo, Ggaba, Kansanga, Kabalagala, Makindye, Lukuli, Entebbe Road, Mukono and Wakiso.</p>
+
+      <p><b>Paragraph 5 - Our Promise & Future Vision:</b> Our promise is simple - to protect lives, property and investments with discipline, integrity and courage. We want to be Uganda's most trusted security company by 2030, expanding from 60+ sites to 500+ sites while keeping our quality and values. Our core values are DISCIPLINE: Discipline, Integrity, Service, Courage and Professionalism. When you choose Pinnacle Security Ltd, you choose peace of mind, 24 hours a day, 7 days a week. Contact us today at <b>hr@pinnaclegroup.co.ug or Control Room 0754 139726</b> for a free security assessment.</p>
+    </div>
   </div>
 )
 
@@ -256,13 +261,11 @@ const App = () => (
       .home-grid-3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px} @media(max-width:900px){.home-grid-3{grid-template-columns:1fr}}
       .mission-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px} @media(max-width:900px){.mission-grid{grid-template-columns:1fr}}
       .mission-card{background:#fff; padding:20px; border-radius:14px; border:2px solid #0a1931; border-left:6px solid #0a1931}.mission-card.gold{border-left-color:#ffcc00; background:#fffbeb}.mission-card.dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; border-left-color:#ffcc00}.mission-card h3{color:#0a1931; margin:10px 0; font-size:18px}.mission-card.dark h3{color:#ffcc00}.mission-card p{color:#0a1931; font-size:14px; margin-bottom:10px; font-weight:600; line-height:1.7}.mission-card.dark p, .mission-card.dark div{color:#fff}.m-icon{font-size:32px}.values-list div{background:#fff; color:#0a1931; padding:10px; border-radius:8px; margin-bottom:8px; font-size:13px; font-weight:600; border:1px solid #e2e8f0}.mission-card.dark .values-list div{background:rgba(255,255,255,0.1); color:#fff; border-color:#ffcc00}
-      
       .services-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px} @media(max-width:900px){.services-grid{grid-template-columns:1fr}}
       .service-card-full{background:#fff; padding:18px; border-radius:14px; border:2px solid #0a1931; border-left:6px solid #0a1931; box-shadow:0 4px 12px rgba(0,0,0,0.05)}.service-card-full h3{color:#0a1931; font-size:16px; margin-bottom:8px; border-bottom:2px solid #ffcc00; padding-bottom:6px; display:inline-block}.svc-desc{color:#0a1931; font-weight:700; font-size:14px; margin-bottom:10px}.svc-details div{background:#f8fafc; padding:10px; border-radius:8px; margin-bottom:8px; font-size:13px; color:#0a1931; font-weight:600; border:1px solid #e2e8f0; border-left:3px solid #ffcc00}.svc-details b{color:#0a1931}
-
       .memo-clean{background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 6px 20px rgba(0,0,0,0.08); border:3px solid #0a1931}
       .memo-head{background:#0a1931; color:#fff; padding:20px; text-align:center}.memo-head h2{color:#ffcc00; font-size:18px; border:none; margin-bottom:8px}.memo-head p{font-size:12px; margin-top:4px; color:#fff}.memo-body-dark{padding:20px; background:#fff}.memo-intro{background:#0a1931; color:#ffcc00; padding:14px; border-radius:10px; font-weight:800; text-align:center; font-size:14px; margin-bottom:16px}.job-box{background:#f8faff; border-radius:12px; margin-bottom:16px; border:2px solid #0a1931; overflow:hidden}.job-box.gold-border{border-color:#ffcc00; background:#fffdf0}.job-header{background:#0a1931; color:#ffcc00; padding:12px 16px; font-weight:900; font-size:15px; text-align:center}.job-header.gold{background:#ffcc00; color:#0a1931}.job-content{padding:16px}.req-title{font-weight:900; color:#0a1931; margin-bottom:10px; font-size:14px; border-bottom:2px solid #ffcc00; display:inline-block; padding-bottom:4px}.req-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px} @media(max-width:700px){.req-grid{grid-template-columns:1fr}}.req-grid div{background:#fff; padding:10px; border-radius:8px; border:1px solid #e2e8f0; font-size:13px; color:#0a1931; font-weight:600}.req-grid div span{font-weight:900; color:#0a1931; display:block; font-size:11px; text-transform:uppercase; margin-bottom:2px}.duty{background:#fff3cd; padding:12px; border-radius:8px; margin-top:12px; color:#0a1931; font-size:13px; font-weight:700; border-left:4px solid #ffcc00}.general-box{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:20px; border-radius:14px; text-align:center; border:2px solid #ffcc00; margin-bottom:16px}.general-box h3{color:#ffcc00; margin-bottom:10px}.general-box p{color:#fff; font-size:14px}.req-inline{display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin:12px 0}.req-inline span{background:rgba(255,204,0,0.2); border:1px solid #ffcc00; color:#ffcc00; padding:6px 12px; border-radius:20px; font-size:11px; font-weight:800}.big-recruit-btn{display:block; background:#ffcc00; color:#0a1931; padding:16px; border-radius:12px; font-weight:900; text-decoration:none; margin-top:12px; font-size:16px; text-align:center}.apply-footer{background:#f1f5f9; padding:14px; border-radius:10px; color:#0a1931; font-size:13px; font-weight:600; border:2px solid #0a1931; text-align:center}
-      .about-hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:22px; border-radius:16px; margin-bottom:16px; border:2px solid #ffcc00}.about-hero h3{color:#ffcc00; font-size:20px; margin-bottom:12px}.about-hero p{margin-bottom:10px; line-height:1.8}
+      .about-hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:22px; border-radius:16px; margin-bottom:16px; border:2px solid #ffcc00}.about-hero h3{color:#ffcc00; font-size:20px; margin-bottom:12px; text-align:center}.about-hero p{margin-bottom:16px; line-height:1.8; color:#fff; font-size:14px; background:rgba(255,255,255,0.05); padding:12px; border-radius:8px}
       .form-big{max-width:900px; margin:16px auto; background:#fff; padding:22px; border-radius:16px; display:flex; flex-direction:column; gap:14px; box-shadow:0 6px 20px rgba(0,0,0,0.08)}.form-big input,.form-big select,.form-big textarea{padding:14px; border:2px solid #0a1931; border-radius:10px; font-size:16px; width:100%}.form-big label{font-size:13px; font-weight:800; color:#0a1931; margin-bottom:4px; display:block}.two-col{display:grid; grid-template-columns:1fr 1fr; gap:14px} @media(max-width:700px){.two-col{grid-template-columns:1fr}}.form-2col{display:grid; grid-template-columns:300px 1fr; gap:16px} @media(max-width:900px){.form-2col{grid-template-columns:1fr}}.big-btn{background:#0a1931; color:#ffcc00; padding:16px; border:none; border-radius:12px; font-weight:900; cursor:pointer; font-size:17px}.msg{padding:12px; background:#d4edda; border-radius:10px; font-size:14px; text-align:center; font-weight:700}
       .admin-page{padding:10px; max-width:1300px; margin:auto}.admin-top{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:16px; border-radius:16px; text-align:center; margin-bottom:10px; border:2px solid #ffcc00}.admin-top h2{color:#ffcc00; border:none; margin-bottom:6px; font-size:18px}.stats{display:flex; gap:8px; justify-content:center; margin:10px 0; flex-wrap:wrap}.stats span{background:rgba(255,204,0,0.15); border:1.5px solid #ffcc00; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:800; color:#ffcc00}.tabs{display:flex; gap:8px; justify-content:center; margin-top:10px; flex-wrap:wrap}.tab{padding:8px 16px; border-radius:20px; border:1.5px solid #ffcc00; background:transparent; color:#ffcc00; font-weight:800; font-size:12px; cursor:pointer}.tab.on{background:#ffcc00; color:#0a1931}.tab.white{background:#fff; color:#0a1931}.tab.red{border-color:#ff4444; color:#ff4444}
       .filter-bar-visible{display:flex; gap:8px; margin-bottom:12px; background:#ffffff; padding:14px; border-radius:14px; flex-wrap:wrap; align-items:center; border:3px solid #0a1931; box-shadow:0 4px 12px rgba(0,0,0,0.1)}.search-input-visible{flex:1; padding:14px 16px; border-radius:10px; border:3px solid #0a1931; font-size:14px; min-width:200px; background:#ffffff; color:#0a1931; font-weight:800}.filter-btns{display:flex; gap:6px; flex-wrap:wrap}
