@@ -18,7 +18,7 @@ const Navbar = () => {
         <Link to="/mission" style={active("/mission")} onClick={() => setOpen(false)}>Mission</Link>
         <Link to="/blog" style={active("/blog")} onClick={() => setOpen(false)}>Jobs</Link>
         <Link to="/contact" style={active("/contact")} onClick={() => setOpen(false)}>Contact</Link>
-        <Link to="/join" className="btn-yellow" onClick={() => setOpen(false)}>Apply Now</Link>
+        <Link to="/join" className="btn-yellow" onClick={() => setOpen(false)}>Apply</Link>
         <Link to="/admin" className="btn-admin" onClick={() => setOpen(false)}>Admin</Link>
       </div>
     </nav>
@@ -30,7 +30,7 @@ const Home = () => {
   useEffect(() => { const t = setInterval(() => setI(p => (p + 1) % 3), 3500); return () => clearInterval(t) }, []);
   const slides = [
     { t: "Pinnacle Security Limited", d: "Plot 442 & 443 Masajjagere, Muyenga - Licensed Security Company" },
-    { t: "WE ARE RECRUITING - JOIN US TODAY", d: "SITE INCHARGE: UCE + 3yrs | SUPERVISOR: UACE + Rider Permit + 3yrs" },
+    { t: "WE ARE RECRUITING - JOIN US TODAY", d: "SITE INCHARGE:  | SUPERVISOR: UACE + Rider Permit + 3yrs" },
     { t: "100+ Sites | 150+ Officers | 24/7 Control Room 0754 139726", d: "hr@pinnaclegroup.co.ug | Free Training | No Recruitment Fees" },
   ];
   return (<>
@@ -38,7 +38,7 @@ const Home = () => {
       <h1>{slides[i].t}</h1><p>{slides[i].d}</p>
       <div className="dots">{[0, 1, 2].map(n => <span key={n} className={n === i ? 'dot on' : 'dot'} onClick={() => setI(n)}></span>)}</div>
       <div style={{display:'flex', gap:'12px', justifyContent:'center', flexWrap:'wrap', marginTop:'12px', alignItems:'center'}}>
-        <Link to="/join" className="btn-yellow big">Apply Now</Link>
+        <Link to="/join" className="btn-yellow big">Apply </Link>
         <a href="https://ee.kobotoolbox.org/your-form-link" target="_blank" rel="noreferrer" className="online-link">Uplitude Test </a>
       </div>
       <p style={{fontSize:'14px', marginTop:'10px', color:'#ccc'}}>Applicants who applied must take online test</p>
@@ -115,7 +115,7 @@ const Services = () => {
           <p className="svc-desc">Best for homes, shops, offices, schools, hotels. We deploy disciplined guards with full uniform, ID, radio, baton, torch.</p>
           <div className="svc-details">
             <div><b>Duties:</b> Gate control, visitor register, patrol every hour, night vigilance, lock checking.</div>
-            <div><b>What you get:</b> Supervisor visits 3x a week, free replacement if guard absent or sick, monthly security report, 10 min rapid response from control room 0754 139726.</div>
+            <div><b>What you get:</b> Supervisor visits 3 times a week, free replacement if guard absent or sick, monthly security report, 10 min rapid response from control room 0754 139726.</div>
             <div><b>Price:</b> From 450k per guard per month. No hidden costs.</div>
           </div>
         </div>
@@ -168,7 +168,7 @@ const Services = () => {
 const Blog = () => (
   <div className="section">
     <div className="memo-clean">
-      <div className="memo-head"><h2>INTERNAL MEMO - PINNACLE SECURITY LTD</h2><p><b>From:</b> HR Manager | <b>To:</b> All Applicants | <b>Date:</b> {new Date().toLocaleDateString()} | <b>Ref:</b> PSL/HR/2026/08</p><p><b>Subject: URGENT RECRUITMENT</b></p></div>
+      <div className="memo-head"><h2>INTERNAL MEMO  PINNACLE SECURITY LTD</h2><p><b>From:</b> HR Manager | <b>To:</b> All Applicants | <b>Date:</b> {new Date().toLocaleDateString()} | <b>Ref:</b> PSL/HR/2026/08</p><p><b>Subject: URGENT RECRUITMENT</b></p></div>
       <div className="memo-body-dark">
         <div className="memo-intro">Management has approved recruitment. Applications are <b>No Fees</b>. Training <b>2 weeks at Muyenga HQ Plot 442/443</b>.</div>
         <div className="job-box"><div className="job-header">POSITION 1: SITE INCHARGE</div><div className="job-content"><p className="req-title">Requirements</p><div className="req-grid"><div><span>Education:</span> UCE Certificate (S4) 4 passes</div><div><span>Experience:</span> 3+ Years security (recommendation letter)</div><div><span>Age:</span> 25-45 years, fit</div><div><span>Skills:</span> Read/write English, OB reports</div><div><span>Record:</span> No crime (LC1 & Police verified)</div><div><span>Leadership:</span> Manage 5-10 guards</div></div><p className="duty"><b>Duties:</b> Supervise guards, daily report, handle complaints, attendance, uniform discipline.</p></div></div>
@@ -207,14 +207,14 @@ const Join = () => {
   const [f, setF] = useState({ fullName: "", phone: "", email: "", education: "", experience: "", interest: "", position: "SITE INCHARGE", district: "" }); const [s, setS] = useState("");
   const send = async (e) => { e.preventDefault(); setS("Submitting..."); try { const r = await fetch(`${API_URL}/api/applicants`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...f, full_name: f.fullName }) }); if (r.ok) { setS("✅ Submitted!"); setF({ fullName: "", phone: "", email: "", education: "", experience: "", interest: "", position: "SITE INCHARGE", district: "" }) } else setS("❌ Error") } catch { setS("❌ Error") } };
   return (
-    <div className="section"><h2>Apply Now - Applicant Form</h2>
+    <div className="section"><h2>Apply </h2>
       <form className="form-big" onSubmit={send}>
         <div className="two-col"><div><label>Full Name *</label><input value={f.fullName} onChange={e => setF({ ...f, fullName: e.target.value })} required placeholder="Fullname" /></div><div><label>Phone *</label><input value={f.phone} onChange={e => setF({ ...f, phone: e.target.value })} required placeholder="Phone" /></div></div>
         <div className="two-col"><div><label>Email *</label><input type="email" value={f.email} onChange={e => setF({ ...f, email: e.target.value })} required placeholder="Email" /></div><div><label>Education *</label><select value={f.education} onChange={e => setF({ ...f, education: e.target.value })} required><option value="">Choose</option><option>P7</option><option>UCE</option><option>UACE</option><option>Diploma</option><option>Degree</option></select></div></div>
         <div className="two-col"><div><label>Position *</label><select value={f.position} onChange={e => setF({ ...f, position: e.target.value })} required><option>SITE INCHARGE</option><option>SUPERVISOR</option><option>SECURITY OFFICER</option></select></div><div><label>District *</label><input value={f.district} onChange={e => setF({ ...f, district: e.target.value })} required placeholder="District" /></div></div>
         <div className="two-col"><div><label>Why Interested? *</label><input value={f.interest} onChange={e => setF({ ...f, interest: e.target.value })} required placeholder="Why interested?" /></div><div><label>Experience *</label><input value={f.experience} onChange={e => setF({ ...f, experience: e.target.value })} required placeholder="Years & where" /></div></div>
         <button className="big-btn">Submit Application</button>{s && <p className="msg">{s}</p>}
-        <div style={{textAlign:'center', marginTop:'12px'}}><a href="https://ee.kobotoolbox.org/your-form-link" target="_blank" rel="noreferrer" style={{color:'#0a1931', fontWeight:'900', fontSize:'16px'}}>After applying, Take Online Test Here →</a></div>
+        <div style={{textAlign:'center', marginTop:'12px'}}><a href="https://ee.kobotoolbox.org/x/ODCdeyaJ" target="_blank" rel="noreferrer" style={{color:'#0a1931', fontWeight:'900', fontSize:'16px'}}>After applying, Take Online Test Here</a></div>
       </form>
     </div>
   )
