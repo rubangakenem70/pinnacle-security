@@ -1,36 +1,25 @@
 import React, { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Link, useNavigate, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom'
 
 const API_URL = "https://pinnacle-security-backend.vercel.app";
-const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbz0Fx9gSfPwPXZdi8pivw9IdQ_fzj707fPk22GBECuGYhGzwePtEPZV47TyXk8TN8bggQ/exec";
-const sendToSheet = async (payload) => { try { await fetch(GOOGLE_SHEET_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) }); } catch (e) {} };
 const ADMIN_PASSWORD = "Pinnacle2026!Secure123";
-const KOBO_LINK = "https://ee.kobotoolbox.org/x/ODCdeyaJ";
 
 const Navbar = () => {
+  const loc = useLocation();
+  const active = (p) => loc.pathname === p ? { color: '#ffcc00', borderBottom: '3px solid #ffcc00' } : { color: 'white' };
   const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
-  const scroll = (id) => {
-    setOpen(false);
-    const doScroll = () => document.getElementById(id)?.scrollIntoView({behavior:'smooth', block:'start'});
-    if (window.location.pathname!== "/") { navigate("/"); setTimeout(doScroll, 350); }
-    else doScroll();
-  };
   return (
     <nav className="nav">
-      <div className="nav-inner">
-        <span className="logo" onClick={()=>scroll("home")} style={{cursor:'pointer'}}>
-          <span style={{color:'#0a1931'}}>ODC</span><span style={{color:'#0ea5e9'}}>deyaJ</span>
-        </span>
-        <span className="menu-btn" onClick={()=>setOpen(!open)}>{open?'✕':'☰'}</span>
-        <div className={`links ${open?'show':''}`}>
-          <span onClick={()=>scroll("home")}>Home</span>
-          <span onClick={()=>scroll("about")}>About ▾</span>
-          <span onClick={()=>scroll("services")}>Mission</span>
-          <span onClick={()=>scroll("jobs")}>Blog</span>
-          <span onClick={()=>scroll("contact")}>Contact</span>
-          <Link to="/online-test" className="btn-register" onClick={()=>setOpen(false)}>Online Test</Link>
-        </div>
+      <div className="nav-top"><span className="logo">PINNACLE SECURITY LTD</span><span className="menu-btn" onClick={() => setOpen(!open)}>{open ? '✕' : '☰'}</span></div>
+      <div className={`links ${open ? 'show' : ''}`}>
+        <Link to="/" style={active("/")} onClick={() => setOpen(false)}>Home</Link>
+        <Link to="/about" style={active("/about")} onClick={() => setOpen(false)}>About</Link>
+        <Link to="/services" style={active("/services")} onClick={() => setOpen(false)}>Services</Link>
+        <Link to="/blog" style={active("/blog")} onClick={() => setOpen(false)}>Jobs</Link>
+        <Link to="/contact" style={active("/contact")} onClick={() => setOpen(false)}>Contact</Link>
+        <Link to="/online-test" style={active("/online-test")} onClick={() => setOpen(false)}>Online Test</Link>
+        <Link to="/join" className="btn-yellow" onClick={() => setOpen(false)}>Apply Now</Link>
+        <Link to="/admin" className="btn-admin" onClick={() => setOpen(false)}>Admin</Link>
       </div>
     </nav>
   )
@@ -38,171 +27,160 @@ const Navbar = () => {
 
 const Home = () => {
   const [i, setI] = useState(0);
-  useEffect(()=>{ const t=setInterval(()=>setI(p=>(p+1)%3), 3500); return()=>clearInterval(t) },[]);
-  const slides=[
-    {t:"Pinnacle Security Limited - 4.3 Rated", d:"Plot 442 & 443 Masajjagere, Muyenga - Licensed Security Company"},
-    {t:"WE ARE RECRUITING - JOIN US TODAY", d:"SITE INCHARGE: UCE + 3yrs | SUPERVISOR: UACE + Rider Permit + 3yrs"},
-    {t:"60+ Sites | 150+ Officers | 24/7 Control Room 0754 139726", d:"hr@pinnaclegroup.co.ug | Free Training | No Fees"},
+  useEffect(() => { const t = setInterval(() => setI(p => (p + 1) % 3), 3500); return () => clearInterval(t) }, []);
+  const slides = [
+    { t: "Pinnacle Security Limited", d: "Plot 442 & 443 Masajjagere, Muyenga - Licensed Security Company" },
+    { t: "WE ARE RECRUITING - JOIN US TODAY", d: "SITE INCHARGE: UCE + 3yrs experience | SUPERVISOR: UACE + Rider Permit + 3yrs" },
+    { t: "60+ Sites | 150+ Officers | 24/7 Control Room 0754 139726", d: "hr@pinnaclegroup.co.ug | Free Training | No Recruitment Fees" },
   ];
-  return (<><div className="hero"><h1>{slides[i].t}</h1><p>{slides[i].d}</p><div className="dots">{[0,1,2].map(n=><span key={n} className={n===i?'dot on':'dot'} onClick={()=>setI(n)}></span>)}</div>
-  <div style={{display:'flex', gap:'12px', justifyContent:'center', flexWrap:'wrap'}}>
-    <span onClick={()=>document.getElementById("join")?.scrollIntoView({behavior:'smooth'})} className="btn-yellow big" style={{cursor:'pointer',display:'inline-block'}}>Apply Now - Free</span>
-    <Link to="/online-test" className="btn-white big" style={{textDecoration:'none'}}>Take Online Test (Kobo)</Link>
-  </div>
-  </div>
-    <div className="section"><div className="card"><h3>Who We Are - 4.3 Rated</h3><p>Pinnacle Security Ltd Plot 442 & 443 Masajjagere, Muyenga - URSB Licensed. 60+ sites, 150+ officers, Control Room 0754 139726 24/7.</p></div><div className="card gold"><h3>Core Services</h3><p>Guard Service, Construction Security, CCTV, Mobile Patrol, Event Security, Alarm & Electric Fence.</p></div><div className="card dark"><h3>URGENT RECRUITMENT - No Fees</h3><p>SITE INCHARGE: UCE + 3yrs | SUPERVISOR: UACE + Rider Permit + 3yrs. Free 2 weeks training.</p><div style={{display:'flex', gap:'10px', flexWrap:'wrap', marginTop:'10px'}}><span onClick={()=>document.getElementById("join")?.scrollIntoView({behavior:'smooth'})} className="btn-yellow" style={{cursor:'pointer',display:'inline-block'}}>Apply Now</span><Link to="/online-test" className="btn-white" style={{textDecoration:'none'}}>Online Test</Link></div></div></div></>)
+  return (<>
+    <div className="hero">
+      <h1>{slides[i].t}</h1>
+      <p>{slides[i].d}</p>
+      <div className="dots">{[0, 1, 2].map(n => <span key={n} className={n === i ? 'dot on' : 'dot'} onClick={() => setI(n)}></span>)}</div>
+      <div style={{display:'flex', gap:'12px', justifyContent:'center', flexWrap:'wrap', marginTop:'10px'}}>
+        <Link to="/join" className="btn-yellow big">Apply Now</Link>
+        <Link to="/online-test" className="btn-outline">Online Test</Link>
+      </div>
+    </div>
+    
+    <div className="section">
+      <div className="home-grid-3">
+        {/* WHO WE ARE - 3 PARAGRAPHS */}
+        <div className="card">
+          <h3>Who We Are</h3>
+          <p>Pinnacle Security Ltd is a licensed security company operating from <b>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga</b>. We are fully licensed by URSB and Ministry of Internal Affairs to provide trusted protection services across Uganda.</p>
+          <p style={{marginTop:'10px'}}>We currently protect <b>60+ sites</b> nationwide with a dedicated team of <b>150+ trained security officers</b>, equipped to handle residential, commercial and construction sites with professionalism and discipline.</p>
+          <p style={{marginTop:'10px'}}>Our <b>24/7 Control Room at 0754 139726</b> ensures rapid response and continuous monitoring, giving clients peace of mind day and night. No hidden fees, no exploitation.</p>
+        </div>
+
+        {/* CORE SERVICES - EXPLAINED */}
+        <div className="card gold">
+          <h3>🎯 Core Services</h3>
+          <p><b>✅ Guard Service:</b> Trained, uniformed armed & unarmed guards for homes, shops, offices with supervisor visits.</p>
+          <p><b>✅ Construction Security:</b> Special protection for cement, iron bars, timber and equipment on building sites.</p>
+          <p><b>✅ CCTV Installation:</b> Supply & install Hikvision/Dahua 4-camera system with phone viewing, night vision, 2-year warranty.</p>
+          <p><b>✅ Mobile Patrol:</b> Our patrol car with 2 officers patrols your area day & night + 10min rapid response.</p>
+          <p><b>✅ Event Security:</b> Crowd control, VIP protection, parking for weddings, concerts, conferences.</p>
+          <p><b>✅ Alarm & Electric Fence:</b> Intruder alarms with phone alerts and electric fence for full perimeter protection.</p>
+        </div>
+
+        {/* URGENT RECRUITMENT - WITH FORM BUTTON */}
+        <div className="card dark">
+          <h3>🚨 URGENT RECRUITMENT</h3>
+          <p><b>SITE INCHARGE:</b> UCE + 3yrs experience. Must manage 5-10 guards, write daily reports.</p>
+          <p style={{marginTop:'8px'}}><b>SUPERVISOR:</b> UACE + Rider Permit + 3yrs. Must ride long distance, visit sites daily, have smartphone.</p>
+          <p style={{marginTop:'8px', background:'rgba(255,204,0,0.15)', padding:'8px', borderRadius:'8px'}}>Free 2 weeks training at Muyenga HQ. Competitive pay. Uniform & PPE provided. No fees.</p>
+          <Link to="/join" className="btn-yellow big" style={{marginTop:'15px', width:'100%', textAlign:'center', display:'block'}}>Apply Now - Applicant Form</Link>
+        </div>
+      </div>
+    </div>
+  </>)
 }
 
-const About = () => {
-  const [open,setOpen]=useState(null);
-  const items=[
-    {t:"Our History Since 2018", d:"Founded in 2018 in Muyenga, started with 5 guards, now 150+ officers, 60+ sites across Kampala, Wakiso, Mukono, Entebbe. Licensed by Ministry of Internal Affairs & URSB."},
-    {t:"Our Mission & Vision", d:"Mission: To protect lives and property with discipline. Vision: To be Uganda's most trusted security company. Core values: Integrity, Discipline, Vigilance, Professionalism."},
-    {t:"Why Choose Pinnacle? - 4.3 Google Rated", d:"4.3 Rated, 24/7 Control Room 0754 139726, Free 2 weeks training at HQ, No recruitment fees, Uniform + ID + Radio provided, Supervisor visits 3x a week, Quick replacement."},
-    {t:"Our Leadership Team", d:"Managing Director + Operations Manager + HR Manager + Training Commander. All ex-servicemen with 15+ years security experience."},
-    {t:"Licenses & Certificates", d:"URSB Registered, Ministry of Internal Affairs Private Security License, PSFU Member, Tax Compliant, NSSF Compliant."},
-    {t:"Our Coverage Areas", d:"Kampala, Muyenga, Buziga, Kololo, Nakawa, Wakiso, Entebbe, Mukono, Industrial Area, Construction sites, Homes, Offices, Warehouses, Schools, Churches."},
-  ];
-  return (
-    <div className="section">
-      <h2>About Pinnacle Security Ltd</h2>
-      <div className="about-hero">
-        <h3>Protecting What Matters Most Since 2018 - Plot 442 & 443 Masajjagere, Muyenga</h3>
-        <p>150+ Trained Officers | 60+ Active Sites | 4.3 Google Rating | Control Room 0754 139726 24/7 | hr@pinnaclegroup.co.ug</p>
-      </div>
-      {items.map((it,i)=>(
-        <div key={i} className="service-box">
-          <div className="service-head" onClick={()=>setOpen(open===i?null:i)}>
-            <div><strong>{it.t}</strong></div><span className="expand-btn">{open===i?'Close -':'Open +'}</span>
-          </div>
-          {open===i && <div className="service-body"><p>{it.d}</p></div>}
-        </div>
-      ))}
+const About = () => (
+  <div className="section">
+    <h2>About Pinnacle Security Ltd</h2>
+    <div className="about-hero">
+      <h3>Pinnacle Security Ltd - Protecting What Matters Most Since 2018</h3>
+      <p>Located at <b>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga Hill, Kampala - Uganda</b>, Pinnacle Security Limited is a fully licensed Private Security Organization registered under URSB and Ministry of Internal Affairs.</p>
+      <p>With <b>60+ Active Sites, 150+ Trained Officers</b> and 24/7 Control Room <b>0754 139726</b>, we are one of the fastest growing security companies in Kampala, Wakiso, Mukono and Entebbe corridor.</p>
     </div>
-  )
-}
+    <div className="about-grid">
+      <div className="card about-card"><div className="about-icon"></div><h3>Our Mission</h3><p>To provide <b>professional, affordable, and reliable security solutions</b> to homes, businesses, construction sites, schools, hotels and events. We are committed to protecting lives, property and investments with discipline, integrity and rapid response. <b>No Hidden Fees, No Exploitation, Free Training for all recruits</b>.</p></div>
+      <div className="card about-card gold"><div className="about-icon"></div><h3>Our Vision</h3><p>To be <b>Uganda's most trusted and most respected security company by 2030</b>. A company where every client feels safe, every guard feels valued, and every site is protected with technology + manpower.</p></div>
+      <div className="card about-card dark-card"><div className="about-icon"></div><h3>Core Values</h3><ul className="about-list"><li><b>D</b> - Discipline</li><li><b>I</b> - Integrity</li><li><b>S</b> - Service</li><li><b>C</b> - Courage</li><li><b>P</b> - Professionalism</li></ul></div>
+    </div>
+  </div>
+)
 
 const Services = () => {
-  const [open,setOpen]=useState(null);
-  const list=[
-    {n:"1. Security Guard Service", short:"Armed & Unarmed", full:["Disciplined guards, uniform, ID, radio, baton, torch. Supervisor visits 3x week. Day & Night shift."]},
-    {n:"2. Construction Site Security", short:"For building sites", full:["Material in/out check, store management, night patrol, anti-theft."]},
-    {n:"3. CCTV Installation", short:"4 cameras from 2.5M", full:["DVR, 4 HD cameras, 1TB HDD, Mobile phone view, 1 year warranty."]},
-    {n:"4. Mobile Patrol", short:"Car patrols every 2 hours", full:["3 visits day, 3 night, alarm response in 15 mins."]},
-    {n:"5. Event Security", short:"Weddings, concerts", full:["Crowd control, VIP protection, bouncers, parking."]},
-    {n:"6. Alarm & Electric Fence", short:"Intruder alarm", full:["Sensors, siren + phone call + electric fence energizer."]},
-  ];
-  return (<div className="section"><h2>Our Services</h2>{list.map((s,i)=><div key={i} className="service-box"><div className="service-head" onClick={()=>setOpen(open===i?null:i)}><div><strong>{s.n}</strong><p className="service-short">{s.short}</p></div><span className="expand-btn">{open===i?'Close':'Open +'}</span></div>{open===i&&<div className="service-body">{s.full.map((p,k)=><p key={k}>- {p}</p>)}</div>}</div>)}</div>)
-}
-
-const Blog = () => {
-  const [open,setOpen]=useState(0);
-  const jobs=[
-    {title:"SITE INCHARGE - UCE + 3 Years Experience", body:["Must have UCE certificate", "3 years experience as security guard", "Able to manage 5-10 guards", "Salary 500k-700k + allowance", "Free training 2 weeks at Muyenga"]},
-    {title:"SUPERVISOR - UACE + Rider Permit + 3 Years", body:["Must have UACE certificate", "Valid rider permit", "Own motorcycle is added advantage", "3 years experience", "Salary 700k-900k + fuel allowance", "Manage 15-20 sites"]},
-    {title:"SECURITY OFFICER - General Recruitment - No Fees", body:["P7, S4, S6 accepted", "18-45 years, disciplined", "No criminal record", "Free training, free uniform", "Deployment within 1 week", "Salary 250k-350k starting"]},
-    {title:"CCTV TECHNICIAN - Internship Available", body:["Diploma in Electrical / IT", "Can install CCTV, alarms", "1 year experience", "Salary negotiable"]},
+  const [open, setOpen] = useState(null);
+  const list = [
+    { n: "1. Security Guard Service", short: "Armed & Unarmed guards for homes, shops, offices", full: ["We deploy disciplined guards with uniform, ID, radio. Duties: Gate control, patrol, visitor register, night vigilance.", "Includes supervisor visits 3x a week, free replacement if guard absent, monthly report, 10 min rapid response."] },
+    { n: "2. Construction Site Security", short: "Special guards for building sites - protect cement, iron bars", full: ["We understand construction theft: cement, D12/D16, timber, tools. Guards trained to check materials in/out, store management, night torch patrol."] },
+    { n: "3. CCTV Installation & Monitoring", short: "4 cameras from 2.5M with phone viewing", full: ["We supply & install: DVR, 4 HD cameras, 1TB HDD, cables, installation. You view on phone anywhere. Night vision, motion alert.", "Brands: Hikvision, Dahua - 2 years warranty."] },
+    { n: "4. Mobile Patrol & Rapid Response", short: "Our car patrols your area every 2 hours", full: ["Best for homes without full-time guard. Our patrol car with 2 officers patrols your zone. 3 visits day, 3 visits night. Random timing.", "Includes 10-min rapid response if alarm. Coverage: Muyenga, Buziga, Munyonyo, Ggaba, Kansanga, Kabalagala."] },
+    { n: "5. Event Security & Bouncers", short: "Weddings, concerts, conferences", full: ["We provide: Crowd control, gate, VIP protection, parking control, anti-theft. Uniform: Smart suits for corporate, t-shirts for concerts."] },
+    { n: "6. Alarm Systems & Electric Fences", short: "Intruder alarm and electric fence protection", full: ["Alarm: Magnetic sensors on doors/windows, motion inside, loud siren + call to your phone + control room.", "Electric Fence: 5 lines, energizer, battery backup, warning signs. Works on Yaka & solar."] },
   ];
   return (
-    <div className="section">
-      <div className="memo">
-        <div className="memo-head"><h2 style={{border:'none', margin:0}}>INTERNAL MEMO - RECRUITMENT 2026</h2><p>From: HR Manager | Date: {new Date().toLocaleDateString()} | Location: Plot 442 & 443 Muyenga</p></div>
-        <div className="memo-body">
-          {jobs.map((j,i)=>(
-            <div key={i} className={`job-card ${i===1?'gold':''}`}>
-              <div className="service-head" onClick={()=>setOpen(open===i?null:i)} style={{padding:0}}><h3 style={{margin:0}}>{j.title}</h3><span className="expand-btn">{open===i?'Close':'Open'}</span></div>
-              {open===i && <ul style={{marginTop:'12px'}}>{j.body.map((b,k)=><li key={k}>{b}</li>)}</ul>}
-            </div>
-          ))}
-          <div className="general-recruit">
-            <h3>How to Apply - No Fees - No Agent</h3>
-            <p>Come to HQ Plot 442 & 443 Muyenga with CV, National ID, Academic docs. Or apply online below - FREE.</p>
-            <div style={{display:'flex', gap:'12px', flexWrap:'wrap', justifyContent:'center', marginTop:'12px'}}>
-              <span onClick={()=>document.getElementById("join")?.scrollIntoView({behavior:'smooth'})} className="big-recruit-btn" style={{cursor:'pointer'}}>APPLY NOW FREE - ONLINE FORM</span>
-              <Link to="/online-test" className="big-test-btn" style={{textDecoration:'none'}}>REGISTER FOR ONLINE TEST</Link>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="section"><h2>Our Services - Click + to Expand</h2>
+      {list.map((s, i) => <div key={i} className="service-box"><div className="service-head" onClick={() => setOpen(open === i ? null : i)}><div><strong>{s.n}</strong><p className="service-short">{s.short}</p></div><span className="expand-btn">{open === i ? 'Close −' : 'Open +'}</span></div>{open === i && <div className="service-body">{s.full.map((p, k) => <p key={k}>• {p}</p>)}</div>}</div>)}
     </div>
   )
 }
 
-const OnlineTestRegister = () => {
-  const [f,setF]=useState({fullName:"",phone:"",email:"",education:""});
-  const [s,setS]=useState("");
-  const inputStyle={width:'100%',padding:'14px 16px',borderRadius:'12px',border:'2px solid #d1d5db',outline:'none',fontSize:'15px',background:'white',color:'#1e293b'};
-  const send=async(e)=>{
-    e.preventDefault();
-    setS("Registering you for Kobo test...");
-    const payload = { type: "kobo_test", date: new Date().toLocaleString(), fullName: f.fullName, phone: f.phone, email: f.email, education: f.education, link: KOBO_LINK };
-    await sendToSheet(payload);
-    try{
-      await fetch(`${API_URL}/api/applicants`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    }catch{}
-    setS("✅ Registered! Opening KoboToolbox Test...");
-    setTimeout(()=>{
-      window.open(KOBO_LINK, "_blank");
-      window.location.href = KOBO_LINK;
-    }, 1200);
-  };
-  return (
-    <div className="section" style={{maxWidth:'700px'}}>
-      <h2>Register for Online Test - KoboToolbox</h2>
-      <div className="form-big" style={{background:'white', border:'2px solid #0a1931'}}>
-        <div style={{background:'#f1f5f9', padding:'14px', borderRadius:'10px', textAlign:'center'}}>
-          <h3 style={{color:'#0a1931'}}>ODCdeyaJ - KoboToolbox Online Test</h3>
-          <p style={{fontSize:'13px', marginTop:'6px'}}>Fill this form, then you will be redirected to: <b>{KOBO_LINK}</b></p>
-          <p style={{fontSize:'12px', color:'#64748b', marginTop:'4px'}}>Secure | Simple | Working | Final Year Project</p>
+const Blog = () => (
+  <div className="section">
+    <div className="memo">
+      <div className="memo-head">
+        <h2 style={{ border: 'none', marginBottom: '5px' }}>📋 INTERNAL MEMO - PINNACLE SECURITY LTD</h2>
+        <p><b>From:</b> Human Resource Manager | <b>To:</b> All Applicants | <b>Date:</b> {new Date().toLocaleDateString()} | <b>Ref:</b> PSL/HR/2026/08</p>
+        <p><b>Subject: URGENT RECRUITMENT - SITE INCHARGE, SUPERVISOR & GENERAL GUARDS</b></p>
+      </div>
+      <div className="memo-body">
+        <p>Management has approved recruitment for immediate deployment. Applications are <b>No Fees</b>. Training is <b>2 weeks FREE at Muyenga HQ Plot 442/443</b>.</p>
+        <div className="job-card">
+          <h3>🔹 POSITION 1: SITE INCHARGE</h3>
+          <p><b>Requirements:</b></p>
+          <ul>
+            <li> Minimum UCE Certificate (S4) with at least 4 passes</li>
+            <li> 3+ Years experience in security (must have recommendation letter)</li>
+            <li> Age 25-45 years, physically fit</li>
+            <li> Can read/write English, can make daily OB reports</li>
+            <li> No criminal record (we shall verify with LC1 & Police)</li>
+            <li> Leadership skills - will manage 5-10 guards</li>
+          </ul>
+          <p><b>Duties:</b> Supervise guards, write daily report, handle client complaints, check attendance, ensure uniform discipline.</p>
         </div>
-        <form onSubmit={send} style={{display:'flex', flexDirection:'column', gap:'14px'}}>
-          <div><label>Full Name *</label><input style={inputStyle} value={f.fullName} onChange={e=>setF({...f,fullName:e.target.value})} required placeholder="Your full name"/></div>
-          <div className="two-col">
-            <div><label>Phone *</label><input style={inputStyle} value={f.phone} onChange={e=>setF({...f,phone:e.target.value})} required placeholder="0754..."/></div>
-            <div><label>Email *</label><input style={inputStyle} type="email" value={f.email} onChange={e=>setF({...f,email:e.target.value})} required placeholder="Email"/></div>
-          </div>
-          <div><label>Education *</label><select style={inputStyle} value={f.education} onChange={e=>setF({...f,education:e.target.value})} required><option value="">Choose</option><option>P7</option><option>UCE</option><option>UACE</option><option>Diploma</option><option>Degree</option></select></div>
-          <button style={{width:'100%',padding:'16px',borderRadius:'12px',border:'none',background:'#1746a2',color:'#fff',fontWeight:'800',fontSize:'18px',cursor:'pointer'}}>Register & Start Kobo Test Now</button>
-          {s&&<p className="msg">{s}</p>}
-        </form>
-        <p style={{textAlign:'center', fontSize:'12px', color:'#64748b', marginTop:'8px'}}>Already registered? <a href={KOBO_LINK} target="_blank" rel="noreferrer" style={{color:'#1746a2', fontWeight:'700'}}>Click here to go directly to Kobo test</a></p>
+        <div className="job-card gold">
+          <h3> POSITION 2: SUPERVISOR</h3>
+          <p><b>Requirements:</b></p>
+          <ul>
+            <li> Minimum UACE Certificate (S6) - 2 principal passes</li>
+            <li> Valid Rider Permit Class A - Must know how to ride motorcycle</li>
+            <li> 3+ Years as security supervisor or site incharge (with proof)</li>
+            <li> Age 27-40, must have smartphone for reports</li>
+            <li> Can ride long distance: Kampala-Entebbe, Kampala-Mukono</li>
+            <li> Honest, not drunkard, no accident history</li>
+            <li> Can train new guards</li>
+          </ul>
+          <p><b>Duties:</b> Visit sites per day, check guards, handle emergencies, recruit new guards, report to Operations Manager.</p>
+        </div>
+        <div className="general-recruit">
+          <h3> GENERAL RECRUITMENT: SECURITY OFFICER</h3>
+          <p>We are ALWAYS recruiting disciplined men & women to join our team. You can apply as general guard and be called when vacancy comes.</p>
+          <p><b>Requirements:</b> P7/UCE, Age 22-45, No crime, Physically fit, Willing to work day/night, Training FREE.</p>
+          <Link to="/join" className="big-recruit-btn">👮 APPLY NOW FOR GENERAL RECRUITMENT</Link>
+        </div>
+        <p style={{ marginTop: '20px', background: '#fff3cd', padding: '12px', borderRadius: '8px' }}><b>How to Apply:</b> Click Apply Now, fill form. Or come physically to Plot 442/443 Masajjagere, Muyenga. Contact HR: <b>hr@pinnaclegroup.co.ug</b> / Control: 0754 139726.</p>
       </div>
     </div>
-  )
-}
+  </div>
+)
 
 const Contact = () => {
-  const [f,setF]=useState({fullName:"",email:"",phone:"",service:"",message:""});
-  const [s,setS]=useState("");
-  const send=async(e)=>{
-    e.preventDefault(); setS("Submitting...");
-    const payload = { type: "contact", date: new Date().toLocaleString(), fullName: f.fullName, email: f.email, phone: f.phone, service: f.service, message: f.message };
-    await sendToSheet(payload);
-    try{
-      const r=await fetch(`${API_URL}/api/contact`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-      if(r.ok) setS("✅ Saved to Admin + Sheet");
-      else setS("✅ Saved to Sheet!");
-      setF({fullName:"",email:"",phone:"",service:"",message:""})
-    }catch{ setS("✅ Saved to Sheet!"); setF({fullName:"",email:"",phone:"",service:"",message:""}) }
-  };
-  const inputStyle={width:'100%',padding:'14px 16px',borderRadius:'12px',border:'2px solid #d1d5db',outline:'none',fontSize:'15px',background:'white',color:'#1e293b'};
+  const [f, setF] = useState({ fullName: "", email: "", phone: "", service: "", message: "" });
+  const [s, setS] = useState("");
+  const send = async (e) => { e.preventDefault(); setS("Submitting..."); try { const r = await fetch(`${API_URL}/api/contact`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(f) }); if (r.ok) { setS("✅ Submitted!"); setF({ fullName: "", email: "", phone: "", service: "", message: "" }) } else setS("❌ Error"); } catch { setS("❌ Error") } };
   return (
-    <div className="contact-full">
-      <h2>Contact Us</h2>
+    <div className="section"><h2>Contact Us</h2>
       <div className="form-2col">
-        <div className="card" style={{height:'fit-content'}}><h3>Visit Us</h3><p>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga Hill, Kampala<br/>0754 139726 / 0782 000000<br/>hr@pinnaclegroup.co.ug<br/>Mon-Sat 8am-6pm</p><Link to="/online-test" className="btn-yellow" style={{textDecoration:'none', display:'inline-block', marginTop:'10px'}}>Take Kobo Test</Link></div>
-        <form className="form-big" onSubmit={send} style={{background:'white'}}>
+        <div className="form-left-info">
+          <div className="card"><h3> Visit Us</h3><p>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga Hill, Kampala.<br />Mon-Sat 8am-6pm. Control Room 24/7.</p><p>📞 0754 139726<br />📧 hr@pinnaclegroup.co.ug</p></div>
+        </div>
+        <form className="form-big" onSubmit={send}>
           <div className="two-col">
-            <input style={inputStyle} value={f.fullName} onChange={e=>setF({...f,fullName:e.target.value})} required placeholder="Fullname"/>
-            <input style={inputStyle} value={f.phone} onChange={e=>setF({...f,phone:e.target.value})} required placeholder="Phone e.g 0754139726"/>
+            <input value={f.fullName} onChange={e => setF({ ...f, fullName: e.target.value })} required placeholder="Enter your fullname" />
+            <input value={f.phone} onChange={e => setF({ ...f, phone: e.target.value })} required placeholder="Enter your phone number" />
           </div>
           <div className="two-col">
-            <input style={inputStyle} type="email" value={f.email} onChange={e=>setF({...f,email:e.target.value})} required placeholder="Email"/>
-            <select style={inputStyle} value={f.service} onChange={e=>setF({...f,service:e.target.value})} required><option value="">Choose Service</option><option>Security Guard Service</option><option>Construction Security</option><option>CCTV Installation</option><option>Mobile Patrol</option><option>Event Security</option><option>Alarm System</option></select>
+            <input type="email" value={f.email} onChange={e => setF({ ...f, email: e.target.value })} required placeholder="Enter your email" />
+            <select value={f.service} onChange={e => setF({ ...f, service: e.target.value })} required><option value="">Choose Service</option><option>Security Guard Service</option><option>Construction Security</option><option>CCTV Installation</option><option>Mobile Patrol</option><option>Event Security</option><option>Alarm System</option></select>
           </div>
-          <textarea style={{...inputStyle,minHeight:'130px',resize:'vertical'}} rows="5" value={f.message} onChange={e=>setF({...f,message:e.target.value})} required placeholder="Message - I need to..."></textarea>
-          <button type="submit" style={{width:'100%',padding:'16px',borderRadius:'12px',border:'none',background:'#0a1931',color:'#ffcc00',fontWeight:'800',fontSize:'18px',cursor:'pointer'}}>Submit</button>
-          {s&&<p className="msg">{s}</p>}
+          <textarea rows="5" value={f.message} onChange={e => setF({ ...f, message: e.target.value })} required placeholder="Message / Location"></textarea>
+          <button className="big-btn">Submit</button>{s && <p className="msg">{s}</p>}
         </form>
       </div>
     </div>
@@ -210,204 +188,255 @@ const Contact = () => {
 }
 
 const Join = () => {
-  const [f,setF]=useState({fullName:"",phone:"",email:"",education:"",position:"SITE INCHARGE",district:"",experience:""});
-  const [s,setS]=useState("");
-  const inputStyle={width:'100%',padding:'14px 16px',borderRadius:'12px',border:'2px solid #d1d5db',outline:'none',fontSize:'15px',background:'white',color:'#1e293b'};
-  const send=async(e)=>{
-    e.preventDefault(); setS("Submitting...");
-    const payload = { type: "applicant", date: new Date().toLocaleString(), fullName: f.fullName, phone: f.phone, email: f.email, education: f.education, position: f.position, district: f.district, experience: f.experience };
-    await sendToSheet(payload);
-    try{
-      const r=await fetch(`${API_URL}/api/applicants`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-      if(r.ok) setS("✅ Saved to Admin + Sheet!");
-      else setS("✅ Saved to Sheet!");
-      setF({fullName:"",phone:"",email:"",education:"",position:"SITE INCHARGE",district:"",experience:""})
-    }catch{ setS("✅ Saved to Sheet!") }
-  };
+  const [f, setF] = useState({ fullName: "", phone: "", email: "", education: "", experience: "", interest: "", position: "SITE INCHARGE", district: "" }); const [s, setS] = useState("");
+  const send = async (e) => { e.preventDefault(); setS("Submitting..."); try { const r = await fetch(`${API_URL}/api/applicants`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...f, full_name: f.fullName }) }); if (r.ok) { setS("✅ Submitted!"); setF({ fullName: "", phone: "", email: "", education: "", experience: "", interest: "", position: "SITE INCHARGE", district: "" }) } else setS("❌ Error") } catch { setS("❌ Error") } };
   return (
-    <div className="section"><h2>Apply Now - Free Training - No Fees</h2>
-      <form className="form-big" onSubmit={send} style={{background:'white'}}>
-        <div className="two-col"><div><label>Full Name *</label><input style={inputStyle} value={f.fullName} onChange={e=>setF({...f,fullName:e.target.value})} required placeholder="Fullname"/></div><div><label>Phone *</label><input style={inputStyle} value={f.phone} onChange={e=>setF({...f,phone:e.target.value})} required placeholder="0754..."/></div></div>
-        <div className="two-col"><div><label>Email *</label><input style={inputStyle} type="email" value={f.email} onChange={e=>setF({...f,email:e.target.value})} required placeholder="Email"/></div><div><label>Education *</label><select style={inputStyle} value={f.education} onChange={e=>setF({...f,education:e.target.value})} required><option value="">Choose</option><option>P7</option><option>UCE</option><option>UACE</option><option>Diploma</option><option>Degree</option></select></div></div>
-        <div className="two-col"><div><label>Position *</label><select style={inputStyle} value={f.position} onChange={e=>setF({...f,position:e.target.value})} required><option>SITE INCHARGE</option><option>SUPERVISOR</option><option>SECURITY OFFICER - General</option></select></div><div><label>District *</label><input style={inputStyle} value={f.district} onChange={e=>setF({...f,district:e.target.value})} required placeholder="District"/></div></div>
-        <div><label>Experience *</label><input style={inputStyle} value={f.experience} onChange={e=>setF({...f,experience:e.target.value})} placeholder="e.g 3 years"/></div>
-        <button style={{width:'100%',padding:'16px',borderRadius:'12px',border:'none',background:'#0a1931',color:'#ffcc00',fontWeight:'800',fontSize:'18px',cursor:'pointer'}}>Submit</button>{s&&<p className="msg">{s}</p>}
-        <div style={{textAlign:'center', marginTop:'8px'}}><Link to="/online-test" style={{color:'#1746a2', fontWeight:'700', fontSize:'14px'}}>Or Register for Kobo Online Test → {KOBO_LINK}</Link></div>
+    <div className="section"><h2>Apply Now - Applicant Form</h2>
+      <form className="form-big" onSubmit={send}>
+        <div className="two-col">
+          <div><label>Full Name *</label><input value={f.fullName} onChange={e => setF({ ...f, fullName: e.target.value })} required placeholder="Enter your fullname" /></div>
+          <div><label>Phone *</label><input value={f.phone} onChange={e => setF({ ...f, phone: e.target.value })} required placeholder="Enter your phone number" /></div>
+        </div>
+        <div className="two-col">
+          <div><label>Email *</label><input type="email" value={f.email} onChange={e => setF({ ...f, email: e.target.value })} required placeholder="Enter your email" /></div>
+          <div><label>Education *</label><select value={f.education} onChange={e => setF({ ...f, education: e.target.value })} required><option value="">Choose Education</option><option>P7</option><option>UCE</option><option>UACE</option><option>Diploma</option><option>Degree</option></select></div>
+        </div>
+        <div className="two-col">
+          <div><label>Position Applying For *</label><select value={f.position} onChange={e => setF({ ...f, position: e.target.value })} required><option>SITE INCHARGE</option><option>SUPERVISOR</option><option>SECURITY OFFICER - General</option></select></div>
+          <div><label>District *</label><input value={f.district} onChange={e => setF({ ...f, district: e.target.value })} required placeholder="Enter your district" /></div>
+        </div>
+        <div className="two-col">
+          <div><label>Why Interested? *</label><input value={f.interest} onChange={e => setF({ ...f, interest: e.target.value })} required placeholder="Why are you interested?" /></div>
+          <div><label>Experience *</label><input value={f.experience} onChange={e => setF({ ...f, experience: e.target.value })} required placeholder="Years & where you worked" /></div>
+        </div>
+        <button className="big-btn">Submit Application</button>{s && <p className="msg">{s}</p>}
+        <p style={{ fontSize: '12px', textAlign: 'center', color: '#666' }}>If you submitted wrong detail, you can submit again. Only last submission will be considered.</p>
       </form>
     </div>
   )
 }
 
+const OnlineTest = () => {
+  const navigate = useNavigate();
+  return (
+    <div className="section" style={{textAlign:'center'}}>
+      <h2>Online Test (Kobo)</h2>
+      <div className="card" style={{maxWidth:'600px', margin:'20px auto'}}>
+        <h3>Ready for Aptitude Test?</h3>
+        <p style={{margin:'15px 0'}}>Click below to start your online test. You will be redirected to KoboToolbox.</p>
+        <a href="https://ee.kobotoolbox.org/your-form-link" target="_blank" rel="noreferrer" className="btn-yellow big">Take Online Test Now</a>
+        <p style={{marginTop:'15px'}}><Link to="/join">Or Apply First - Go to Applicant Form</Link></p>
+      </div>
+    </div>
+  )
+}
+
 const AdminLogin = () => {
-  const [pass, setPass] = useState(""); const [msg, setMsg] = useState(""); const navigate = useNavigate();
-  const login = (e) => { e.preventDefault(); if (pass === ADMIN_PASSWORD) { localStorage.setItem("pinnacle_admin_token", pass); navigate("/admin"); } else { setMsg(`Wrong password.`); } };
-  return (<div className="section" style={{maxWidth:'520px', margin:'60px auto'}}><div className="form-big light-form" style={{border:'3px solid #ffcc00', textAlign:'center'}}><h2>Admin Login</h2><form onSubmit={login} style={{display:'flex', flexDirection:'column', gap:'15px', marginTop:'20px'}}><input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="Password" required style={{padding:'16px'}} /><button className="big-btn">Login</button>{msg && <p className="msg">{msg}</p>}</form></div></div>)
+  const [pass, setPass] = useState(""); const [msg, setMsg] = useState("");
+  const navigate = useNavigate();
+  const login = (e) => {
+    e.preventDefault();
+    if (pass === ADMIN_PASSWORD) {
+      localStorage.setItem("pinnacle_admin_token", pass);
+      setMsg(" Correct! Opening admin...");
+      setTimeout(() => navigate("/admin"), 500);
+    } else {
+      setMsg(`❌ Wrong password.`);
+    }
+  };
+  return (
+    <div className="section" style={{ maxWidth: '520px', margin: '60px auto' }}>
+      <div className="form-big" style={{ border: '3px solid #ffcc00', textAlign: 'center' }}>
+        <h2> Admin Login</h2>
+        <p style={{ background: '#fff3cd', padding: '10px', borderRadius: '8px', margin: '10px 0' }}>Protected - Manager Only</p>
+        <form onSubmit={login} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
+          <input type="password" value={pass} onChange={e => setPass(e.target.value)} placeholder="Enter Admin Password" required style={{ padding: '16px' }} />
+          <button className="big-btn">Login </button>
+          {msg && <p className="msg">{msg}</p>}
+        </form>
+      </div>
+    </div>
+  )
 }
 
 const Admin = () => {
-  const [contacts, setContacts] = useState([]); const [applicants, setApplicants] = useState([]); const [tab, setTab] = useState("contacts"); const [page, setPage] = useState(1); const [rowsPerPage, setRowsPerPage] = useState(30); const navigate = useNavigate(); const token = localStorage.getItem("pinnacle_admin_token");
-  const load = async () => { try { const headers = {'x-admin-secret': token, 'Content-Type':'application/json'}; const [cRes, aRes] = await Promise.all([fetch(`${API_URL}/api/contact`, {headers}), fetch(`${API_URL}/api/applicants`, {headers})]); if (cRes.status===401) { localStorage.removeItem("pinnacle_admin_token"); navigate("/admin-login"); return; } const cData = await cRes.json(); const aData = await aRes.json(); if (Array.isArray(cData)) setContacts(cData); if (Array.isArray(aData)) setApplicants(aData); } catch(err){} }
-  useEffect(()=>{ load(); const interval=setInterval(load, 10000); return()=>clearInterval(interval); },[]); useEffect(()=>{ setPage(1); }, [tab, rowsPerPage]);
-  const list = tab==="contacts"? contacts : applicants; const totalPages = Math.max(1, Math.ceil(list.length / rowsPerPage)); const start = (page - 1) * rowsPerPage; const paginated = list.slice(start, start + rowsPerPage);
-  const handleDelete = async (id, type) => { if (!window.confirm("Delete this?")) return; const url = type==='contacts'? `${API_URL}/api/contact/${id}` : `${API_URL}/api/applicants/${id}`; await fetch(url, {method:'DELETE', headers:{'x-admin-secret': token}}); load(); }
-  const exportExcel = () => { if (!list.length) return alert(`No data`); const headers = Object.keys(list[0]); const csv = [headers.join(",")].concat(list.map(r=>headers.map(h=>`"${(r[h]||'').toString().replace(/"/g,'""')}"`).join(","))).join("\n"); const blob = new Blob([csv], {type:'text/csv'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download=`pinnacle_${tab}.csv`; a.click(); }
+  const [contacts, setContacts] = useState([]);
+  const [applicants, setApplicants] = useState([]);
+  const [tab, setTab] = useState("contacts");
+  const [search, setSearch] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [page, setPage] = useState(1); const perPage = 10;
+  const navigate = useNavigate();
+  const token = localStorage.getItem("pinnacle_admin_token");
+
+  const load = async () => {
+    try {
+      const headers = { 'x-admin-secret': token, 'Content-Type': 'application/json' };
+      const [cRes, aRes] = await Promise.all([
+        fetch(`${API_URL}/api/contact`, { headers }),
+        fetch(`${API_URL}/api/applicants`, { headers })
+      ]);
+      if (cRes.status === 401) { localStorage.removeItem("pinnacle_admin_token"); navigate("/admin-login"); return; }
+      const cData = await cRes.json(); const aData = await aRes.json();
+      if (Array.isArray(cData)) setContacts(cData); if (Array.isArray(aData)) setApplicants(aData);
+    } catch (err) { console.log("Load error", err); }
+  }
+  useEffect(() => { load(); }, []);
+  useEffect(() => { setPage(1); }, [tab, search, filterType]);
+
+  const handleDelete = async (id, type) => {
+    if (!window.confirm("Delete this after handling?")) return;
+    const url = type === 'contacts' ? `${API_URL}/api/contact/${id}` : `${API_URL}/api/applicants/${id}`;
+    await fetch(url, { method: 'DELETE', headers: { 'x-admin-secret': token } });
+    load();
+  }
+
+  const exportExcel = () => {
+    const data = tab === 'contacts' ? contacts : applicants;
+    if (!data.length) return alert("No data");
+    const headers = Object.keys(data[0]);
+    const csv = [headers.join(",")].concat(data.map(r => headers.map(h => `"${(r[h] || '').toString().replace(/"/g, '""')}"`).join(","))).join("\n");
+    const blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `pinnacle_${tab}.csv`; a.click();
+  }
   const logout = () => { localStorage.removeItem("pinnacle_admin_token"); navigate("/admin-login"); }
+
+  const filteredContacts = contacts.filter(c => {
+    const q = search.toLowerCase();
+    const matchSearch = (c.full_name || c.fullName || "").toLowerCase().includes(q) || (c.email || "").toLowerCase().includes(q) || (c.phone || "").toLowerCase().includes(q) || (c.service || "").toLowerCase().includes(q) || (c.message || "").toLowerCase().includes(q);
+    if (filterType === "all") return matchSearch;
+    return matchSearch && (c.service || "").toLowerCase().includes(filterType.toLowerCase());
+  });
+
+  const filteredApplicants = applicants.filter(a => {
+    const q = search.toLowerCase();
+    const matchSearch = (a.full_name || a.fullName || "").toLowerCase().includes(q) || (a.phone || "").toLowerCase().includes(q) || (a.email || "").toLowerCase().includes(q) || (a.education || "").toLowerCase().includes(q) || (a.position || "").toLowerCase().includes(q);
+    if (filterType === "all") return matchSearch;
+    return matchSearch && (a.education || "").toLowerCase() === filterType.toLowerCase();
+  });
+
+  const currentList = tab === "contacts" ? filteredContacts : filteredApplicants;
+  const totalPages = Math.ceil(currentList.length / perPage) || 1;
+  const paged = currentList.slice((page - 1) * perPage, page * perPage);
+
   return (
-    <div className="admin-full">
-      <div className="admin-top-full">
-        <h2>Admin - {contacts.length} Contacts | {applicants.length} Applicants | Sheet: 8bggQ</h2>
+    <div className="admin-page">
+      <div className="admin-top">
+        <h2>Admin</h2>
+        <div className="stats">
+          <span>{contacts.length} Contacts</span>
+          <span> {applicants.length} Applicants</span>
+          <span>Page {page}/{totalPages}</span>
+        </div>
         <div className="tabs">
-          <button onClick={()=>setTab("contacts")} className={tab==="contacts"?"tab on":"tab"}>Contacts ({contacts.length})</button>
-          <button onClick={()=>setTab("applicants")} className={tab==="applicants"?"tab on":"tab"}>Applicants ({applicants.length})</button>
-          <button onClick={exportExcel} className="tab white">Export Excel</button>
-          <button onClick={load} className="tab">Refresh</button>
+          <button onClick={() => setTab("contacts")} className={tab === "contacts" ? "tab on" : "tab"}>Contacts</button>
+          <button onClick={() => setTab("applicants")} className={tab === "applicants" ? "tab on" : "tab"}>Applicants</button>
+          <button onClick={exportExcel} className="tab white"> Export Excel</button>
           <button onClick={logout} className="tab red">Logout</button>
         </div>
       </div>
-      <div className="table-wrap">
-        <table className="admin-table">
-          <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>{tab==='contacts'?'Service':'Position'}</th><th>Message</th><th>Date</th><th>Action</th></tr></thead>
-          <tbody>
-            {paginated.map((item, idx)=>(
-              <tr key={item.id}>
-                <td>{start + idx + 1}</td>
-                <td><b>{item.full_name||item.fullName||'-'}</b></td>
-                <td>{item.email||'-'}</td>
-                <td style={{color:'#0a1931', fontWeight:'800'}}>{item.phone||item.phone_number||'-'}</td>
-                <td>{item.service||item.education||item.position||'-'} {item.district?`(${item.district})`:''}</td>
-                <td className="msg-cell">{item.message||item.experience||'-'}</td>
-                <td>{new Date(item.created_at||Date.now()).toLocaleString()}</td>
-                <td><div className="row-actions"><a href={`tel:${item.phone||item.phone_number}`} className="mini-btn call">Call</a><a href={`https://wa.me/${(item.phone||'').toString().replace(/[^0-9]/g,'')}`} target="_blank" rel="noreferrer" className="mini-btn wa">WA</a><button onClick={()=>handleDelete(item.id,tab)} className="mini-btn del">X</button></div></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {list.length===0 && <div style={{textAlign:'center', padding:'20px'}}>No {tab} yet</div>}
-        <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', padding:'14px 16px', background:'#f8fafc', borderTop:'1px solid #e2e8f0'}}>
-          <div style={{display:'flex', alignItems:'center', gap:'8px'}}>
-            <span style={{fontSize:'14px'}}>Page</span>
-            <input type="number" value={page} min={1} max={totalPages} onChange={e=>setPage(Math.min(totalPages, Math.max(1, Number(e.target.value)||1)))} style={{width:'65px', padding:'8px', borderRadius:'8px', border:'1.5px solid #cbd5e1', textAlign:'center', fontWeight:'800'}}/>
-            <span style={{fontSize:'14px'}}>of {totalPages}</span>
+      <div className="filter-bar-visible">
+        <input className="search-input-visible" placeholder={tab === "contacts" ? " Search by service, name, phone..." : "🔍 Search by education, name, phone..."} value={search} onChange={e => setSearch(e.target.value)} />
+        <select className="dropdown-filter-visible" value={filterType} onChange={e => setFilterType(e.target.value)}>
+          <option value="all">All {tab === "contacts" ? "Services" : "Education"}</option>
+          {tab === "contacts" ? (
+            <>
+              <option>Security Guard Service</option>
+              <option>Construction Security</option>
+              <option>CCTV Installation</option>
+              <option>Mobile Patrol</option>
+              <option>Event Security</option>
+              <option>Alarm System</option>
+            </>
+          ) : (
+            <>
+              <option>P7</option>
+              <option>UCE</option>
+              <option>UACE</option>
+              <option>Diploma</option>
+              <option>Degree</option>
+            </>
+          )}
+        </select>
+        <div className="filter-btns">
+          <button className="btn-yellow small" onClick={load}>🔄 Refresh</button>
+          <button className="btn-dark small" onClick={() => setPage(p => Math.max(1, p - 1))}>‹ Prev</button>
+          <button className="btn-dark small" onClick={() => setPage(p => Math.min(totalPages, p + 1))}>Next ›</button>
+        </div>
+      </div>
+      <div className="mobile-cards">
+        {paged.map((item, i) => (
+          <div key={item.id || i} className="m-card">
+            <div className="m-head">
+              <b>{item.full_name || item.fullName}</b>
+              <small> {new Date(item.created_at || item.createdAt || Date.now()).toLocaleString()}</small>
+            </div>
+            <div className="m-line">{item.email || '-'} </div>
+            <div className="m-line">{item.phone || '-'} </div>
+            <div className="m-tag"><span className="tag blue">{item.service || item.education || item.position || 'General'}</span></div>
+            <div className="m-msg">{(item.message || item.interest || item.experience || '').substring(0, 120)}</div>
+            <div className="m-actions-3">
+              <a href={`tel:${item.phone}`} className="m-btn call"> Call</a>
+              <a href={`https://wa.me/${(item.phone || '').replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="m-btn wa">WhatsApp</a>
+              <button onClick={() => handleDelete(item.id, tab)} className="m-btn del"> Delete</button>
+            </div>
           </div>
-          <select value={rowsPerPage} onChange={e=>setRowsPerPage(Number(e.target.value))} style={{padding:'8px 12px', borderRadius:'8px', border:'1.5px solid #cbd5e1', fontWeight:'800'}}>
-            <option value={10}>10 rows</option>
-            <option value={30}>30 rows</option>
-            <option value={50}>50 rows</option>
-            <option value={100}>100 rows</option>
-          </select>
+        ))}
+        {paged.length === 0 && <p className="no-data">No data found</p>}
+      </div>
+      <div className="table-card desktop-only">
+        <div className="scroll">
+          <table className="clear-table">
+            <thead><tr><th>#</th><th>Name</th><th>Contact Info</th><th>{tab === "contacts" ? "Service" : "Education / Position"}</th><th>Details</th><th>⏰ Time</th><th>Action</th></tr></thead>
+            <tbody>{paged.map((item, i) => (
+              <tr key={item.id}><td>{(page - 1) * perPage + i + 1}</td><td><b>{item.full_name || item.fullName}</b></td><td>{item.email}<br /><small>{item.phone}</small></td><td><span className="tag blue">{item.service || item.education}</span><br /><small>{item.position || ''}</small></td><td style={{ maxWidth: '200px' }}><small>{(item.message || item.interest || item.experience || '').substring(0, 100)}</small></td><td><small>{new Date(item.created_at || item.createdAt || Date.now()).toLocaleString()}</small></td><td><button onClick={() => handleDelete(item.id, tab)} className="del-btn">Delete</button></td></tr>
+            ))}</tbody>
+          </table>
         </div>
       </div>
     </div>
   )
 }
 
-const ProtectedAdmin = () => { const token = localStorage.getItem("pinnacle_admin_token"); if (token!== ADMIN_PASSWORD) return <Navigate to="/admin-login" replace />; return <Admin />; }
+const ProtectedAdmin = () => {
+  const token = localStorage.getItem("pinnacle_admin_token");
+  if (token !== ADMIN_PASSWORD) return <Navigate to="/admin-login" replace />;
+  return <Admin />;
+}
 
-const SinglePage = () => (
-  <>
-    <div id="home"><Home/></div>
-    <div id="about"><About/></div>
-    <div id="services"><Services/></div>
-    <div id="jobs"><Blog/></div>
-    <div id="contact"><Contact/></div>
-    <div id="join"><Join/></div>
-  </>
-)
-
-const Footer = () => (
-  <div className="footer-new">
-    <div className="footer-inner-odc">
-      <div className="f-col">
-        <h4 className="f-logo"><span style={{color:'#fff'}}>ODC</span><span style={{color:'#38bdf8'}}>deyaJ</span></h4>
-        <p>A BIST Final Year Project — Secure, Simple, Working. Built with passion by Rubangakene Moses.</p>
-        <a href={KOBO_LINK} target="_blank" rel="noreferrer" className="footer-test-btn" style={{marginTop:'8px', display:'inline-block', textDecoration:'none', background:'#38bdf8', color:'#0f172a', padding:'10px 18px', borderRadius:'20px', fontWeight:'800', fontSize:'13px'}}>Take Kobo Online Test</a>
-      </div>
-      <div className="f-col">
-        <h4>Quick Links</h4>
-        <span onClick={()=>document.getElementById("home")?.scrollIntoView({behavior:'smooth'})}>Home</span>
-        <span onClick={()=>document.getElementById("about")?.scrollIntoView({behavior:'smooth'})}>About Us</span>
-        <span onClick={()=>document.getElementById("services")?.scrollIntoView({behavior:'smooth'})}>Mission</span>
-        <Link to="/online-test" style={{color:'#38bdf8', fontWeight:'700', textDecoration:'none'}}>Online Test (Kobo)</Link>
-      </div>
-      <div className="f-col">
-        <h4>Services</h4>
-        <span>Student Registration</span>
-        <span>KoboToolbox Setup</span>
-        <span>Website Design</span>
-        <span>Office Fix</span>
-      </div>
-      <div className="f-col">
-        <h4>Contact</h4>
-        <p>Entebbe, Uganda</p>
-        <p>rubangakenem708@gmail.com</p>
-        <p>Nkumba University</p>
-        <p>© 2026 ODCdeyaJ</p>
-      </div>
-    </div>
-    <div className="footer-copy">© 2026 ODCdeyaJ | Built by Moses | All Rights Reserved | Kobo Test: {KOBO_LINK}</div>
-  </div>
-)
+const Footer = () => <div className="footer">© 2026 Pinnacle Security Ltd | Plot 442 & 443 Masajjagere, Muyenga | HR: hr@pinnaclegroup.co.ug | Control Room 24/7: 0754 139726</div>
 
 const App = () => (
   <BrowserRouter>
     <style>{`
-      html{scroll-behavior:smooth}
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap');
-      *{margin:0;padding:0;box-sizing:border-box}
-      html,body{width:100%; overflow-x:hidden; background:#f1f5f9; margin:0}
-      body{font-family:'Inter', sans-serif; font-size:15px; line-height:1.7; color:#1e293b; padding-top:68px}
-      h1,h2,h3,h4,.logo{font-family:'Poppins', sans-serif; line-height:1.3}
-   .nav{background:#ffffff; padding:0 16px; position:fixed; top:0; left:0; width:100%; z-index:9999; box-shadow:0 2px 16px rgba(0,0,0,0.08); border-bottom:1px solid #e2e8f0; height:68px; display:flex; align-items:center}
-   .nav-inner{max-width:1250px; margin:auto; display:flex; justify-content:space-between; align-items:center; width:100%}
-   .logo{font-weight:800; font-size:22px; cursor:pointer}
-   .menu-btn{color:#0a1931; font-size:26px; cursor:pointer; display:none; font-weight:800}
-   .links{display:flex; gap:4px; align-items:center}
-   .links span,.links a{color:#334155; text-decoration:none; font-size:14.5px; font-weight:600; padding:8px 14px; cursor:pointer; border-radius:8px}
-   .links span:hover{color:#0a1931; background:#f1f5f9}
-   .btn-register{background:#1746a2!important; color:#fff!important; padding:10px 22px!important; border-radius:25px!important; font-weight:700!important; margin-left:10px!important; text-decoration:none!important}
-   .btn-register:hover{background:#12367e!important}
-   .btn-yellow{background:#ffcc00!important; color:#0a1931!important; padding:9px 18px!important; border-radius:25px!important; font-weight:800!important; text-decoration:none}.btn-yellow.big{padding:13px 26px!important; font-size:15px}
-   .btn-white{background:#fff!important; color:#0a1931!important; padding:9px 18px!important; border-radius:25px!important; font-weight:800!important; border:2px solid #0a1931}.btn-white.big{padding:11px 24px!important}
-   .big-test-btn{background:#1746a2; color:#fff; padding:14px 24px; border-radius:30px; font-weight:800; text-decoration:none; display:inline-block; text-align:center; cursor:pointer}
-   .hero{background:linear-gradient(135deg,#0a1931 0%,#1e3a8a 100%); color:#fff; padding:40px 16px; text-align:center; width:100%}.hero h1{color:#ffcc00; font-size:24px; margin-bottom:10px; font-weight:800}.hero p{font-size:14px; color:#cbd5e1}.dots{margin:14px 0}.dot{width:9px; height:9px; background:#475569; border-radius:50%; display:inline-block; margin:0 4px; cursor:pointer}.dot.on{background:#ffcc00}
-   .section{padding:18px 14px; max-width:1250px; margin:auto; width:100%}.section h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:8px; margin-bottom:16px; font-size:22px; font-weight:800}.card{background:#fff; padding:18px; border-radius:14px; margin-bottom:12px; box-shadow:0 4px 12px rgba(0,0,0,0.05); border-left:4px solid #0a1931}.card.gold{border-left-color:#ffcc00; background:#fffbeb}.card.dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; border-left-color:#ffcc00}.card h3{font-size:17px; margin-bottom:8px}
-   .about-hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:22px; border-radius:14px; margin-bottom:14px; border:2px solid #ffcc00}.service-box{background:#fff; border-radius:12px; margin-bottom:10px; box-shadow:0 3px 10px rgba(0,0,0,0.04); border-left:4px solid #0a1931}.service-head{display:flex; justify-content:space-between; align-items:center; padding:14px; cursor:pointer}.service-short{font-size:13px; color:#64748b}.expand-btn{background:#0a1931; color:#ffcc00; padding:6px 12px; border-radius:20px; font-size:11px; font-weight:800}.service-body{background:#f8fafc; padding:12px; border-top:1px solid #e2e8f0}
-   .memo{background:#fff; border-radius:14px; padding:18px; border:2px solid #0a1931}.memo-head{background:#0a1931; color:#fff; padding:16px; border-radius:12px; margin:-18px -18px 16px -18px; text-align:center}.job-card{background:#f8fafc; border:2px solid #e2e8f0; border-radius:12px; padding:14px; margin-bottom:12px}.job-card.gold{background:#fffbeb; border-color:#ffcc00}.big-recruit-btn{background:#ffcc00; color:#0a1931; padding:14px 24px; border-radius:30px; font-weight:800; text-decoration:none; display:inline-block; text-align:center; cursor:pointer}
-   .contact-full{padding:0; margin:0; width:100vw; margin-left:calc(-50vw + 50%); background:#f1f5f9; padding:20px 16px 30px 16px}.contact-full h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:8px; margin-bottom:18px; font-size:22px; font-weight:800; max-width:1250px; margin-left:auto; margin-right:auto}
-   .form-big{max-width:900px; margin:14px auto; background:#fff; padding:22px; border-radius:14px; display:flex; flex-direction:column; gap:14px; box-shadow:0 4px 12px rgba(0,0,0,0.06)}.light-form input,.light-form select,.light-form textarea{background:#ffffff!important; color:#0a1931!important; border:2px solid #cbd5e1!important}.form-big input,.form-big select,.form-big textarea{padding:12px 14px; border-radius:10px; font-size:14px; width:100%; font-family:'Inter'}.form-big label{font-size:13px; font-weight:700; color:#0a1931; margin-bottom:4px; display:block}.two-col{display:grid; grid-template-columns:1fr 1fr; gap:12px} @media(max-width:700px){.two-col{grid-template-columns:1fr}}.form-2col{display:grid; grid-template-columns:320px 1fr; gap:16px; max-width:1250px; margin:auto} @media(max-width:900px){.form-2col{grid-template-columns:1fr}}.big-btn{background:#0a1931; color:#ffcc00; padding:14px; border:none; border-radius:10px; font-weight:800; cursor:pointer; font-size:15px}.msg{padding:12px; background:#d4edda; border-radius:10px; font-size:13px; text-align:center; font-weight:700}
-   .admin-full{width:100vw; margin-left:calc(-50vw + 50%); margin-right:calc(-50vw + 50%); background:#ffffff; min-height:70vh; padding:0; margin-top:0; margin-bottom:0}
-   .admin-top-full{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:16px 10px; text-align:center; border-bottom:4px solid #ffcc00; width:100%}.admin-top-full h2{color:#ffcc00; font-size:16px; border:none; margin-bottom:10px}
-   .tabs{display:flex; gap:6px; justify-content:center; flex-wrap:wrap}.tab{padding:8px 12px; border-radius:20px; border:1.5px solid #ffcc00; background:transparent; color:#ffcc00; font-weight:700; font-size:11px; cursor:pointer}.tab.on{background:#ffcc00; color:#0a1931}.tab.white{background:#fff; color:#0a1931; border-color:#fff}.tab.red{border-color:#ff4444; color:#ff4444}
-   .table-wrap{width:100%; overflow-x:auto; background:#fff; -webkit-overflow-scrolling:touch}
-   .admin-table{width:100%; border-collapse:collapse; min-width:900px; font-size:13px}
-   .admin-table th{background:#0a1931; color:#ffcc00; padding:11px 8px; text-align:left; font-weight:800; font-size:11.5px; text-transform:uppercase; position:sticky; top:0; white-space:nowrap}
-   .admin-table td{padding:9px 8px; border-bottom:1px solid #e2e8f0; vertical-align:top; max-width:220px; word-wrap:break-word}
-   .admin-table tr:hover{background:#f8fafc}.admin-table tr:nth-child(even){background:#fffbeb}
-   .msg-cell{max-width:220px; font-size:12px; color:#334155}.row-actions{display:flex; gap:4px}.mini-btn{padding:5px 9px; border-radius:7px; font-size:10px; font-weight:800; text-decoration:none; border:none; cursor:pointer}.mini-btn.call{background:#0a1931; color:#ffcc00}.mini-btn.wa{background:#22c55e; color:#fff}.mini-btn.del{background:#fee2e2; color:#dc2626}
-   .footer-new{background:#0f172a; color:#94a3b8; width:100vw; margin-left:calc(-50vw + 50%); border-top:1px solid #1e293b; padding:0}
-   .footer-inner-odc{max-width:1250px; margin:auto; padding:44px 20px 30px 20px; display:grid; grid-template-columns:1.6fr 1fr 1fr 1fr; gap:32px}
-   .f-col{display:flex; flex-direction:column; gap:10px}
-   .f-col h4{color:#fff; font-size:15px; font-weight:700; margin-bottom:4px}
-   .f-col p,.f-col span{font-size:13.5px; color:#94a3b8; line-height:1.7; cursor:pointer; text-decoration:none}
-   .f-col span:hover{color:#e2e8f0}
-   .f-logo{font-size:22px!important; font-weight:800; letter-spacing:-0.5px}
-   .footer-copy{text-align:center; font-size:12px; color:#64748b; padding:18px 16px; border-top:1px solid rgba(255,255,255,0.07)}
-      @media(max-width:900px){
-     .menu-btn{display:block}
-     .links{display:none; flex-direction:column; align-items:flex-start; background:#fff; position:absolute; top:68px; left:0; width:100%; padding:14px 16px; box-shadow:0 8px 24px rgba(0,0,0,0.12); border-top:1px solid #e2e8f0}
-     .links.show{display:flex}
-     .footer-inner-odc{grid-template-columns:1fr 1fr; gap:28px}
-      }
-      @media(max-width:560px){.footer-inner-odc{grid-template-columns:1fr; gap:24px}.nav{height:60px} body{padding-top:60px}.links{top:60px} }
+      *{margin:0;padding:0;box-sizing:border-box} body{font-family:Arial,sans-serif; background:#f4f6f9; line-height:1.6; overflow-x:hidden}
+  .nav{background:#0a1931; padding:14px 15px; position:sticky; top:0; z-index:999}.nav-top{display:flex; justify-content:space-between; align-items:center}.logo{color:#ffcc00; font-weight:900; font-size:16px}.menu-btn{color:#fff; font-size:26px; cursor:pointer; display:none}.links{display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap}.links a{color:#fff; text-decoration:none; font-size:15px; font-weight:700; padding:8px 10px}.btn-yellow{background:#ffcc00!important; color:#0a1931!important; padding:10px 18px!important; border-radius:25px!important; font-weight:900!important; border:none; cursor:pointer; text-decoration:none; display:inline-block; font-size:14px}.btn-yellow.big{padding:14px 26px!important; font-size:16px}.btn-yellow.small{padding:10px 16px!important; font-size:13px}.btn-outline{background:transparent!important; color:#fff!important; border:2px solid #fff!important; padding:12px 24px!important; border-radius:25px!important; font-weight:900!important; text-decoration:none; display:inline-block}.btn-admin{background:#1e3a8a!important; color:#ffcc00!important; border:2px solid #ffcc00!important; padding:8px 16px!important; border-radius:25px!important; font-weight:900!important; text-decoration:none; font-size:14px}.btn-dark{background:#0a1931; color:#ffcc00; border:none; padding:12px 18px; border-radius:10px; font-weight:800; cursor:pointer; font-size:13px}.btn-dark.small{padding:10px 14px}.hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:35px 15px; text-align:center; border-radius:0 0 20px 20px}.hero h1{color:#ffcc00; font-size:22px; margin-bottom:10px; line-height:1.3}.hero p{font-size:15px}.dots{margin:12px 0}.dot{width:10px; height:10px; background:#555; border-radius:50%; display:inline-block; margin:0 5px; cursor:pointer}.dot.on{background:#ffcc00}.section{padding:18px 12px; max-width:1250px; margin:auto}.section h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:8px; margin-bottom:16px; font-size:22px}.card{background:#fff; padding:18px; border-radius:14px; margin-bottom:14px; box-shadow:0 4px 12px rgba(0,0,0,0.06); border-left:5px solid #0a1931; font-size:15px; line-height:1.7}.card.gold{border-left-color:#ffcc00; background:#fffbeb}.card.dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; border-left-color:#ffcc00}.card h3{font-size:18px; margin-bottom:10px; color:#0a1931}.card.dark h3{color:#ffcc00}
+   .home-grid-3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px} @media(max-width:900px){.home-grid-3{grid-template-columns:1fr}}
+   .about-hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:22px; border-radius:16px; margin-bottom:16px; border:2px solid #ffcc00}.about-hero h3{color:#ffcc00; font-size:20px; margin-bottom:12px}.about-hero p{margin-bottom:10px; line-height:1.8}.about-grid{display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:16px}.about-card{text-align:center}.about-list{list-style:none; text-align:left; margin-top:10px}.about-list li{padding:4px 0; font-size:14px}
+   .service-box{background:#fff; border-radius:12px; margin-bottom:10px; box-shadow:0 2px 8px rgba(0,0,0,0.05); border-left:4px solid #0a1931; overflow:hidden}.service-head{display:flex; justify-content:space-between; align-items:center; padding:14px; cursor:pointer; background:#fff}.service-short{font-size:12px; color:#666; margin-top:3px}.expand-btn{background:#0a1931; color:#ffcc00; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:800}.service-body{background:#f8fafc; padding:14px; border-top:1px solid #e2e8f0}.service-body p{margin-bottom:8px; font-size:14px}
+   .memo{background:#fff; border-radius:16px; padding:20px; box-shadow:0 6px 20px rgba(0,0,0,0.08); border:3px solid #0a1931}.memo-head{background:#0a1931; color:#fff; padding:16px; border-radius:12px; margin:-20px -20px 20px -20px; text-align:center}.memo-head h2{color:#ffcc00; font-size:18px}.memo-head p{font-size:12px; margin-top:4px}.memo-body{line-height:1.7}.job-card{background:#f0f7ff; border-left:5px solid #1e40af; padding:16px; border-radius:12px; margin-bottom:14px}.job-card.gold{background:#fffbeb; border-left-color:#ffcc00}.job-card h3{color:#0a1931; font-size:16px; margin-bottom:8px}.job-card ul{margin-left:20px; margin-top:8px}.job-card li{font-size:13px; margin-bottom:4px}.general-recruit{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:18px; border-radius:14px; text-align:center; border:2px solid #ffcc00}.general-recruit h3{color:#ffcc00}.big-recruit-btn{display:block; background:#ffcc00; color:#0a1931; padding:16px; border-radius:12px; font-weight:900; text-decoration:none; margin-top:12px; font-size:16px}
+   .form-big{max-width:900px; margin:16px auto; background:#fff; padding:22px; border-radius:16px; display:flex; flex-direction:column; gap:14px; box-shadow:0 6px 20px rgba(0,0,0,0.08)}.form-big input,.form-big select,.form-big textarea{padding:14px; border:2px solid #0a1931; border-radius:10px; font-size:16px; width:100%; outline:none}.form-big label{font-size:13px; font-weight:800; color:#0a1931; margin-bottom:4px; display:block}.two-col{display:grid; grid-template-columns:1fr 1fr; gap:14px} @media(max-width:700px){.two-col{grid-template-columns:1fr}}.form-2col{display:grid; grid-template-columns:300px 1fr; gap:16px} @media(max-width:900px){.form-2col{grid-template-columns:1fr}}.big-btn{background:#0a1931; color:#ffcc00; padding:16px; border:none; border-radius:12px; font-weight:900; cursor:pointer; font-size:17px}.msg{padding:12px; background:#d4edda; border-radius:10px; font-size:14px; text-align:center; font-weight:700}
+   .admin-page{padding:10px; max-width:1300px; margin:auto}
+   .admin-top{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:16px; border-radius:16px; text-align:center; margin-bottom:10px; border:2px solid #ffcc00}.admin-top h2{color:#ffcc00; border:none; margin-bottom:6px; font-size:18px}.stats{display:flex; gap:8px; justify-content:center; margin:10px 0; flex-wrap:wrap}.stats span{background:rgba(255,204,0,0.15); border:1.5px solid #ffcc00; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:800; color:#ffcc00}.tabs{display:flex; gap:8px; justify-content:center; margin-top:10px; flex-wrap:wrap}.tab{padding:8px 16px; border-radius:20px; border:1.5px solid #ffcc00; background:transparent; color:#ffcc00; font-weight:800; font-size:12px; cursor:pointer}.tab.on{background:#ffcc00; color:#0a1931}.tab.white{background:#fff; color:#0a1931}.tab.red{border-color:#ff4444; color:#ff4444}
+   .filter-bar-visible{display:flex; gap:8px; margin-bottom:12px; background:#ffffff; padding:14px; border-radius:14px; flex-wrap:wrap; align-items:center; border:3px solid #0a1931; box-shadow:0 4px 12px rgba(0,0,0,0.1)}.search-input-visible{flex:1; padding:14px 16px; border-radius:10px; border:3px solid #0a1931; font-size:14px; min-width:200px; background:#ffffff; color:#0a1931; font-weight:800}.dropdown-filter-visible{padding:14px; border-radius:10px; border:3px solid #0a1931; font-size:13px; font-weight:800; background:#fffbeb; min-width:150px; color:#0a1931}.filter-btns{display:flex; gap:6px; flex-wrap:wrap}
+   .mobile-cards{display:flex; flex-direction:column; gap:10px}.m-card{background:#fff; border-radius:12px; padding:14px; box-shadow:0 2px 10px rgba(0,0,0,0.07); border-left:4px solid #ffcc00; border-top:2px solid #0a1931; border-right:2px solid #0a1931; border-bottom:2px solid #0a1931}.m-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:4px}.m-head b{font-size:14px; color:#0a1931}.m-head small{font-size:10px; color:#0a1931; background:#ffcc00; padding:4px 8px; border-radius:10px; font-weight:800}.m-line{font-size:12px; color:#334155; margin:2px 0; word-break:break-all}.m-tag{margin:6px 0}.m-msg{font-size:12px; color:#475569; background:#f8fafc; padding:8px; border-radius:8px; margin:6px 0; border:1px solid #cbd5e1}.m-actions-3{display:grid; grid-template-columns:1fr 1fr 0.8fr; gap:6px; margin-top:8px}.m-btn{text-align:center; padding:10px 8px; border-radius:8px; font-size:11px; font-weight:800; text-decoration:none; border:none; cursor:pointer}.m-btn.call{background:#0a1931; color:#ffcc00}.m-btn.wa{background:#22c55e; color:#fff}.m-btn.del{background:#fee2e2; color:#dc2626}
+   .table-card{background:#fff; border-radius:14px; padding:12px; box-shadow:0 4px 14px rgba(0,0,0,0.06); border:3px solid #0a1931}.scroll{overflow-x:auto}.clear-table{width:100%; border-collapse:collapse; font-size:13px; min-width:950px}.clear-table th{background:#0a1931; color:#ffcc00; padding:14px 10px; text-align:left; border:2px solid #0a1931}.clear-table td{padding:12px 10px; border:2px solid #94a3b8; vertical-align:top}.clear-table tr:nth-child(even){background:#f8fafc}.tag{padding:4px 10px; border-radius:12px; font-size:11px; font-weight:800}.tag.blue{background:#dbeafe; color:#1e40af}.del-btn{background:#e11d48; color:#fff; border:none; padding:7px 12px; border-radius:6px; cursor:pointer; font-weight:800; font-size:12px}.no-data{text-align:center; padding:20px; color:#888}
+   .desktop-only{display:none} @media(min-width:768px){.mobile-cards{display:none}.desktop-only{display:block}.about-grid{grid-template-columns:1fr 1fr 1fr}}
+   .footer{background:#0a1931; color:#aaa; text-align:center; padding:16px; font-size:11px; margin-top:20px; line-height:1.6} @media(max-width:850px){.menu-btn{display:block}.links{display:none; flex-direction:column; align-items:flex-start; padding-top:12px}.links.show{display:flex} }
     `}</style>
-    <Navbar/>
+    <Navbar />
     <Routes>
-      <Route path="/" element={<SinglePage/>}/>
-      <Route path="/online-test" element={<OnlineTestRegister/>}/>
-      <Route path="/admin-login" element={<AdminLogin/>}/>
-      <Route path="/admin" element={<ProtectedAdmin/>}/>
+      <Route path="/" element={<Home />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/services" element={<Services />} />
+      <Route path="/blog" element={<Blog />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/join" element={<Join />} />
+      <Route path="/online-test" element={<OnlineTest />} />
+      <Route path="/admin-login" element={<AdminLogin />} />
+      <Route path="/admin" element={<ProtectedAdmin />} />
     </Routes>
-    <Footer/>
+    <Footer />
   </BrowserRouter>
 )
 export default App
