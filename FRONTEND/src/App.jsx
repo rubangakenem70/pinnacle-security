@@ -6,7 +6,7 @@ const GOOGLE_SHEET_WEBHOOK = "https://script.google.com/macros/s/AKfycbz0Fx9gSfP
 const KOBO_APTITUDE_TEST = "https://ee.kobotoolbox.org/x/ODCdeyaJ";
 const GOOGLE_APTITUDE_REGISTER = "https://forms.gle/W8JroZ8n8HGArq248";
 
-// ========= FIXED ADMIN - TWO TABLES NO COMPRESS =========
+// ========= FIXED ADMIN - TWO TABLES - SERVICE AND MESSAGE SEPARATE =========
 const AdminDashboard = () => {
   const [auth, setAuth] = useState(false);
   const [pass, setPass] = useState("");
@@ -87,12 +87,12 @@ const AdminDashboard = () => {
 
         {(tab==='all'||tab==='contact') && (
           <div style={{background:'#fff', borderRadius:'16px', overflow:'hidden', boxShadow:'0 4px 12px rgba(0,0,0,0.06)'}}>
-            <div style={{background:'#0a1931', padding:'14px 20px', fontWeight:'900', color:'#ffcc00'}}>📞 CONTACTS TABLE - {filteredContacts.length} Records</div>
+            <div style={{background:'#0a1931', padding:'14px 20px', fontWeight:'900', color:'#ffcc00'}}>📞 CONTACTS TABLE - {filteredContacts.length} Records - SERVICE & MESSAGE SEPARATE</div>
             <div style={{overflowX:'auto'}}>
               <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px', minWidth:'1100px'}}>
-                <thead><tr style={{background:'#0a1931', color:'#ffcc00', textAlign:'left'}}><th style={{padding:'12px'}}>Date</th><th style={{padding:'12px'}}>Name</th><th style={{padding:'12px'}}>Phone</th><th style={{padding:'12px'}}>Email</th><th style={{padding:'12px', minWidth:'200px'}}>Service</th><th style={{padding:'12px', minWidth:'350px'}}>Message</th></tr></thead>
+                <thead><tr style={{background:'#0a1931', color:'#ffcc00', textAlign:'left'}}><th style={{padding:'12px'}}>Date</th><th style={{padding:'12px'}}>Name</th><th style={{padding:'12px'}}>Phone</th><th style={{padding:'12px'}}>Email</th><th style={{padding:'12px', minWidth:'200px', background:'#ffcc00', color:'#0a1931'}}>SERVICE</th><th style={{padding:'12px', minWidth:'350px'}}>MESSAGE</th></tr></thead>
                 <tbody>
-                  {filteredContacts.map((d,i)=><tr key={i} style={{borderBottom:'1px solid #eee'}}><td style={{padding:'10px', fontSize:'11px'}}>{d.timestamp?new Date(d.timestamp).toLocaleString():''}</td><td style={{padding:'10px', fontWeight:'800'}}>{d.fullName}</td><td style={{padding:'10px'}}>{d.phone}</td><td style={{padding:'10px', fontSize:'12px'}}>{d.email}</td><td style={{padding:'10px', fontWeight:'700', background:'#fffbeb'}}>{d.service}</td><td style={{padding:'10px', whiteSpace:'normal', wordBreak:'break-word', lineHeight:'1.6'}}>{d.message}</td></tr>)}
+                  {filteredContacts.map((d,i)=><tr key={i} style={{borderBottom:'1px solid #eee'}}><td style={{padding:'10px', fontSize:'11px'}}>{d.timestamp?new Date(d.timestamp).toLocaleString():''}</td><td style={{padding:'10px', fontWeight:'800'}}>{d.fullName}</td><td style={{padding:'10px'}}>{d.phone}</td><td style={{padding:'10px', fontSize:'12px'}}>{d.email}</td><td style={{padding:'10px', fontWeight:'700', background:'#fffbeb', border:'2px solid #ffcc00'}}>{d.service}</td><td style={{padding:'10px', whiteSpace:'normal', wordBreak:'break-word', lineHeight:'1.6', border:'1px solid #ddd'}}>{d.message}</td></tr>)}
                 </tbody>
               </table>
             </div>
@@ -344,7 +344,7 @@ const MainSite = () => (
       body{font-family: Arial, Helvetica, sans-serif !important; background:#f4f6f9; line-height:1.8; overflow-x:hidden; padding-top:75px; font-size:17px}
       .nav{background:#0a1931; padding:16px 18px; position:fixed; top:0; left:0; right:0; width:100%; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,0.3)}
       .nav-top{display:flex; justify-content:space-between; align-items:center}.logo{color:#ffcc00; font-weight:900; font-size:18px}.menu-btn{color:#fff; font-size:28px; cursor:pointer; display:none}.links{display:flex; gap:12px; align-items:center; justify-content:center; flex-wrap:wrap}.links a{color:#fff; text-decoration:none; font-size:16px; font-weight:700; padding:8px 12px; cursor:pointer}
-      .btn-yellow{background:#ffcc00!important; color:#0a1931!important; padding:11px 20px!important; border-radius:25px!important; font-weight:900!important; border:none; cursor:pointer; text-decoration:none; display:inline-block; font-size:16px}.btn-yellow.big{padding:16px 28px!important; font-size:18px}
+      .btn-yellow{background:#ffcc00!important; color:#0a1931!important; padding:11px 20px!important; border-radius:25px!important; fontWeight:900!important; border:none; cursor:pointer; text-decoration:none; display:inline-block; font-size:16px}.btn-yellow.big{padding:16px 28px!important; font-size:18px}
       .hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:40px 18px; text-align:center; border-radius:0 0 20px 20px}.hero h1{color:#ffcc00; font-size:28px; margin-bottom:12px; font-weight:900}.hero p{font-size:18px}.dots{margin:14px 0}.dot{width:12px; height:12px; background:#555; border-radius:50%; display:inline-block; margin:0 6px; cursor:pointer}.dot.on{background:#ffcc00}
       .section{padding:22px 14px; max-width:1280px; margin:auto}.section h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:10px; margin-bottom:18px; font-size:26px; font-weight:900}
       .card{background:#fff; padding:20px; border-radius:14px; margin-bottom:16px; box-shadow:0 4px 12px rgba(0,0,0,0.06); border-left:6px solid #0a1931; font-size:17px; line-height:1.8; color:#0a1931}.card.gold{border-left-color:#ffcc00; background:#fffbeb}.card.dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; border-left-color:#ffcc00}.card h3{font-size:20px; margin-bottom:12px; color:#0a1931; font-weight:900}.card.dark h3{color:#ffcc00}
