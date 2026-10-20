@@ -6,6 +6,92 @@ const GOOGLE_SHEET_WEBHOOK = "https://script.google.com/macros/s/AKfycbz0Fx9gSfP
 const KOBO_APTITUDE_TEST = "https://ee.kobotoolbox.org/x/ODCdeyaJ";
 const GOOGLE_APTITUDE_REGISTER = "https://forms.gle/W8JroZ8n8HGArq248";
 
+// ========= NEW BEAUTIFUL ADMIN DASHBOARD =========
+const AdminDashboard = () => {
+  const [auth, setAuth] = useState(false);
+  const [pass, setPass] = useState("");
+  const [data, setData] = useState([]);
+  const [search, setSearch] = useState("");
+  const [tab, setTab] = useState("all");
+  const [loading, setLoading] = useState(false);
+
+  const login = () => {
+    if (pass === ADMIN_PASSWORD) setAuth(true);
+    else alert("Wrong Password!");
+  };
+
+  const load = () => {
+    setLoading(true);
+    fetch(GOOGLE_SHEET_WEBHOOK)
+      .then(r => r.json())
+      .then(d => {
+        // Sort newest first
+        const sorted = (Array.isArray(d) ? d : []).sort((a,b)=> new Date(b.timestamp || b.Timestamp) - new Date(a.timestamp || a.Timestamp));
+        setData(sorted);
+        setLoading(false);
+      })
+      .catch(() => { setLoading(false); alert("Failed to load. Make sure Google Sheet has 2 tabs: Applicants & Contacts and Apps Script deployed as Anyone")});
+  };
+
+  useEffect(() => { if (auth) load(); }, [auth]);
+
+  if (!auth) {
+    return (
+      <div style={{minHeight:'100vh', background:'#0a1931', display:'flex', justifyContent:'center', alignItems:'center', fontFamily:'Arial'}}>
+        <div style={{background:'#fff', padding:'30px', borderRadius:'16px', width:'90%', maxWidth:'380px', textAlign:'center'}}>
+          <h2 style={{fontWeight:'900', color:'#0a1931'}}>🛡️ PINNACLE ADMIN</h2>
+          <p style={{fontSize:'12px', color:'#666', marginTop:'6px'}}>pinnacle-security-bice.vercel.app/admin</p>
+          <input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="Admin Password" style={{width:'100%', padding:'14px', borderRadius:'10px', marginTop:'15px', border:'2px solid #0a1931'}}/>
+          <button onClick={login} style={{width:'100%', marginTop:'12px', background:'#ffcc00', padding:'14px', borderRadius:'10px', fontWeight:'900', border:'none', cursor:'pointer'}}>LOGIN</button>
+          <a href="/" style={{display:'block', marginTop:'14px', color:'#0a1931', fontSize:'13px', textDecoration:'none', fontWeight:'800'}}>← Back to Website</a>
+        </div>
+      </div>
+    )
+  }
+
+  const applicants = data.filter(d=>d.type==='applicant');
+  const contacts = data.filter(d=>d.type==='contact');
+  const filtered = data.filter(d=>{
+    const matchTab = tab==='all' || d.type===tab;
+    const str = `${d.fullName} ${d.phone} ${d.email} ${d.position} ${d.service}`.toLowerCase();
+    return matchTab && str.includes(search.toLowerCase());
+  });
+
+  return (
+    <div style={{background:'#f4f6f9', minHeight:'100vh', fontFamily:'Arial', padding:'20px'}}>
+      <div style={{maxWidth:'1300px', margin:'auto'}}>
+        <div style={{display:'flex', justifyContent:'space-between', flexWrap:'wrap', gap:'12px', alignItems:'center'}}>
+          <h1 style={{fontWeight:'900', color:'#0a1931', fontSize:'20px'}}>🛡️ Admin - {data.length} Records | {applicants.length} Applicants | {contacts.length} Contacts</h1>
+          <div style={{display:'flex', gap:'8px'}}>
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search name, phone..." style={{padding:'10px 16px', borderRadius:'20px', border:'1px solid #ddd', width:'240px'}}/>
+            <button onClick={load} style={{background:'#0a1931', color:'#ffcc00', padding:'10px 18px', borderRadius:'20px', fontWeight:'800', border:'none', cursor:'pointer'}}>{loading?'Loading...':'🔄 Refresh'}</button>
+            <a href="/" style={{background:'#fff', color:'#0a1931', padding:'10px 18px', borderRadius:'20px', fontWeight:'800', textDecoration:'none', border:'2px solid #0a1931'}}>Website</a>
+          </div>
+        </div>
+
+        <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))', gap:'12px', margin:'20px 0'}}>
+          <div onClick={()=>setTab('all')} style={{background:tab==='all'?'#0a1931':'#fff', color:tab==='all'?'#ffcc00':'#0a1931', padding:'16px', borderRadius:'12px', cursor:'pointer', borderLeft:'5px solid #0a1931'}}><p style={{fontSize:'11px'}}>TOTAL</p><h2 style={{fontSize:'26px', fontWeight:'900'}}>{data.length}</h2></div>
+          <div onClick={()=>setTab('applicant')} style={{background:tab==='applicant'?'#ffcc00':'#fff', padding:'16px', borderRadius:'12px', cursor:'pointer', borderLeft:'5px solid #ffcc00'}}><p style={{fontSize:'11px'}}>APPLICANTS</p><h2 style={{fontSize:'26px', fontWeight:'900'}}>{applicants.length}</h2></div>
+          <div onClick={()=>setTab('contact')} style={{background:tab==='contact'?'#0a1931':'#fff', color:tab==='contact'?'#ffcc00':'#0a1931', padding:'16px', borderRadius:'12px', cursor:'pointer', borderLeft:'5px solid #0a1931'}}><p style={{fontSize:'11px'}}>CONTACTS</p><h2 style={{fontSize:'26px', fontWeight:'900'}}>{contacts.length}</h2></div>
+          <div style={{background:'#fff', padding:'16px', borderRadius:'12px', borderLeft:'5px solid #22c55e'}}><p style={{fontSize:'11px'}}>TODAY</p><h2 style={{fontSize:'26px', fontWeight:'900'}}>{data.filter(d=>{ try{ return new Date(d.timestamp).toDateString()===new Date().toDateString()}catch{return false}}).length}</h2></div>
+        </div>
+
+        <div style={{background:'#fff', borderRadius:'16px', overflow:'hidden', boxShadow:'0 4px 12px rgba(0,0,0,0.06)'}}>
+          <div style={{overflowX:'auto'}}>
+            <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px', minWidth:'1100px'}}>
+              <thead><tr style={{background:'#0a1931', color:'#ffcc00', textAlign:'left'}}><th style={{padding:'14px'}}>Date</th><th>Name</th><th>Phone</th><th>Email</th><th>Type</th><th>Applicant Info</th><th>Contact Info</th></tr></thead>
+              <tbody>
+                {filtered.map((d,i)=><tr key={i} style={{borderBottom:'1px solid #f0f0f0'}}><td style={{padding:'12px', fontSize:'11px', color:'#666'}}>{d.timestamp ? new Date(d.timestamp).toLocaleDateString() : ''}<br/>{d.timestamp ? new Date(d.timestamp).toLocaleTimeString() : ''}</td><td style={{padding:'12px', fontWeight:'800'}}>{d.fullName}</td><td style={{padding:'12px'}}>{d.phone}</td><td style={{padding:'12px', fontSize:'11px'}}>{d.email}</td><td style={{padding:'12px'}}><span style={{background:d.type==='applicant'?'#ffcc00':'#0a1931', color:d.type==='applicant'?'#0a1931':'#fff', padding:'4px 10px', borderRadius:'12px', fontSize:'11px', fontWeight:'800'}}>{d.type}</span></td><td style={{padding:'12px', fontSize:'12px'}}>{d.type==='applicant' ? `${d.position||''} | ${d.education||''} | ${d.district||''} | Exp:${d.experience||''} | Why:${d.interest||''}` : '-'}</td><td style={{padding:'12px', fontSize:'12px'}}>{d.type==='contact' ? `${d.service||''} | ${d.message||''}` : '-'}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+          {filtered.length===0 && <div style={{padding:'40px', textAlign:'center', color:'#888'}}>No records. Submit form on website then click Refresh.</div>}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const scrollTo = (id) => {
@@ -32,6 +118,7 @@ const Navbar = () => {
         <a onClick={() => scrollTo('aptitude')}>Aptitude Test</a>
         <a onClick={() => scrollTo('contact')}>Contact</a>
         <a onClick={() => scrollTo('join')} className="btn-yellow">Apply Now</a>
+        <a href="/admin" style={{color:'#ffcc00', fontWeight:'900', border:'1px solid #ffcc00', borderRadius:'20px'}}>🛡️ Admin</a>
       </div>
     </nav>
   )
@@ -163,9 +250,9 @@ const Contact = () => {
     const payload = { type: 'contact', fullName: f.fullName, phone: f.phone, email: f.email, service: f.service, message: f.message, timestamp: new Date().toISOString() };
     try {
       await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
-      setS("Thank you! We will contact you soon.");
+      setS("✅ Thank you! We will contact you soon.");
       setF({ fullName: "", email: "", phone: "", service: "", message: "" });
-    } catch { setS(" Thank you! We will contact you soon."); }
+    } catch { setS("✅ Thank you! We will contact you soon."); }
   };
   return (
     <div className="section">
@@ -192,9 +279,9 @@ const Join = () => {
     const payload = { type: 'applicant', fullName: f.fullName, phone: f.phone, email: f.email, education: f.education, experience: f.experience, interest: f.interest, position: f.position, district: f.district, timestamp: new Date().toISOString() };
     try {
       await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
-      setS("Thank you! We will contact you soon.");
+      setS("✅ Thank you! We will contact you soon.");
       setF({ fullName: "", phone: "", email: "", education: "", experience: "", interest: "", position: "SITE INCHARGE", district: "" });
-    } catch { setS("Thank you! We will contact you soon."); }
+    } catch { setS("✅ Thank you! We will contact you soon."); }
   };
   return (
     <div className="section">
@@ -232,6 +319,7 @@ const Footer = () => {
           <a onClick={() => scrollTo('aptitude')}>Aptitude Test</a>
           <a onClick={() => scrollTo('contact')}>Contact</a>
           <a onClick={() => scrollTo('join')}>Apply Now</a>
+          <a href="/admin" style={{background:'#ffcc00', color:'#0a1931'}}>🛡️ Admin</a>
         </div>
       </div>
       <div className="footer-bottom">© 2026 Pinnacle Security Ltd | Plot 442 & 443 Massionatees, Muyenga | HR: hr@pinnaclegroup.co.ug | Control 24/7: 0776971970</div>
@@ -239,7 +327,7 @@ const Footer = () => {
   )
 }
 
-const App = () => (
+const MainSite = () => (
   <>
     <style>{`
       *{margin:0;padding:0;box-sizing:border-box; font-family: Arial, Helvetica, sans-serif !important}
@@ -273,5 +361,15 @@ const App = () => (
     <Footer />
   </>
 )
+
+const App = () => {
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    if (window.location.pathname === '/admin') setIsAdmin(true);
+  }, []);
+  
+  if (isAdmin) return <AdminDashboard />;
+  return <MainSite />;
+}
 
 export default App
