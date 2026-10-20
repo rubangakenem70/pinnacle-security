@@ -6,7 +6,7 @@ const GOOGLE_SHEET_WEBHOOK = "https://script.google.com/macros/s/AKfycbz0Fx9gSfP
 const KOBO_APTITUDE_TEST = "https://ee.kobotoolbox.org/x/ODCdeyaJ";
 const GOOGLE_APTITUDE_REGISTER = "https://forms.gle/W8JroZ8n8HGArq248";
 
-// ========= FIXED ADMIN - TWO TABLES - SERVICE AND MESSAGE SEPARATE =========
+// ========= FIXED ADMIN - Position Education Experience Interest separate, Service Message separate =========
 const AdminDashboard = () => {
   const [auth, setAuth] = useState(false);
   const [pass, setPass] = useState("");
@@ -73,7 +73,7 @@ const AdminDashboard = () => {
 
         {(tab==='all'||tab==='applicant') && (
           <div style={{background:'#fff', borderRadius:'16px', overflow:'hidden', boxShadow:'0 4px 12px rgba(0,0,0,0.06)', marginBottom:'24px'}}>
-            <div style={{background:'#ffcc00', padding:'14px 20px', fontWeight:'900', color:'#0a1931'}}>📋 APPLICANTS TABLE - {filteredApplicants.length} Records</div>
+            <div style={{background:'#ffcc00', padding:'14px 20px', fontWeight:'900', color:'#0a1931'}}>📋 APPLICANTS TABLE - {filteredApplicants.length} Records - Position | Education | District | Experience | Interest SEPARATE</div>
             <div style={{overflowX:'auto'}}>
               <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px', minWidth:'1450px'}}>
                 <thead><tr style={{background:'#0a1931', color:'#ffcc00', textAlign:'left'}}><th style={{padding:'12px'}}>Date</th><th style={{padding:'12px'}}>Name</th><th style={{padding:'12px'}}>Phone</th><th style={{padding:'12px'}}>Email</th><th style={{padding:'12px'}}>Position</th><th style={{padding:'12px'}}>Education</th><th style={{padding:'12px'}}>District</th><th style={{padding:'12px'}}>Experience</th><th style={{padding:'12px', minWidth:'220px'}}>Interest</th></tr></thead>
@@ -87,7 +87,7 @@ const AdminDashboard = () => {
 
         {(tab==='all'||tab==='contact') && (
           <div style={{background:'#fff', borderRadius:'16px', overflow:'hidden', boxShadow:'0 4px 12px rgba(0,0,0,0.06)'}}>
-            <div style={{background:'#0a1931', padding:'14px 20px', fontWeight:'900', color:'#ffcc00'}}>📞 CONTACTS TABLE - {filteredContacts.length} Records - SERVICE & MESSAGE SEPARATE</div>
+            <div style={{background:'#0a1931', padding:'14px 20px', fontWeight:'900', color:'#ffcc00'}}>📞 CONTACTS TABLE - {filteredContacts.length} Records - SERVICE & MESSAGE SEPARATE COLUMNS</div>
             <div style={{overflowX:'auto'}}>
               <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px', minWidth:'1100px'}}>
                 <thead><tr style={{background:'#0a1931', color:'#ffcc00', textAlign:'left'}}><th style={{padding:'12px'}}>Date</th><th style={{padding:'12px'}}>Name</th><th style={{padding:'12px'}}>Phone</th><th style={{padding:'12px'}}>Email</th><th style={{padding:'12px', minWidth:'200px', background:'#ffcc00', color:'#0a1931'}}>SERVICE</th><th style={{padding:'12px', minWidth:'350px'}}>MESSAGE</th></tr></thead>
