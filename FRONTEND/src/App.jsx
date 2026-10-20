@@ -6,7 +6,7 @@ const GOOGLE_SHEET_WEBHOOK = "https://script.google.com/macros/s/AKfycbz0Fx9gSfP
 const KOBO_APTITUDE_TEST = "https://ee.kobotoolbox.org/x/ODCdeyaJ";
 const GOOGLE_APTITUDE_REGISTER = "https://forms.gle/W8JroZ8n8HGArq248";
 
-// ========= FIXED ADMIN - BEAUTIFUL + POPUP VIEW =========
+// ========= FIXED ADMIN - TWO TABLES NO COMPRESS =========
 const AdminDashboard = () => {
   const [auth, setAuth] = useState(false);
   const [pass, setPass] = useState("");
@@ -14,7 +14,6 @@ const AdminDashboard = () => {
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("all");
   const [loading, setLoading] = useState(false);
-  const [selected, setSelected] = useState(null);
 
   const login = () => {
     if (pass === ADMIN_PASSWORD) setAuth(true);
@@ -30,7 +29,7 @@ const AdminDashboard = () => {
         setData(sorted);
         setLoading(false);
       })
-      .catch(() => { setLoading(false); alert("Failed to load. Check Google Sheet"); });
+      .catch(() => { setLoading(false); });
   };
 
   useEffect(() => { if (auth) load(); }, [auth]);
@@ -51,62 +50,51 @@ const AdminDashboard = () => {
 
   const applicants = data.filter(d=>d.type==='applicant');
   const contacts = data.filter(d=>d.type==='contact');
-  const filtered = data.filter(d=>{
-    const matchTab = tab==='all' || d.type===tab;
-    const str = `${d.fullName} ${d.phone} ${d.email} ${d.position} ${d.service} ${d.district}`.toLowerCase();
-    return matchTab && str.includes(search.toLowerCase());
-  });
+  const filteredApplicants = applicants.filter(d=> `${d.fullName} ${d.phone} ${d.position} ${d.education} ${d.district} ${d.experience} ${d.interest}`.toLowerCase().includes(search.toLowerCase()) && (tab==='all'||tab==='applicant'));
+  const filteredContacts = contacts.filter(d=> `${d.fullName} ${d.phone} ${d.service} ${d.message}`.toLowerCase().includes(search.toLowerCase()) && (tab==='all'||tab==='contact'));
 
   return (
     <div style={{background:'#f4f6f9', minHeight:'100vh', fontFamily:'Arial', padding:'20px'}}>
-      <div style={{maxWidth:'1300px', margin:'auto'}}>
-        <div style={{display:'flex', justifyContent:'space-between', flexWrap:'wrap', gap:'12px', alignItems:'center'}}>
+      <div style={{maxWidth:'1400px', margin:'auto'}}>
+        <div style={{display:'flex', justifyContent:'space-between', flexWrap:'wrap', gap:'12px', alignItems:'center', marginBottom:'20px'}}>
           <h1 style={{fontWeight:'900', color:'#0a1931', fontSize:'22px'}}>Pinnacle Records - {data.length}</h1>
           <div style={{display:'flex', gap:'8px'}}>
-            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search name, phone..." style={{padding:'10px 16px', borderRadius:'20px', border:'1px solid #ddd', width:'240px'}}/>
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search name, phone, service..." style={{padding:'10px 16px', borderRadius:'20px', border:'1px solid #ddd', width:'260px'}}/>
             <button onClick={load} style={{background:'#0a1931', color:'#ffcc00', padding:'10px 18px', borderRadius:'20px', fontWeight:'800', border:'none', cursor:'pointer'}}>{loading?'Loading...':'🔄 Refresh'}</button>
             <a href="/" style={{background:'#fff', color:'#0a1931', padding:'10px 18px', borderRadius:'20px', fontWeight:'800', textDecoration:'none', border:'2px solid #0a1931'}}>Website</a>
           </div>
         </div>
 
-        <div style={{display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'12px', margin:'20px 0'}}>
+        <div style={{display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'12px', marginBottom:'20px'}}>
           <div onClick={()=>setTab('all')} style={{background:tab==='all'?'#0a1931':'#fff', color:tab==='all'?'#ffcc00':'#0a1931', padding:'16px', borderRadius:'12px', cursor:'pointer', borderLeft:'5px solid #0a1931'}}><p style={{fontSize:'11px'}}>TOTAL</p><h2 style={{fontSize:'26px', fontWeight:'900'}}>{data.length}</h2></div>
           <div onClick={()=>setTab('applicant')} style={{background:tab==='applicant'?'#ffcc00':'#fff', padding:'16px', borderRadius:'12px', cursor:'pointer', borderLeft:'5px solid #ffcc00'}}><p style={{fontSize:'11px'}}>APPLICANTS</p><h2 style={{fontSize:'26px', fontWeight:'900'}}>{applicants.length}</h2></div>
           <div onClick={()=>setTab('contact')} style={{background:tab==='contact'?'#0a1931':'#fff', color:tab==='contact'?'#ffcc00':'#0a1931', padding:'16px', borderRadius:'12px', cursor:'pointer', borderLeft:'5px solid #0a1931'}}><p style={{fontSize:'11px'}}>CONTACTS</p><h2 style={{fontSize:'26px', fontWeight:'900'}}>{contacts.length}</h2></div>
         </div>
 
-        <div style={{background:'#fff', borderRadius:'16px', overflow:'hidden', boxShadow:'0 4px 12px rgba(0,0,0,0.06)'}}>
-          <div style={{overflowX:'auto'}}>
-            <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px', minWidth:'1100px'}}>
-              <thead><tr style={{background:'#0a1931', color:'#ffcc00', textAlign:'left'}}><th style={{padding:'14px'}}>Date</th><th>Name</th><th>Phone</th><th>Type</th><th style={{width:'35%'}}>Details</th><th>Action</th></tr></thead>
-              <tbody>
-                {filtered.map((d,i)=><tr key={i} style={{borderBottom:'1px solid #f0f0f0'}}><td style={{padding:'12px', fontSize:'11px'}}>{d.timestamp ? new Date(d.timestamp).toLocaleString() : ''}</td><td style={{padding:'12px', fontWeight:'800'}}>{d.fullName}<br/><span style={{fontSize:'11px', color:'#666', fontWeight:'400'}}>{d.email}</span></td><td style={{padding:'12px'}}>{d.phone}</td><td style={{padding:'12px'}}><span style={{background:d.type==='applicant'?'#ffcc00':'#0a1931', color:d.type==='applicant'?'#0a1931':'#fff', padding:'4px 10px', borderRadius:'12px', fontSize:'11px', fontWeight:'800'}}>{d.type}</span></td><td style={{padding:'12px', fontSize:'12px', whiteSpace:'normal', wordBreak:'break-word', lineHeight:'1.6'}}>{d.type==='applicant' ? <><b>{d.position}</b> | {d.education} | District: {d.district}<br/>Exp: {d.experience} | Why: {d.interest}</> : <><b>{d.service}</b><br/>{d.message}</>}</td><td style={{padding:'12px'}}><button onClick={()=>setSelected(d)} style={{background:'#ffcc00', border:'none', padding:'6px 14px', borderRadius:'20px', fontWeight:'900', cursor:'pointer'}}>View</button></td></tr>)}
-              </tbody>
-            </table>
+        {(tab==='all'||tab==='applicant') && (
+          <div style={{background:'#fff', borderRadius:'16px', overflow:'hidden', boxShadow:'0 4px 12px rgba(0,0,0,0.06)', marginBottom:'24px'}}>
+            <div style={{background:'#ffcc00', padding:'14px 20px', fontWeight:'900', color:'#0a1931'}}>📋 APPLICANTS TABLE - {filteredApplicants.length} Records</div>
+            <div style={{overflowX:'auto'}}>
+              <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px', minWidth:'1450px'}}>
+                <thead><tr style={{background:'#0a1931', color:'#ffcc00', textAlign:'left'}}><th style={{padding:'12px'}}>Date</th><th style={{padding:'12px'}}>Name</th><th style={{padding:'12px'}}>Phone</th><th style={{padding:'12px'}}>Email</th><th style={{padding:'12px'}}>Position</th><th style={{padding:'12px'}}>Education</th><th style={{padding:'12px'}}>District</th><th style={{padding:'12px'}}>Experience</th><th style={{padding:'12px', minWidth:'220px'}}>Interest</th></tr></thead>
+                <tbody>
+                  {filteredApplicants.map((d,i)=><tr key={i} style={{borderBottom:'1px solid #eee'}}><td style={{padding:'10px', fontSize:'11px'}}>{d.timestamp?new Date(d.timestamp).toLocaleString():''}</td><td style={{padding:'10px', fontWeight:'800'}}>{d.fullName}</td><td style={{padding:'10px'}}>{d.phone}</td><td style={{padding:'10px', fontSize:'12px'}}>{d.email}</td><td style={{padding:'10px', fontWeight:'700'}}>{d.position}</td><td style={{padding:'10px'}}>{d.education}</td><td style={{padding:'10px'}}>{d.district}</td><td style={{padding:'10px'}}>{d.experience}</td><td style={{padding:'10px', whiteSpace:'normal', wordBreak:'break-word'}}>{d.interest}</td></tr>)}
+                </tbody>
+              </table>
+            </div>
           </div>
-          {filtered.length===0 && <div style={{padding:'40px', textAlign:'center', color:'#888'}}>No records. Click Refresh.</div>}
-        </div>
+        )}
 
-        {selected && (
-          <div onClick={()=>setSelected(null)} style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.7)', display:'flex', justifyContent:'center', alignItems:'center', zIndex:9999, padding:'20px'}}>
-            <div onClick={e=>e.stopPropagation()} style={{background:'#fff', padding:'24px', borderRadius:'16px', maxWidth:'500px', width:'100%'}}>
-              <h3 style={{fontWeight:'900', color:'#0a1931', marginBottom:'12px', borderBottom:'3px solid #ffcc00', paddingBottom:'8px'}}>{selected.fullName} - {selected.type?.toUpperCase()}</h3>
-              <div style={{fontSize:'14px', lineHeight:'2'}}>
-                <b>📞 Phone:</b> {selected.phone}<br/>
-                <b>📧 Email:</b> {selected.email}<br/>
-                <b>🕒 Date:</b> {selected.timestamp ? new Date(selected.timestamp).toLocaleString() : ''}<br/><br/>
-                {selected.type==='applicant' ? <>
-                  <b>Position:</b> {selected.position}<br/>
-                  <b>Education:</b> {selected.education}<br/>
-                  <b>District:</b> {selected.district}<br/>
-                  <b>Experience:</b> {selected.experience}<br/>
-                  <b>Why Interested:</b> {selected.interest}<br/>
-                </> : <>
-                  <b>Service:</b> {selected.service}<br/>
-                  <b>Message:</b> {selected.message}<br/>
-                </>}
-              </div>
-              <button onClick={()=>setSelected(null)} style={{marginTop:'18px', background:'#0a1931', color:'#ffcc00', padding:'14px', borderRadius:'20px', border:'none', fontWeight:'900', width:'100%', cursor:'pointer'}}>Close</button>
+        {(tab==='all'||tab==='contact') && (
+          <div style={{background:'#fff', borderRadius:'16px', overflow:'hidden', boxShadow:'0 4px 12px rgba(0,0,0,0.06)'}}>
+            <div style={{background:'#0a1931', padding:'14px 20px', fontWeight:'900', color:'#ffcc00'}}>📞 CONTACTS TABLE - {filteredContacts.length} Records</div>
+            <div style={{overflowX:'auto'}}>
+              <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px', minWidth:'1100px'}}>
+                <thead><tr style={{background:'#0a1931', color:'#ffcc00', textAlign:'left'}}><th style={{padding:'12px'}}>Date</th><th style={{padding:'12px'}}>Name</th><th style={{padding:'12px'}}>Phone</th><th style={{padding:'12px'}}>Email</th><th style={{padding:'12px', minWidth:'200px'}}>Service</th><th style={{padding:'12px', minWidth:'350px'}}>Message</th></tr></thead>
+                <tbody>
+                  {filteredContacts.map((d,i)=><tr key={i} style={{borderBottom:'1px solid #eee'}}><td style={{padding:'10px', fontSize:'11px'}}>{d.timestamp?new Date(d.timestamp).toLocaleString():''}</td><td style={{padding:'10px', fontWeight:'800'}}>{d.fullName}</td><td style={{padding:'10px'}}>{d.phone}</td><td style={{padding:'10px', fontSize:'12px'}}>{d.email}</td><td style={{padding:'10px', fontWeight:'700', background:'#fffbeb'}}>{d.service}</td><td style={{padding:'10px', whiteSpace:'normal', wordBreak:'break-word', lineHeight:'1.6'}}>{d.message}</td></tr>)}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
