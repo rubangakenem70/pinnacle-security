@@ -1,9 +1,108 @@
 import React, { useState, useEffect } from 'react'
 
+const ADMIN_PASSWORD = "Pinnacle2026!Secure123";
 const GOOGLE_SHEET_WEBHOOK = "https://script.google.com/macros/s/AKfycbz0Fx9gSfPwPXZdi8pivw9IdQ_fzj707fPk22GBECuGYhGzwePtEPZV47TyXk8TN8bggQ/exec";
 const KOBO_APTITUDE_TEST = "https://ee.kobotoolbox.org/x/ODCdeyaJ";
 const GOOGLE_APTITUDE_REGISTER = "https://forms.gle/W8JroZ8n8HGArq248";
 
+// ========= ADMIN DASHBOARD - CONTACTS & APPLICANTS =========
+const AdminDashboard = () => {
+  const [auth, setAuth] = useState(false);
+  const [pass, setPass] = useState("");
+  const [data, setData] = useState([]);
+  const [search, setSearch] = useState("");
+  const [tab, setTab] = useState("contacts");
+  const [loading, setLoading] = useState(false);
+
+  const login = () => {
+    if (pass === ADMIN_PASSWORD) setAuth(true);
+    else alert("Wrong Password!");
+  };
+
+  const load = () => {
+    setLoading(true);
+    fetch(GOOGLE_SHEET_WEBHOOK)
+      .then(r => r.json())
+      .then(d => {
+        const arr = Array.isArray(d) ? d : [];
+        const sorted = arr.sort((a,b)=> new Date(b.timestamp || b.Timestamp || 0) - new Date(a.timestamp || a.Timestamp || 0));
+        setData(sorted);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  };
+
+  useEffect(() => { if (auth) load(); }, [auth]);
+  const getVal = (obj, keys) => { for(let k of keys) if(obj[k] !== undefined && obj[k] !== null && obj[k] !== '') return obj[k]; return ''; }
+  const formatDate = (t) => { if(!t) return ''; try { return new Date(t).toLocaleString(); } catch { return t; } }
+
+  if (!auth) {
+    return (
+      <div style={{minHeight:'100vh', background:'#0a1931', display:'flex', justifyContent:'center', alignItems:'center', fontFamily:'Arial'}}>
+        <div style={{background:'#fff', padding:'30px', borderRadius:'16px', width:'90%', maxWidth:'380px', textAlign:'center'}}>
+          <h2 style={{fontWeight:'900', color:'#0a1931'}}>🛡️ PINNACLE ADMIN</h2>
+          <p style={{fontSize:'12px', color:'#666', marginTop:'6px'}}>PSL db - Contacts & Applicants</p>
+          <input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="Admin Password" style={{width:'100%', padding:'14px', borderRadius:'10px', marginTop:'15px', border:'2px solid #0a1931'}}/>
+          <button onClick={login} style={{width:'100%', marginTop:'12px', background:'#ffcc00', padding:'14px', borderRadius:'10px', fontWeight:'900', border:'none', cursor:'pointer'}}>LOGIN</button>
+          <a href="/" style={{display:'block', marginTop:'14px', color:'#0a1931', fontSize:'13px', textDecoration:'none', fontWeight:'800'}}>← Back to Website</a>
+        </div>
+      </div>
+    )
+  }
+
+  const applicants = data.filter(d => (d.type==='applicant') || getVal(d, ['Position','position']));
+  const contacts = data.filter(d => (d.type==='contact') || getVal(d, ['Service','service']));
+
+  const filteredContacts = contacts.filter(d => `${getVal(d,['FullName','fullName'])} ${getVal(d,['Phone','phone'])} ${getVal(d,['Email','email'])} ${getVal(d,['Service','service'])} ${getVal(d,['Messages','message'])}`.toLowerCase().includes(search.toLowerCase()));
+  const filteredApplicants = applicants.filter(d => `${getVal(d,['FullName','fullName'])} ${getVal(d,['Phone','phone'])} ${getVal(d,['Email','email'])} ${getVal(d,['Position','position'])} ${getVal(d,['Education','education'])} ${getVal(d,['District','district'])} ${getVal(d,['Experience','experience'])} ${getVal(d,['Interest','interest'])}`.toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <div style={{background:'#f4f6f9', minHeight:'100vh', fontFamily:'Arial', padding:'20px'}}>
+      <div style={{maxWidth:'1600px', margin:'auto'}}>
+        <div style={{display:'flex', justifyContent:'space-between', flexWrap:'wrap', gap:'12px', alignItems:'center', marginBottom:'20px'}}>
+          <h1 style={{fontWeight:'900', color:'#0a1931', fontSize:'22px'}}>PSL db Admin - {data.length} total</h1>
+          <div style={{display:'flex', gap:'8px', flexWrap:'wrap'}}>
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search name, phone, service..." style={{padding:'10px 16px', borderRadius:'20px', border:'1px solid #ddd', width:'260px'}}/>
+            <button onClick={load} style={{background:'#0a1931', color:'#ffcc00', padding:'10px 18px', borderRadius:'20px', fontWeight:'800', border:'none', cursor:'pointer'}}>{loading?'Loading...':'🔄 Refresh'}</button>
+            <a href="/" style={{background:'#fff', color:'#0a1931', padding:'10px 18px', borderRadius:'20px', fontWeight:'800', textDecoration:'none', border:'2px solid #0a1931'}}>Website</a>
+          </div>
+        </div>
+
+        <div style={{display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'12px', marginBottom:'20px'}}>
+          <div onClick={()=>setTab('contacts')} style={{background:tab==='contacts'?'#0a1931':'#fff', color:tab==='contacts'?'#ffcc00':'#0a1931', padding:'16px', borderRadius:'12px', cursor:'pointer', borderLeft:'5px solid #0a1931'}}><p style={{fontSize:'11px', fontWeight:'800'}}>CONTACTS</p><h2 style={{fontSize:'26px', fontWeight:'900'}}>{contacts.length}</h2></div>
+          <div onClick={()=>setTab('applicants')} style={{background:tab==='applicants'?'#ffcc00':'#fff', padding:'16px', borderRadius:'12px', cursor:'pointer', borderLeft:'5px solid #ffcc00'}}><p style={{fontSize:'11px', fontWeight:'800'}}>APPLICANTS</p><h2 style={{fontSize:'26px', fontWeight:'900'}}>{applicants.length}</h2></div>
+          <div style={{background:'#fff', padding:'16px', borderRadius:'12px', borderLeft:'5px solid #0a1931'}}><p style={{fontSize:'11px', fontWeight:'800'}}>TOTAL</p><h2 style={{fontSize:'26px', fontWeight:'900', color:'#0a1931'}}>{data.length}</h2></div>
+        </div>
+
+        {tab === 'contacts' && (
+          <div style={{background:'#fff', borderRadius:'16px', overflow:'hidden', boxShadow:'0 4px 12px rgba(0,0,0,0.06)'}}>
+            <div style={{background:'#0a1931', padding:'14px 20px', fontWeight:'900', color:'#ffcc00'}}>📞 CONTACTS - {filteredContacts.length} Records - Timestamp | FullName | Phone | Email | Service | Messages</div>
+            <div style={{overflowX:'auto'}}>
+              <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px', minWidth:'1200px'}}>
+                <thead><tr style={{background:'#0a1931', color:'#ffcc00', textAlign:'left'}}><th style={{padding:'12px', border:'1px solid #1e3a5f'}}>Timestamp</th><th style={{padding:'12px', border:'1px solid #1e3a5f'}}>FullName</th><th style={{padding:'12px', border:'1px solid #1e3a5f'}}>Phone</th><th style={{padding:'12px', border:'1px solid #1e3a5f'}}>Email</th><th style={{padding:'12px', border:'1px solid #1e3a5f'}}>Service</th><th style={{padding:'12px', border:'1px solid #1e3a5f'}}>Messages</th></tr></thead>
+                <tbody>{filteredContacts.map((d,i)=><tr key={i} style={{borderBottom:'1px solid #eee', background: i%2===0?'#fff':'#f8f9ff'}}><td style={{padding:'10px', border:'1px solid #eee', fontSize:'11px'}}>{formatDate(getVal(d,['Timestamp','timestamp']))}</td><td style={{padding:'10px', border:'1px solid #eee', fontWeight:'700'}}>{getVal(d,['FullName','fullName'])}</td><td style={{padding:'10px', border:'1px solid #eee'}}>{getVal(d,['Phone','phone'])}</td><td style={{padding:'10px', border:'1px solid #eee'}}>{getVal(d,['Email','email'])}</td><td style={{padding:'10px', border:'1px solid #eee', fontWeight:'600'}}>{getVal(d,['Service','service'])}</td><td style={{padding:'10px', border:'1px solid #eee', whiteSpace:'normal', wordBreak:'break-word'}}>{getVal(d,['Messages','message'])}</td></tr>)}</tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {tab === 'applicants' && (
+          <div style={{background:'#fff', borderRadius:'16px', overflow:'hidden', boxShadow:'0 4px 12px rgba(0,0,0,0.06)'}}>
+            <div style={{background:'#ffcc00', padding:'14px 20px', fontWeight:'900', color:'#0a1931'}}>📋 APPLICANTS - {filteredApplicants.length} Records - Timestamp | FullName | Phone | Email | Position | Education | District | Experience | Interest</div>
+            <div style={{overflowX:'auto'}}>
+              <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px', minWidth:'1450px'}}>
+                <thead><tr style={{background:'#0a1931', color:'#ffcc00', textAlign:'left'}}><th style={{padding:'12px', border:'1px solid #1e3a5f'}}>Timestamp</th><th style={{padding:'12px', border:'1px solid #1e3a5f'}}>FullName</th><th style={{padding:'12px', border:'1px solid #1e3a5f'}}>Phone</th><th style={{padding:'12px', border:'1px solid #1e3a5f'}}>Email</th><th style={{padding:'12px', border:'1px solid #1e3a5f'}}>Position</th><th style={{padding:'12px', border:'1px solid #1e3a5f'}}>Education</th><th style={{padding:'12px', border:'1px solid #1e3a5f'}}>District</th><th style={{padding:'12px', border:'1px solid #1e3a5f'}}>Experience</th><th style={{padding:'12px', border:'1px solid #1e3a5f'}}>Interest</th></tr></thead>
+                <tbody>{filteredApplicants.map((d,i)=><tr key={i} style={{borderBottom:'1px solid #eee', background: i%2===0?'#fff':'#fffbeb'}}><td style={{padding:'10px', border:'1px solid #eee', fontSize:'11px'}}>{formatDate(getVal(d,['Timestamp','timestamp']))}</td><td style={{padding:'10px', border:'1px solid #eee', fontWeight:'700'}}>{getVal(d,['FullName','fullName'])}</td><td style={{padding:'10px', border:'1px solid #eee'}}>{getVal(d,['Phone','phone'])}</td><td style={{padding:'10px', border:'1px solid #eee'}}>{getVal(d,['Email','email'])}</td><td style={{padding:'10px', border:'1px solid #eee', fontWeight:'600'}}>{getVal(d,['Position','position'])}</td><td style={{padding:'10px', border:'1px solid #eee'}}>{getVal(d,['Education','education'])}</td><td style={{padding:'10px', border:'1px solid #eee'}}>{getVal(d,['District','district'])}</td><td style={{padding:'10px', border:'1px solid #eee'}}>{getVal(d,['Experience','experience'])}</td><td style={{padding:'10px', border:'1px solid #eee'}}>{getVal(d,['Interest','interest'])}</td></tr>)}</tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ========= WEBSITE COMPONENTS =========
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const scrollTo = (id) => {
@@ -30,6 +129,7 @@ const Navbar = () => {
         <a onClick={() => scrollTo('aptitude')}>Aptitude Test</a>
         <a onClick={() => scrollTo('contact')}>Contact</a>
         <a onClick={() => scrollTo('join')} className="btn-yellow">Apply Now</a>
+        <a href="/admin" style={{color:'#ffcc00', fontWeight:'900', border:'1px solid #ffcc00', borderRadius:'20px'}}>🛡️ Admin</a>
       </div>
     </nav>
   )
@@ -226,6 +326,7 @@ const Footer = () => {
           <a onClick={() => scrollTo('aptitude')}>Aptitude Test</a>
           <a onClick={() => scrollTo('contact')}>Contact</a>
           <a onClick={() => scrollTo('join')}>Apply Now</a>
+          <a href="/admin" style={{background:'#ffcc00', color:'#0a1931'}}>🛡️ Admin</a>
         </div>
       </div>
       <div className="footer-bottom">© 2026 Pinnacle Security Ltd | Plot 442 & 443 Massionatees, Muyenga | HR: hr@pinnaclegroup.co.ug | Control 24/7: 0776971970</div>
@@ -269,6 +370,11 @@ const MainSite = () => (
 )
 
 const App = () => {
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    if (window.location.pathname === '/admin') setIsAdmin(true);
+  }, []);
+  if (isAdmin) return <AdminDashboard />;
   return <MainSite />;
 }
 
