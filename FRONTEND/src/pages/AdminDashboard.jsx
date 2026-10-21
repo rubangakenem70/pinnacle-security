@@ -18,11 +18,11 @@ const AdminDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(30);
   const [selected, setSelected] = useState([]);
+  const [detailRow, setDetailRow] = useState(null); // NEW - Right side panel
 
   const login = () => pass === ADMIN_PASSWORD ? setAuth(true) : alert("Wrong Password!");
   
   const getFullDateTime24 = () => {
-    // Uganda Time (EAT) - 24hrs format
     return new Date().toLocaleString('en-GB', {
       timeZone: 'Africa/Kampala',
       day: '2-digit',
@@ -49,13 +49,11 @@ const AdminDashboard = () => {
 
   const getVal = (obj, keys) => { for(let k of keys) if(obj[k]!==undefined && obj[k]!==null && obj[k]!=='') return obj[k]; return ''; }
   
-  // FIXED: Full Date + Time in 24hrs
   const formatDate = (t) => { 
     if(!t) return '-'; 
     try { 
       const d = new Date(t);
       if(isNaN(d.getTime())){
-        // If already in format 21/10/2026 21:41:13, return as is
         return t;
       }
       return d.toLocaleString('en-GB', {
@@ -75,6 +73,7 @@ const AdminDashboard = () => {
     const ts = getVal(row,['Timestamp','timestamp']);
     setData(prev => prev.filter(r => getVal(r,['Timestamp','timestamp']) !== ts));
     setSelected(prev=>prev.filter(id=>id!==ts));
+    setDetailRow(null);
     const payload = { action:'delete', timestamp:ts, type:tab };
     await fetch(GOOGLE_SHEET_WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
   };
@@ -84,6 +83,7 @@ const AdminDashboard = () => {
     const toDelete = [...selected];
     setData(prev => prev.filter(r => !toDelete.includes(getVal(r,['Timestamp','timestamp']))));
     setSelected([]);
+    setDetailRow(null);
     const payload = { action:'bulkDelete', timestamps: toDelete, type: tab };
     await fetch(GOOGLE_SHEET_WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
   };
@@ -98,6 +98,9 @@ const AdminDashboard = () => {
     const payload = { action:'update', ...form, timestamp:editRow, type:tab };
     setData(prev => prev.map(r => getVal(r,['Timestamp','timestamp'])===editRow?{...r,...form,Timestamp:editRow,timestamp:editRow}:r));
     setEditRow(null);
+    if(detailRow && getVal(detailRow,['Timestamp','timestamp'])===editRow){
+      setDetailRow(prev=>({...prev,...form,Timestamp:editRow,timestamp:editRow}));
+    }
     await fetch(GOOGLE_SHEET_WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
   };
   const handleAddNew = async () => {
@@ -203,7 +206,7 @@ const AdminDashboard = () => {
 
         <div style={{background:'#fff',borderRadius:'20px',overflow:'hidden',boxShadow:'0 10px 30px rgba(0,0,0,.06)'}}>
           <div style={{padding:'16px 20px',display:'flex',justifyContent:'space-between',alignItems:'center',background:tab==='contacts'?'#0a1931':'#7a0a0a'}}>
-            <div style={{color:tab==='contacts'?'#ffcc00':'#fff',fontWeight:900,fontSize:'13px'}}>{tab==='contacts'?`📞 CONTACTS — ${list.length} / ${contacts.length}`:`📋 APPLICANTS — ${list.length} / ${applicants.length}`} {activeFilterCount>0&&` (filtered)`}</div>
+            <div style={{color:tab==='contacts'?'#ffcc00':'#fff',fontWeight:900,fontSize:'13px'}}>{tab==='contacts'?`📞 CONTACTS — ${list.length} / ${contacts.length}`:`📋 APPLICANTS — ${list.length} / ${applicants.length}`} {activeFilterCount>0&&` (filtered)`} • Click row to view →</div>
             <div style={{fontSize:'10px',color:tab==='contacts'?'#ffcc00':'#ffcccc',opacity:.8}}>Google Sheet: {tab==='contacts'?'Contacts':'Applicants'} tab</div>
           </div>
           <div style={{overflowX:'auto'}}>
@@ -218,8 +221,8 @@ const AdminDashboard = () => {
                 {paginatedList.length===0 ? <tr><td colSpan={12} style={{padding:'40px',textAlign:'center',color:'#999'}}>{loading?'Loading...':'No records match your filters — try Clear Filters'}</td></tr> : paginatedList.map((d,i)=>{ 
                   const ts=getVal(d,['Timestamp','timestamp']); const isEditing=editRow===ts; const checked=selected.includes(ts);
                   return (
-                  <tr key={i} style={{borderBottom:'1px solid #f1f1f1',background:checked?'#fff9db': isEditing?'#eef2ff': i%2===0?'#fff':'#fcfdff'}}>
-                    <td style={{padding:'12px 16px'}}><input type="checkbox" checked={checked} onChange={()=>toggleSelect(ts)} /></td>
+                  <tr key={i} onClick={()=>{ if(!isEditing) setDetailRow(d); }} style={{borderBottom:'1px solid #f1f1f1',background:checked?'#fff9db': isEditing?'#eef2ff': detailRow && getVal(detailRow,['Timestamp','timestamp'])===ts ? '#fff3cd' : i%2===0?'#fff':'#fcfdff', cursor:'pointer'}} title="Click to view details">
+                    <td style={{padding:'12px 16px'}} onClick={e=>e.stopPropagation()}><input type="checkbox" checked={checked} onChange={()=>toggleSelect(ts)} /></td>
                     <td style={{padding:'12px 16px',color:'#0a1931',fontSize:'11px',fontWeight:800}}>{formatDate(ts)}</td>
                     <td style={{padding:'12px 16px',fontWeight:700}}>{isEditing?<input value={form.FullName||''} onChange={e=>setForm({...form,FullName:e.target.value})} style={{padding:'6px',borderRadius:'6px',border:'1px solid #ddd',width:'110px'}}/>:getVal(d,['FullName','fullName'])}</td>
                     <td style={{padding:'12px 16px'}}>{isEditing?<input value={form.Phone||''} onChange={e=>setForm({...form,Phone:e.target.value})} style={{padding:'6px',borderRadius:'6px',border:'1px solid #ddd',width:'90px'}}/>:getVal(d,['Phone','phone'])}</td>
@@ -234,7 +237,7 @@ const AdminDashboard = () => {
                       <td style={{padding:'12px 16px'}}>{isEditing?<input value={form.Experience||''} onChange={e=>setForm({...form,Experience:e.target.value})} style={{padding:'4px',width:'50px'}}/>:getVal(d,['Experience','experience'])}</td>
                       <td style={{padding:'12px 16px'}}>{isEditing?<input value={form.Interest||''} onChange={e=>setForm({...form,Interest:e.target.value})} style={{padding:'4px',width:'80px'}}/>:getVal(d,['Interest','interest'])}</td>
                     </>}
-                    <td style={{padding:'12px 16px'}}><div style={{display:'flex',gap:'6px'}}>{isEditing?<><button onClick={handleSave} style={{background:'#0a1931',color:'#ffcc00',border:'none',padding:'6px 12px',borderRadius:'8px',fontWeight:800,fontSize:'11px',cursor:'pointer'}}>SAVE</button><button onClick={()=>setEditRow(null)} style={{background:'#eee',border:'none',padding:'6px 10px',borderRadius:'8px',fontSize:'11px',cursor:'pointer'}}>CANCEL</button></>:<><button onClick={()=>handleEdit(d)} style={{background:'#ffcc00',border:'none',padding:'6px 12px',borderRadius:'8px',fontWeight:800,fontSize:'11px',cursor:'pointer'}}>EDIT</button><button onClick={()=>handleDelete(d)} style={{background:'#fee2e2',color:'#dc2626',border:'none',padding:'6px 10px',borderRadius:'8px',fontWeight:800,fontSize:'11px',cursor:'pointer'}}>DEL</button></>}</div></td>
+                    <td style={{padding:'12px 16px'}} onClick={e=>e.stopPropagation()}><div style={{display:'flex',gap:'6px'}}>{isEditing?<><button onClick={handleSave} style={{background:'#0a1931',color:'#ffcc00',border:'none',padding:'6px 12px',borderRadius:'8px',fontWeight:800,fontSize:'11px',cursor:'pointer'}}>SAVE</button><button onClick={()=>setEditRow(null)} style={{background:'#eee',border:'none',padding:'6px 10px',borderRadius:'8px',fontSize:'11px',cursor:'pointer'}}>CANCEL</button></>:<><button onClick={()=>handleEdit(d)} style={{background:'#ffcc00',border:'none',padding:'6px 12px',borderRadius:'8px',fontWeight:800,fontSize:'11px',cursor:'pointer'}}>EDIT</button><button onClick={()=>handleDelete(d)} style={{background:'#fee2e2',color:'#dc2626',border:'none',padding:'6px 10px',borderRadius:'8px',fontWeight:800,fontSize:'11px',cursor:'pointer'}}>DEL</button></>}</div></td>
                   </tr>
                 )})}
               </tbody>
@@ -264,6 +267,60 @@ const AdminDashboard = () => {
             </div>
             <div style={{display:'flex',gap:'8px',marginTop:'16px'}}><button onClick={handleAddNew} style={{flex:1,background:'#0a1931',color:'#ffcc00',padding:'12px',borderRadius:'12px',border:'none',fontWeight:900,cursor:'pointer'}}>SAVE TO SHEET</button><button onClick={()=>setShowAdd(false)} style={{flex:1,background:'#f3f4f6',padding:'12px',borderRadius:'12px',border:'none',fontWeight:700,cursor:'pointer'}}>CANCEL</button></div>
           </div>
+        </div>
+      )}
+
+      {/* RIGHT SIDE DRAWER - Contact & Applicant Details */}
+      {detailRow && (
+        <div style={{position:'fixed',inset:0,zIndex:10001,display:'flex',justifyContent:'flex-end'}}>
+          <div onClick={()=>setDetailRow(null)} style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.45)',backdropFilter:'blur(3px)'}}></div>
+          <div style={{position:'relative',width:'92%',maxWidth:'420px',background:'#fff',height:'100vh',overflowY:'auto',boxShadow:'-10px 0 40px rgba(0,0,0,0.2)',animation:'slideIn 0.25s ease'}}>
+            <div style={{background: tab==='contacts'?'#0a1931':'#7a0a0a', padding:'20px', color:'#fff', position:'sticky', top:0, zIndex:2}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                <div><p style={{fontSize:'10px',color:'#ffcc00',fontWeight:800,letterSpacing:'1px'}}>{tab==='contacts'?'📞 CONTACT DETAIL':'🎖️ APPLICANT DETAIL'}</p><h2 style={{fontSize:'16px',fontWeight:900,marginTop:'4px'}}>{getVal(detailRow,['FullName','fullName'])||'No Name'}</h2></div>
+                <button onClick={()=>setDetailRow(null)} style={{background:'rgba(255,255,255,0.15)',border:'none',color:'#fff',width:'36px',height:'36px',borderRadius:'10px',fontSize:'18px',cursor:'pointer',fontWeight:900}}>✕</button>
+              </div>
+              <p style={{fontSize:'11px',marginTop:'10px',opacity:0.8,background:'rgba(255,255,255,0.1)',padding:'6px 10px',borderRadius:'20px',display:'inline-block'}}>🕒 {formatDate(getVal(detailRow,['Timestamp','timestamp']))}</p>
+            </div>
+
+            <div style={{padding:'20px',display:'grid',gap:'14px'}}>
+              <div style={{display:'grid',gap:'12px'}}>
+                <div style={{background:'#f8fafc',padding:'12px 14px',borderRadius:'12px',border:'1px solid #eef'}}><p style={{fontSize:'10px',fontWeight:800,color:'#64748b',letterSpacing:'1px'}}>FULL NAME</p><p style={{fontSize:'13px',fontWeight:800,marginTop:'4px',color:'#0a1931'}}>{getVal(detailRow,['FullName','fullName'])||'-'}</p></div>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px'}}>
+                  <div style={{background:'#f8fafc',padding:'12px 14px',borderRadius:'12px',border:'1px solid #eef'}}><p style={{fontSize:'10px',fontWeight:800,color:'#64748b'}}>PHONE</p><p style={{fontSize:'13px',fontWeight:700,marginTop:'4px'}}>{getVal(detailRow,['Phone','phone'])||'-'}</p><a href={`tel:${getVal(detailRow,['Phone','phone'])}`} style={{fontSize:'11px',color:'#0a1931',fontWeight:800,textDecoration:'none',background:'#ffcc00',padding:'4px 10px',borderRadius:'20px',marginTop:'6px',display:'inline-block'}}>📞 Call</a></div>
+                  <div style={{background:'#f8fafc',padding:'12px 14px',borderRadius:'12px',border:'1px solid #eef'}}><p style={{fontSize:'10px',fontWeight:800,color:'#64748b'}}>EMAIL</p><p style={{fontSize:'12px',fontWeight:600,marginTop:'4px',wordBreak:'break-all'}}>{getVal(detailRow,['Email','email'])||'-'}</p></div>
+                </div>
+
+                {tab==='contacts' ? (
+                  <>
+                    <div style={{background:'#eef2ff',padding:'12px 14px',borderRadius:'12px',border:'1px solid #e0e7ff'}}><p style={{fontSize:'10px',fontWeight:800,color:'#3730a3'}}>SERVICE REQUESTED</p><p style={{fontSize:'13px',fontWeight:800,marginTop:'4px',color:'#3730a3'}}>{getVal(detailRow,['Service','service'])||'-'}</p></div>
+                    <div style={{background:'#fffbeb',padding:'14px',borderRadius:'12px',border:'1px solid #fde68a'}}><p style={{fontSize:'10px',fontWeight:800,color:'#92400e'}}>MESSAGE</p><p style={{fontSize:'13px',marginTop:'6px',lineHeight:'1.6',color:'#451a03',whiteSpace:'pre-wrap'}}>{getVal(detailRow,['Messages','message'])||'No message'}</p></div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px'}}>
+                      <div style={{background:'#fef3c7',padding:'12px 14px',borderRadius:'12px',border:'1px solid #fde68a'}}><p style={{fontSize:'10px',fontWeight:800,color:'#92400e'}}>POSITION</p><p style={{fontSize:'13px',fontWeight:800,marginTop:'4px'}}>{getVal(detailRow,['Position','position'])||'-'}</p></div>
+                      <div style={{background:'#f0fdf4',padding:'12px 14px',borderRadius:'12px',border:'1px solid #bbf7d0'}}><p style={{fontSize:'10px',fontWeight:800,color:'#166534'}}>EDUCATION</p><p style={{fontSize:'13px',fontWeight:800,marginTop:'4px'}}>{getVal(detailRow,['Education','education'])||'-'}</p></div>
+                    </div>
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px'}}>
+                      <div style={{background:'#f8fafc',padding:'12px 14px',borderRadius:'12px',border:'1px solid #eef'}}><p style={{fontSize:'10px',fontWeight:800,color:'#64748b'}}>DISTRICT</p><p style={{fontSize:'13px',fontWeight:700,marginTop:'4px'}}>{getVal(detailRow,['District','district'])||'-'}</p></div>
+                      <div style={{background:'#f8fafc',padding:'12px 14px',borderRadius:'12px',border:'1px solid #eef'}}><p style={{fontSize:'10px',fontWeight:800,color:'#64748b'}}>EXPERIENCE</p><p style={{fontSize:'13px',fontWeight:700,marginTop:'4px'}}>{getVal(detailRow,['Experience','experience'])||'-'}</p></div>
+                    </div>
+                    <div style={{background:'#fffbeb',padding:'14px',borderRadius:'12px',border:'1px solid #fde68a'}}><p style={{fontSize:'10px',fontWeight:800,color:'#92400e'}}>INTEREST / WHY JOIN</p><p style={{fontSize:'13px',marginTop:'6px',lineHeight:'1.6',whiteSpace:'pre-wrap'}}>{getVal(detailRow,['Interest','interest'])||'-'}</p></div>
+                  </>
+                )}
+
+                <div style={{background:'#f1f5f9',padding:'12px 14px',borderRadius:'12px',marginTop:'8px'}}><p style={{fontSize:'10px',fontWeight:800,color:'#64748b'}}>TIMESTAMP (24HRS - EAT)</p><p style={{fontSize:'12px',fontWeight:800,marginTop:'4px',fontFamily:'monospace'}}>{formatDate(getVal(detailRow,['Timestamp','timestamp']))}</p></div>
+
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px',marginTop:'10px'}}>
+                  <button onClick={()=>{ handleEdit(detailRow); }} style={{background:'#ffcc00',border:'none',padding:'12px',borderRadius:'12px',fontWeight:900,fontSize:'12px',cursor:'pointer'}}>✏️ EDIT</button>
+                  <button onClick={()=>handleDelete(detailRow)} style={{background:'#fee2e2',color:'#dc2626',border:'1px solid #fecaca',padding:'12px',borderRadius:'12px',fontWeight:900,fontSize:'12px',cursor:'pointer'}}>🗑 DELETE</button>
+                </div>
+                <button onClick={()=>setDetailRow(null)} style={{background:'#0a1931',color:'#ffcc00',border:'none',padding:'12px',borderRadius:'12px',fontWeight:900,fontSize:'12px',cursor:'pointer',marginTop:'4px'}}>← CLOSE</button>
+              </div>
+            </div>
+          </div>
+          <style>{`@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }`}</style>
         </div>
       )}
     </div>
