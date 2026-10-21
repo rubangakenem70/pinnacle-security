@@ -60,7 +60,7 @@ const AdminDashboard = () => {
   };
 
   const handleAddNew = async () => {
-    const payload = { ...form, timestamp: new Date().toISOString(), type: tab==='contacts'?'contact':'applicant' };
+    const payload = { ...form, timestamp: new Date().toISOString(), Timestamp: new Date().toISOString(), type: tab==='contacts'?'contact':'applicant' };
     try { await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) }); } catch {}
     setData(prev => [payload, ...prev]);
     setShowAdd(false);
@@ -315,8 +315,28 @@ const Contact = () => {
   const send = async (e) => {
     e.preventDefault();
     setS("Submitting...");
-    const payload = { type: 'contact', fullName: f.fullName, phone: f.phone, email: f.email, service: f.service, message: f.message, timestamp: new Date().toISOString() };
-    try { await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) }); setS("✅ Thank you!"); setF({ fullName: "", email: "", phone: "", service: "", message: "" }); } catch { setS("✅ Thank you!"); }
+    // FIXED - NOW SENDS ALL COLUMNS WITH CAPITAL LETTERS
+    const payload = { 
+      type: 'contact', 
+      FullName: f.fullName,
+      fullName: f.fullName,
+      Phone: f.phone,
+      phone: f.phone,
+      Email: f.email,
+      email: f.email,
+      Service: f.service,
+      service: f.service,
+      Messages: f.message,
+      message: f.message,
+      Message: f.message,
+      Timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
+    };
+    try { 
+      await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) }); 
+      setS("✅ Thank you! Message received."); 
+      setF({ fullName: "", email: "", phone: "", service: "", message: "" }); 
+    } catch { setS("✅ Thank you!"); }
   };
   return (
     <div className="section"><h2>Contact Us</h2>
@@ -338,8 +358,33 @@ const Join = () => {
   const send = async (e) => {
     e.preventDefault();
     setS("Submitting...");
-    const payload = { type: 'applicant', fullName: f.fullName, phone: f.phone, email: f.email, education: f.education, experience: f.experience, interest: f.interest, position: f.position, district: f.district, timestamp: new Date().toISOString() };
-    try { await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) }); setS("✅ Thank you!"); setF({ fullName: "", phone: "", email: "", education: "", experience: "", interest: "", position: "SITE INCHARGE", district: "" }); } catch { setS("✅ Thank you!"); }
+    // FIXED - NOW SENDS ALL COLUMNS WITH CAPITAL LETTERS
+    const payload = { 
+      type: 'applicant',
+      FullName: f.fullName,
+      fullName: f.fullName,
+      Phone: f.phone,
+      phone: f.phone,
+      Email: f.email,
+      email: f.email,
+      Education: f.education,
+      education: f.education,
+      Experience: f.experience,
+      experience: f.experience,
+      Interest: f.interest,
+      interest: f.interest,
+      Position: f.position,
+      position: f.position,
+      District: f.district,
+      district: f.district,
+      Timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
+    };
+    try { 
+      await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) }); 
+      setS("✅ Thank you! Application received."); 
+      setF({ fullName: "", phone: "", email: "", education: "", experience: "", interest: "", position: "SITE INCHARGE", district: "" }); 
+    } catch { setS("✅ Thank you!"); }
   };
   return (
     <div className="section"><h2>Apply Now - Applicant Form</h2>
