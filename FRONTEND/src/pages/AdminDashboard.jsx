@@ -67,52 +67,35 @@ const AdminDashboard = () => {
     } catch { return t; } 
   }
 
-  // FIXED: SINGLE DELETE - Deletes from BOTH Dashboard + Sheet
+  // DELETE SINGLE - NO POPUP - Deletes from Dashboard + Sheet
   const handleDelete = async (row) => {
     const ts = getVal(row,['Timestamp','timestamp']);
-    const name = getVal(row,['FullName','fullName']) || 'this record';
-    if(!window.confirm(`Delete ${name} ?\n\nThis will delete from Dashboard AND Google Sheet permanently.`)) return;
-    
-    // 1. Delete from dashboard immediately
     setData(prev => prev.filter(r => getVal(r,['Timestamp','timestamp']) !== ts));
     setSelected(prev=>prev.filter(id=>id!==ts));
     if(detailRow && getVal(detailRow,['Timestamp','timestamp'])===ts) setDetailRow(null);
     
-    // 2. Delete from Google Sheet
-    try{
-      const payload = { action:'delete', timestamp: ts, Timestamp: ts, type: tab };
-      await fetch(GOOGLE_SHEET_WEBHOOK,{
-        method:'POST',
-        mode:'no-cors',
-        headers:{'Content-Type':'text/plain'},
-        body:JSON.stringify(payload)
-      });
-    }catch(e){ console.log(e); }
+    await fetch(GOOGLE_SHEET_WEBHOOK,{
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({ action:'delete', timestamp: ts })
+    });
   };
 
-  // FIXED: BULK DELETE - Deletes multiple at once from BOTH
+  // DELETE MULTIPLE - NO POPUP - Deletes from Dashboard + Sheet
   const handleBulkDelete = async () => {
     if(selected.length===0) return;
-    if(!window.confirm(`Delete ${selected.length} selected records?\n\nThis will delete from Dashboard AND Google Sheet permanently.`)) return;
-    
     const toDelete = [...selected];
-    
-    // 1. Delete from dashboard immediately
     setData(prev => prev.filter(r => !toDelete.includes(getVal(r,['Timestamp','timestamp']))));
     setSelected([]);
     setDetailRow(null);
     
-    // 2. Delete from Google Sheet
-    try{
-      const payload = { action:'bulkDelete', timestamps: toDelete, type: tab };
-      await fetch(GOOGLE_SHEET_WEBHOOK,{
-        method:'POST',
-        mode:'no-cors',
-        headers:{'Content-Type':'text/plain'},
-        body:JSON.stringify(payload)
-      });
-      alert(`${toDelete.length} records deleted from Dashboard and Sheet!`);
-    }catch(e){ console.log(e); }
+    await fetch(GOOGLE_SHEET_WEBHOOK,{
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({ action:'bulkDelete', timestamps: toDelete })
+    });
   };
 
   const toggleSelect = (ts) => setSelected(prev => prev.includes(ts) ? prev.filter(id=>id!==ts) : [...prev, ts]);
