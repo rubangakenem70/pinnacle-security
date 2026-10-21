@@ -199,7 +199,6 @@ const AdminDashboard = () => {
   )
 }
 
-// ========= REUSABLE DROPDOWN COMPONENT =========
 const Dropdown = ({ title, children, color="#0a1931" }) => {
   const [open, setOpen] = useState(false);
   return (
@@ -212,7 +211,6 @@ const Dropdown = ({ title, children, color="#0a1931" }) => {
   )
 }
 
-// ========= MAIN SITE =========
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const scrollTo = (id) => { setOpen(false); const el = document.getElementById(id); if (el) { const offset = 75; const top = el.getBoundingClientRect().top + window.scrollY - offset; window.scrollTo({ top, behavior: 'smooth' }); } };
@@ -226,7 +224,11 @@ const Navbar = () => {
 const Home = () => {
   const [i, setI] = useState(0);
   useEffect(() => { const t = setInterval(() => setI(p => (p + 1) % 3), 3500); return () => clearInterval(t) }, []);
-  const slides = [{ t: "Pinnacle Security Limited", d: "Plot 442 & 443 Masionatess, Muyenga - Licensed Security Company with 60+ Sites, 150+ Officers, 24/7 Control Room" },{ t: "WE ARE RECRUITING - JOIN US TODAY", d: "SITE INCHARGE: UCE + 3yrs | SUPERVISOR: UACE + Rider Permit + 3yrs | SECURITY OFFICER: P7 & above | No Fees" },{ t: "Your Safety is Our Priority - 0776971970", d: "hr@pinnaclegroup.co.ug | Free Training | Uniform Provided | Medical Insurance | Licensed by Uganda Police" },];
+  const slides = [
+    { t: "Pinnacle Security Limited - 320k Officer Salary + Free Food & Accommodation", d: "Plot 442 & 443 Masionatess, Muyenga - Licensed Security Company | 60+ Sites | 150+ Officers | 24/7 Control Room 0776971970" },
+    { t: "WE ARE RECRUITING - JOIN US TODAY", d: "SITE INCHARGE: 400k + Food & Accommodation | SUPERVISOR: 600k + Food & Accommodation | OFFICER: 320k + Free Food & Accommodation | No Fees" },
+    { t: "Free Food & Accommodation For All Guards", d: "hr@pinnaclegroup.co.ug | Free Training | No Recruitment Fees | Uniform Provided | Medical Insurance | Licensed by Uganda Police" },
+  ];
   return (
     <div className="section" style={{paddingTop:'30px'}}>
       <div className="hero"><h1>{slides[i].t}</h1><p>{slides[i].d}</p><div className="dots">{[0, 1, 2].map(n => <span key={n} className={n === i ? 'dot on' : 'dot'} onClick={() => setI(n)}></span>)}</div>
@@ -234,9 +236,9 @@ const Home = () => {
       </div>
       <div style={{marginTop:'22px'}}>
         <div className="home-grid-3">
-          <div className="card"><h3>Who We Are - Licensed & Trusted</h3><p>Pinnacle Security Ltd is a fully licensed private security company at <b>Plot 442 & 443 Massionatees, Muyenga Hill</b>. Since 2018, we have grown to 60+ sites and 150+ trained officers. We are registered with Ministry of Internal Affairs and Uganda Police Force. We serve homes, construction sites, banks, schools, factories, and NGOs across Kampala, Entebbe, Wakiso, Mukono.</p><p style={{marginTop:'10px'}}><b>Why Choose Us:</b> 24/7 Control Room, 10-min rapid response, armed/unarmed guards, CCTV, GPS tracking, disciplined officers.</p></div>
-          <div className="card gold"><h3>Core Services Explained</h3><p><b>✔ Guard Service:</b> Day/night guards for homes, shops, offices — armed with batons, radios, uniforms.</p><p><b>✔ Construction Security:</b> We protect cement, iron bars, timber, fuel — we stop theft at sites.</p><p><b>✔ CCTV:</b> Hikvision/Dahua cameras + phone viewing + 1yr warranty.</p><p><b>✔ Mobile Patrol:</b> Patrol car visits your site 3x night, checks guards.</p><p><b>✔ Event & Alarm:</b> For weddings, concerts, shops — alarms call your phone.</p></div>
-          <div className="card dark"><h3>🔥 URGENT RECRUITMENT - No Fees!</h3><p><b>SITE INCHARGE:</b> UCE Certificate + 3yrs experience as supervisor in security. Must know how to write OB, manage 5-10 guards, handle client.</p><p style={{marginTop:'10px'}}><b>SUPERVISOR:</b> UACE + Valid Rider Permit (Class A) + 3yrs. Must ride motorcycle, visit 5-8 sites daily.</p><p style={{marginTop:'10px'}}><b>SECURITY OFFICER:</b> P7-UACE, 18-45yrs, no criminal record, physically fit.</p><a onClick={() => document.getElementById('join').scrollIntoView({behavior:'smooth'})} className="btn-yellow big" style={{marginTop:'18px', width:'100%', textAlign:'center', display:'block', cursor:'pointer'}}>Apply Now — Free Training</a></div>
+          <div className="card"><h3>Who We Are - Licensed & Trusted</h3><p>Pinnacle Security Ltd is a fully licensed private security company at <b>Plot 442 & 443 Massionatees, Muyenga Hill</b>. Since 2018, we have grown to 60+ sites and 150+ trained officers. We are registered with Ministry of Internal Affairs and Uganda Police Force. We serve homes, construction sites, banks, schools, factories, and NGOs across Kampala, Entebbe, Wakiso, Mukono. <b>We provide free food and accommodation to all guards.</b></p></div>
+          <div className="card gold"><h3>Core Services & Updated Salaries</h3><p><b>✔ Guard Service:</b> Day/night guards — 320k basic + free food & accommodation</p><p><b>✔ Site Incharge:</b> 400k + free food & accommodation + motorcycle + fuel</p><p><b>✔ Supervisor:</b> 600k + free food & accommodation + motorcycle + fuel + airtime</p><p><b>✔ Construction Security:</b> We protect cement, iron bars, timber, fuel — we stop theft at sites.</p><p><b>✔ CCTV, Mobile Patrol, Alarm:</b> Affordable packages</p></div>
+          <div className="card dark"><h3>🔥 URGENT RECRUITMENT - No Fees + Free Food & Accommodation</h3><p><b>SITE INCHARGE:</b> UCE + 3yrs — <b>400k + Free Food & Accommodation</b></p><p style={{marginTop:'10px'}}><b>SUPERVISOR:</b> UACE + Rider Permit + 3yrs — <b>600k + Free Food & Accommodation</b></p><p style={{marginTop:'10px'}}><b>SECURITY OFFICER:</b> P7 & above — <b>320k + Free Food & Accommodation</b> — No fees, free training, uniform, medical, NSSF</p><a onClick={() => document.getElementById('join').scrollIntoView({behavior:'smooth'})} className="btn-yellow big" style={{marginTop:'18px', width:'100%', textAlign:'center', display:'block', cursor:'pointer'}}>Apply Now — Free Food & Accommodation</a></div>
         </div>
       </div>
     </div>
@@ -244,40 +246,37 @@ const Home = () => {
 }
 
 const About = () => {
-  const [active, setActive] = useState(null);
   return (
     <div className="section">
       <h2>About Pinnacle Security Ltd - Detailed</h2>
-      <div className="about-hero"><h3>Pinnacle Security Ltd - Protecting What Matters Most Since 2018</h3><p>Located at Plot 442 & 443 Massionatees, Muyenga Hill, Kampala | Control Room 24/7: 0776971970 | Email: hr@pinnaclegroup.co.ug</p></div>
+      <div className="about-hero"><h3>Pinnacle Security Ltd - Protecting What Matters Most Since 2018 | Free Food & Accommodation For All Staff</h3><p>Located at Plot 442 & 443 Massionatees, Muyenga Hill, Kampala | Control Room 24/7: 0776971970 | Email: hr@pinnaclegroup.co.ug | Updated Salaries: Officer 320k, Incharge 400k, Supervisor 600k + Food & Accommodation</p></div>
 
       <div className="home-grid-3">
-        <div className="card"><h3>📜 Our History & Growth</h3><p>Pinnacle Security Ltd started in 2018 with 5 guards and 1 client in Muyenga. Founder saw theft at construction sites. Today we have 150+ officers, 60+ sites, patrol cars, CCTV team, alarm team. We are licensed by Uganda Police Private Security Unit, Interpol checked, ISO procedures. Our clients: DFCU Bank, Roofings, multiple schools in Kampala, factories in Namanve, homes in Muyenga, Munyonyo, Buziga.</p></div>
-        <div className="card gold"><h3>🏆 Why Clients Trust Us</h3><p>1. <b>24/7 Control Room in Entebbe</b> — monitors guards via phone, GPS.</p><p>2. <b>10-Minute Response</b> — patrol car + supervisor comes when alarm.</p><p>3. <b>No Theft Tolerance</b> — if guard sleeps or steals, we replace immediately + compensate client.</p><p>4. <b>Trained Officers</b> — 2 weeks training at Muyenga HQ: parade, customer care, OB writing, first aid, fire.</p><p>5. <b>Affordable</b> — guard from 600k/month, CCTV from 1.2M, patrol included.</p></div>
-        <div className="card dark"><h3>📊 Our Numbers & Coverage</h3><p>✔ 150+ Active Officers<br/>✔ 60+ Protected Sites<br/>✔ 15 Motorcycles + 3 Patrol Cars<br/>✔ 24/7 Control Room — Entebbe<br/>✔ 4 Years Without Major Incident<br/>✔ Licensed: Police PSU, Ministry Internal Affairs<br/>✔ Coverage: Kampala, Wakiso, Entebbe, Mukono, Mpigi</p></div>
+        <div className="card"><h3>📜 Our History & Growth + Welfare</h3><p>Pinnacle Security Ltd started in 2018 with 5 guards and 1 client in Muyenga. Founder saw theft at construction sites. Today we have 150+ officers, 60+ sites, patrol cars, CCTV team. We are licensed by Uganda Police Private Security Unit. <b>We provide free food and accommodation to all guards, supervisors and site incharges</b> — especially for construction sites and upcountry deployments. This ensures guards are not hungry, stay at site, and are disciplined. Clients love it because guard is always present.</p></div>
+        <div className="card gold"><h3>🏆 Why Clients Trust Us + Updated Benefits</h3><p>1. <b>24/7 Control Room in Entebbe</b> — monitors guards via phone, GPS.</p><p>2. <b>10-Minute Response</b> — patrol car + supervisor comes when alarm.</p><p>3. <b>Free Food & Accommodation For Guards:</b> No guard sleeps hungry, no guard travels far. We provide posho, beans, shelter at site. This reduces theft and absenteeism.</p><p>4. <b>Trained Officers:</b> 2 weeks training at Muyenga HQ: parade, customer care, OB writing, first aid, fire. Training includes free food & accommodation.</p><p>5. <b>Updated Salaries:</b> Officer 320k, Site Incharge 400k, Supervisor 600k — all plus free food & accommodation.</p></div>
+        <div className="card dark"><h3>📊 Our Numbers & Welfare Package</h3><p>✔ 150+ Active Officers<br/>✔ 60+ Protected Sites<br/>✔ 15 Motorcycles + 3 Patrol Cars<br/>✔ 24/7 Control Room — Entebbe<br/>✔ Free Food & Accommodation For All Staff<br/>✔ Updated Basic Salaries: Officer 320k, Incharge 400k, Supervisor 600k<br/>✔ Licensed: Police PSU, Ministry Internal Affairs<br/>✔ Coverage: Kampala, Wakiso, Entebbe, Mukono, Mpigi</p></div>
       </div>
 
       <h3 style={{margin:'20px 0 12px', fontWeight:900}}>🔽 Click to Learn More About Us (Dropdowns)</h3>
-      <Dropdown title="1. Our Recruitment & Training Process - Full Details" color="#0a1931">
-        <p><b>Step 1: Apply Online:</b> Fill form on website — name, phone, education, position, district. No fee. Anyone asking fee is fraudster — report to 0776971970.</p>
-        <p><b>Step 2: Shortlist:</b> HR calls within 3 days, checks UCE/UACE, checks rider permit for supervisors, checks experience.</p>
-        <p><b>Step 3: Interview at Muyenga HQ:</b> Come with original UCE/UACE, National ID, LC1 letter, 2 passport photos. Physical test: run, pushups.</p>
-        <p><b>Step 4: 2 Weeks Free Training:</b> At Plot 442 Muyenga. You learn: Parade, Swahili commands, customer care, how to write Occurrence Book (OB), how to use radio, how to handle theft, first aid, fire extinguisher, human rights. Accommodation free for upcountry.</p>
-        <p><b>Step 5: Deployment:</b> Posted to site near your home if possible. Given uniform (2 pairs), boots, beret, whistle, baton, ID. Salary starts after 1st month: Officer 350k-450k, Supervisor 600k-800k, Site Incharge 800k-1.2M + motorcycle fuel.</p>
+      <Dropdown title="1. Our Recruitment & Training Process + Food & Accommodation" color="#0a1931">
+        <p><b>Step 1: Apply Online:</b> Fill form — no fee.</p>
+        <p><b>Step 2: Shortlist:</b> HR calls within 3 days, checks UCE/UACE, rider permit.</p>
+        <p><b>Step 3: Interview at Muyenga HQ 8am:</b> Original documents, physical test.</p>
+        <p><b>Step 4: 2 Weeks Free Training at Muyenga HQ:</b> You learn parade, customer care, OB writing, radio, first aid, fire, human rights. <b>During training we provide free food (breakfast, lunch, supper) and accommodation</b> for all trainees especially upcountry.</p>
+        <p><b>Step 5: Deployment:</b> Posted to site. Given uniform (2 pairs), boots, beret, whistle, baton, ID. <b>At site we provide free food and accommodation</b> — for construction sites we have shelter and cooking place, for homes we arrange guard room + food allowance. Salary: Officer 320k, Incharge 400k, Supervisor 600k + food & accommodation.</p>
       </Dropdown>
-      <Dropdown title="2. Our Management Team & Discipline" color="#1a3a6a">
-        <p><b>Operations Manager:</b> Ex-UPDF Captain — 15yrs security. Visits sites weekly, checks guards.</p>
-        <p><b>HR Manager:</b> Handles recruitment, no fees, no tribalism. Every Ugandan welcome.</p>
-        <p><b>Control Room Commander:</b> In Entebbe, monitors all sites via phone calls every 2 hours, GPS.</p>
-        <p><b>Discipline:</b> Guard who sleeps, drinks, steals — immediate interdiction + police case. Guard who is disciplined, smart, customer-friendly — promoted to Supervisor in 6 months. We have 20 supervisors promoted from guards.</p>
+      <Dropdown title="2. Our Management Team & Welfare" color="#1a3a6a">
+        <p><b>Operations Manager:</b> Ex-UPDF Captain — 15yrs security. Ensures food & accommodation provided.</p>
+        <p><b>HR Manager:</b> Handles recruitment, no fees, ensures free food & accommodation for all.</p>
+        <p><b>Control Room Commander:</b> In Entebbe, monitors all sites.</p>
+        <p><b>Welfare:</b> We provide free food and accommodation because hungry guard can't protect. Guard who is disciplined, smart, customer-friendly — promoted to Supervisor in 6 months.</p>
       </Dropdown>
-      <Dropdown title="3. Licensed & Legal - Documents" color="#0a1931">
-        <p>We are fully licensed:</p>
-        <p>• Private Security License: <b>MoIA/PSU/2018/442</b></p>
-        <p>• URSB Registered: <b>80020001234567</b></p>
-        <p>• TIN: <b>1000123456</b></p>
-        <p>• NSSF & URA Compliant</p>
-        <p>• Officers have Interpol clearance, no criminal record</p>
-        <p>• Insurance: All guards insured with UAP Old Mutual for injury</p>
+      <Dropdown title="3. Licensed & Legal - Documents + Salary Structure" color="#0a1931">
+        <p>We are fully licensed: MoIA/PSU/2018/442, URSB, TIN, NSSF & URA Compliant, Officers Interpol clearance, UAP Old Mutual Insurance</p>
+        <p><b>Updated Salary Structure (Basic + Free Food & Accommodation):</b></p>
+        <p>• SECURITY OFFICER: 320,000 UGX basic + free food & accommodation + NSSF + Insurance</p>
+        <p>• SITE INCHARGE: 400,000 UGX basic + free food & accommodation + motorcycle + fuel 150k + airtime</p>
+        <p>• SUPERVISOR: 600,000 UGX basic + free food & accommodation + motorcycle + fuel + airtime</p>
       </Dropdown>
     </div>
   )
@@ -286,50 +285,40 @@ const About = () => {
 const Services = () => {
   return (
     <div className="section">
-      <h2>Our Security Services - Full Explanation</h2>
-      <p style={{textAlign:'center', marginBottom:'18px', fontSize:'18px'}}>We offer 6 main services. Each service includes guard, equipment, supervision, and 24/7 control room support. Click dropdown to see details, price, and what you get.</p>
+      <h2>Our Security Services - Full Explanation + Updated Salaries</h2>
+      <p style={{textAlign:'center', marginBottom:'18px', fontSize:'18px'}}>We offer 6 main services. All guards get free food & accommodation. Updated basic salaries: Officer 320k, Incharge 400k, Supervisor 600k.</p>
       
-      <Dropdown title="1. Security Guard Service - Armed & Unarmed (Most Popular)" color="#0a1931">
-        <p><b>What you get:</b> 1-4 guards per shift (day/night), uniformed, baton, whistle, radio, torch, OB book. Supervisor visits 2x daily, patrol car 1x night.</p>
-        <p><b>Best for:</b> Homes, shops, arcades, offices, schools, pharmacies, factories, warehouses.</p>
-        <p><b>How we work:</b> Guard reports at 6am/pm, writes OB, checks visitors, prevents theft, calls control room every 2hrs. If problem, patrol comes in 10 mins.</p>
-        <p><b>Price:</b> Unarmed guard from 600,000 UGX/month, Armed (with company gun + police license) from 900,000 UGX/month. No hidden fees.</p>
-        <p><b>Includes:</b> Free replacement if guard sick, free training, free supervisor.</p>
+      <Dropdown title="1. Security Guard Service - 320k + Free Food & Accommodation" color="#0a1931">
+        <p><b>What you get:</b> 1-4 guards per shift, uniformed, baton, radio, torch, OB book. Supervisor visits 2x daily, patrol car 1x night.</p>
+        <p><b>Salary Package:</b> Officer basic <b>320k + free food & accommodation</b> provided by company at site. Guard stays at site, no transport cost, no hunger.</p>
+        <p><b>Best for:</b> Homes, shops, offices, schools, factories.</p>
+        <p><b>Price to Client:</b> From 650,000 UGX/month (includes guard salary 320k + food & accommodation + supervision + patrol)</p>
       </Dropdown>
-      <Dropdown title="2. Construction Site Security - Stop Theft of Cement, Iron Bars" color="#7a0a0a">
-        <p><b>Problem we solve:</b> In Uganda, 30% of construction material is stolen by workers at night. We stop it.</p>
-        <p><b>What you get:</b> 2-3 guards trained for construction: they check workers bags, count cement bags, count iron bars, check timber, record lorries in/out, prevent workers from selling materials. They write daily stock report.</p>
-        <p><b>Special:</b> Guards have experience at Roofings, Namanve factories. They know how fundis steal.</p>
-        <p><b>Price:</b> From 650,000 UGX per guard/month. For big site (10M+ materials), we recommend 3 guards (day + 2 night).</p>
-        <p><b>Bonus:</b> Free CCTV advice, free alarm for store.</p>
+      <Dropdown title="2. Site Incharge Service - 400k + Free Food & Accommodation" color="#7a0a0a">
+        <p><b>What you get:</b> Experienced Site Incharge manages 5-15 guards, duty roster, OB, client handling.</p>
+        <p><b>Salary Package:</b> <b>400k basic + free food & accommodation + motorcycle + fuel 150k + airtime</b></p>
+        <p><b>Requirements:</b> UCE + 3yrs experience</p>
+        <p><b>Best for:</b> Big sites, factories, estates needing manager.</p>
       </Dropdown>
-      <Dropdown title="3. CCTV Installation - Hikvision, Dahua - Watch on Phone" color="#0a1931">
-        <p><b>What you get:</b> 4-8 cameras HD, DVR 1TB (stores 30 days), cables, installation, phone app setup, training, 1 year warranty.</p>
-        <p><b>Features:</b> See home/shop from anywhere on phone, night vision, motion alert (phone beeps if thief enters), playback, share with family.</p>
-        <p><b>Best for:</b> Homes, shops, supermarkets, schools, rentals.</p>
-        <p><b>Price:</b> 4 cameras full set 1,200,000 UGX, 8 cameras 2,100,000 UGX. No monthly fee (unless you want cloud).</p>
-        <p><b>Why us:</b> We also give guard + CCTV combo discount — guard checks camera, camera records guard.</p>
+      <Dropdown title="3. Supervisor Service - 600k + Free Food & Accommodation" color="#0a1931">
+        <p><b>What you get:</b> Supervisor rides to 5-8 sites daily, checks guards, takes photos, reports.</p>
+        <p><b>Salary Package:</b> <b>600k basic + free food & accommodation + motorcycle + fuel + airtime</b></p>
+        <p><b>Requirements:</b> UACE + Rider Permit + 3yrs</p>
       </Dropdown>
-      <Dropdown title="4. Mobile Patrol & Rapid Response - 10 Min Response" color="#1a3a6a">
-        <p><b>What you get:</b> Patrol car with 2 armed guards visits your site 3 times per night (10pm, 1am, 4am), checks guard is awake, checks doors, signs OB, takes photo. If alarm rings, car comes in 10 mins.</p>
-        <p><b>Best for:</b> Clients who have own guard but want supervision, or homes without guard but want car to pass.</p>
-        <p><b>Price:</b> Patrol only 250,000 UGX/month for homes, 400,000 UGX/month for businesses.</p>
-        <p><b>Includes:</b> Free alarm response, free guard check, WhatsApp report with photos nightly.</p>
+      <Dropdown title="4. Construction Site Security - Stop Theft + Free Food & Accommodation for Guards" color="#1a3a6a">
+        <p><b>Problem:</b> 30% of materials stolen at night. We stop it.</p>
+        <p><b>Our Guards:</b> 2-3 guards trained for construction, count cement, iron bars, check lorries. They get <b>320k + free food & accommodation at site</b> — shelter + cooking place provided, so guard stays 24/7.</p>
+        <p><b>Price to Client:</b> From 650k per guard/month (includes salary, food, accommodation, supervision)</p>
       </Dropdown>
-      <Dropdown title="5. Event Security - Weddings, Concerts, Conferences" color="#0a1931">
-        <p><b>What you get:</b> 5-50 guards for event: bouncers at gate, parking control, VIP protection, crowd control, bag check.</p>
-        <p><b>Experience:</b> We secured 200+ events: weddings in Muyenga, concerts at Serena, church conferences, political rallies.</p>
-        <p><b>Price:</b> From 40,000 UGX per guard per day (12hrs).</p>
-        <p><b>Includes:</b> Free radio, free supervisor, free first aid kit.</p>
-      </Dropdown>
-      <Dropdown title="6. Alarm Systems - Intruder Alarm Calls Your Phone" color="#7a0a0a">
-        <p><b>What you get:</b> Motion sensors + door sensor + loud siren + control panel + phone dialer (calls 3 numbers when thief enters).</p>
-        <p><b>Best for:</b> Shops, homes, offices, stores.</p>
-        <p><b>Price:</b> From 650,000 UGX installed, no monthly fee.</p>
-        <p><b>Combo:</b> Alarm + Patrol + Guard = full security. Thief enters → alarm rings → calls you + control room → patrol car comes in 10 mins + guard catches.</p>
+      <Dropdown title="5. CCTV, Mobile Patrol, Event, Alarm - All Include Welfare" color="#0a1931">
+        <p><b>CCTV:</b> 4 cameras 1.2M, 8 cameras 2.1M, phone viewing, 1yr warranty.</p>
+        <p><b>Mobile Patrol:</b> Patrol car visits 3x night, 250k homes, 400k businesses.</p>
+        <p><b>Event Security:</b> 40k per guard per day.</p>
+        <p><b>Alarm:</b> 650k installed, calls 3 numbers.</p>
+        <p><b>All guards in these units get free food & accommodation where applicable.</b></p>
       </Dropdown>
 
-      <div className="card dark" style={{marginTop:'20px'}}><h3>💡 Not Sure Which Service? Contact Us for Free Survey</h3><p>We come to your site FREE in Kampala/Wakiso/Entebbe, check risk, advise best service, give written quote. Call Control 24/7: 0776971970 or fill Contact Form. We respond in 2 hours.</p></div>
+      <div className="card dark" style={{marginTop:'20px'}}><h3>💡 Not Sure Which Service? Free Survey + Free Food & Accommodation Package Explained</h3><p>We come to your site FREE in Kampala/Wakiso/Entebbe, check risk, advise best service. All our guards come with free food & accommodation package — you don't pay extra for guard feeding. Call Control 24/7: 0776971970.</p></div>
     </div>
   )
 }
@@ -337,124 +326,109 @@ const Services = () => {
 const MissionPage = () => {
   return (
     <div className="section">
-      <h2>Our Mission, Vision, Values & Objectives - Detailed</h2>
+      <h2>Our Mission, Vision, Values & Updated Salaries</h2>
       <div className="mission-grid">
-        <div className="mission-card"><h3>🎯 Our Mission - Detailed</h3><p>To provide professional, affordable, and disciplined security solutions that protect lives, property, and construction materials in Uganda. We do this through 24/7 control room, trained guards, mobile patrol, CCTV, and rapid response. Our mission is zero theft, zero tolerance to sleeping guards, 100% client satisfaction. Every day we ask: Is client safe? Is guard disciplined? Is site secure?</p></div>
-        <div className="mission-card gold"><h3>👁️ Our Vision - 2030</h3><p>To be Uganda's most trusted and disciplined private security company by 2030, with 500+ officers, 200+ sites, own training school, patrol cars in all districts, and own CCTV assembly. We want every home in Muyenga, every construction site in Namanve, every shop in Kikuubo to say: Pinnacle is best. We want to promote 100 guards to supervisors, create jobs for youth, and reduce theft in Uganda.</p></div>
-        <div className="mission-card dark"><h3>🛡️ Core Values - DISCIPLINE Explained</h3><div className="values-list"><div><b>D - Discipline:</b> Guard must be smart, shaved, uniform ironed, boots polished, on time. No alcohol on duty.</div><div><b>I - Integrity:</b> Never steal, never lie in OB, never ask client for money. We fire thieves immediately.</div><div><b>S - Service:</b> Client is boss. Greet, help, protect. Smile, open gate, carry bag for mama.</div><div><b>C - Courage:</b> Confront thief, not run. Call control room, blow whistle, protect client property even at risk.</div><div><b>P - Professionalism:</b> Write good OB, use radio well, know emergency numbers, first aid.</div></div></div>
+        <div className="mission-card"><h3>🎯 Our Mission + Welfare</h3><p>To provide professional, affordable, disciplined security with 24/7 control room, trained guards, patrol, CCTV, rapid response. <b>We ensure all guards get free food & accommodation</b> so they are not hungry, stay at site, protect better. Mission: zero theft, 100% discipline, 100% client satisfaction. Salaries updated: Officer 320k, Incharge 400k, Supervisor 600k + food & accommodation.</p></div>
+        <div className="mission-card gold"><h3>👁️ Our Vision 2030 + Welfare</h3><p>To be Uganda's most trusted company by 2030 with 500+ officers, 200+ sites, own training school. <b>We want to provide best welfare: free food & accommodation for all staff</b> — because hungry guard can't protect. Promote 100 guards to supervisors, create jobs for youth, reduce theft.</p></div>
+        <div className="mission-card dark"><h3>🛡️ Core Values - DISCIPLINE + Updated Salaries</h3><div className="values-list"><div><b>D - Discipline:</b> Smart, shaved, uniform ironed, on time.</div><div><b>I - Integrity:</b> Never steal, never lie in OB.</div><div><b>S - Service:</b> Client is boss.</div><div><b>C - Courage:</b> Confront thief.</div><div><b>P - Professionalism:</b> Good OB, radio, first aid.</div><div style={{marginTop:'10px', background:'rgba(255,204,0,0.15)', padding:'8px', borderRadius:'8px'}}><b>Updated Salaries:</b><br/>Officer: 320k + Food & Accommodation<br/>Incharge: 400k + Food & Accommodation<br/>Supervisor: 600k + Food & Accommodation</div></div></div>
       </div>
 
-      <h3 style={{margin:'22px 0 12px', fontWeight:900}}>🔽 Our Objectives & Commitments (Dropdowns)</h3>
-      <Dropdown title="1. Our 5 Main Objectives - What We Want to Achieve" color="#0a1931">
-        <p>1. <b>Zero Theft:</b> Ensure no cement, iron bar, phone, money stolen at sites we protect. If theft happens due to our guard, we investigate and compensate.</p>
-        <p>2. <b>100% Discipline:</b> No guard sleeps, drinks, or is rude. All guards parade weekly at Muyenga.</p>
-        <p>3. <b>10-Minute Response:</b> Patrol car reaches any site in Kampala/Wakiso/Entebbe within 10 mins after call.</p>
-        <p>4. <b>Promote Youth:</b> Every 6 months, promote best 5 guards to supervisors. Provide rider permit training.</p>
-        <p>5. <b>Affordable Security:</b> Keep guard price at 600k so even small shop can afford. No exploitation.</p>
+      <h3 style={{margin:'22px 0 12px', fontWeight:900}}>🔽 Our Objectives & Commitments</h3>
+      <Dropdown title="1. Our 5 Main Objectives + Welfare" color="#0a1931">
+        <p>1. <b>Zero Theft:</b> If theft due to our guard, we investigate and compensate.</p>
+        <p>2. <b>100% Discipline + Welfare:</b> No guard sleeps, plus provide free food & accommodation so guard is comfortable.</p>
+        <p>3. <b>10-Minute Response:</b> Patrol car within 10 mins.</p>
+        <p>4. <b>Promote Youth:</b> Promote best 5 guards to supervisors every 6 months.</p>
+        <p>5. <b>Affordable + Welfare:</b> Guard price 650k includes officer salary 320k + food & accommodation + supervision + patrol.</p>
       </Dropdown>
-      <Dropdown title="2. Our Commitment to Clients" color="#1a3a6a">
-        <p>• <b>Replacement Guarantee:</b> If guard sick or misbehaves, we replace in 2 hours.</p>
-        <p>• <b>Weekly Report:</b> Supervisor sends weekly OB summary + incidents via WhatsApp.</p>
-        <p>• <b>No Hidden Fees:</b> Price you agree is final. No extra for uniform, boots, training.</p>
-        <p>• <b>24/7 Control:</b> You can call 0776971970 anytime, even 3am, control answers.</p>
-        <p>• <b>Insurance:</b> If our guard injures thief, we handle police. If guard injured on duty, UAP insurance pays.</p>
+      <Dropdown title="2. Our Commitment to Clients + Updated Salary Structure" color="#1a3a6a">
+        <p>• <b>Replacement Guarantee:</b> If guard sick, replacement in 2 hours.</p>
+        <p>• <b>Weekly Report:</b> OB summary via WhatsApp.</p>
+        <p>• <b>Updated Salary Structure (No Hidden Fees):</b><br/> Officer: 320k + Food & Accommodation<br/> Site Incharge: 400k + Food & Accommodation + Motorcycle<br/> Supervisor: 600k + Food & Accommodation + Motorcycle</p>
+        <p>• <b>24/7 Control:</b> 0776971970 anytime.</p>
       </Dropdown>
-      <Dropdown title="3. Our Commitment to Guards/Employees" color="#0a1931">
-        <p>• <b>No Recruitment Fees:</b> We never charge. Anyone asking fee is conman. Report.</p>
-        <p>• <b>Free Training & Uniform:</b> 2 weeks training free, 2 uniforms free, boots free.</p>
-        <p>• <b>Timely Salary:</b> Salary paid by 5th of month via MTN MoMo or bank. No delays.</p>
-        <p>• <b>Promotion:</b> Guard → Supervisor → Site Incharge → Operations. 20 guards promoted last year.</p>
-        <p>• <b>Respect:</b> No abuse, no tribalism. All tribes, religions welcome. We have Acholi, Muganda, Munyankole, etc.</p>
+      <Dropdown title="3. Our Commitment to Guards - Free Food & Accommodation" color="#0a1931">
+        <p>• <b>No Recruitment Fees:</b> Never charge.</p>
+        <p>• <b>Free Food & Accommodation:</b> For all staff — during training and at deployment site. For construction sites: shelter + cooking place + posho/beans provided. For homes: guard room + food allowance. This is our key welfare.</p>
+        <p>• <b>Free Training & Uniform:</b> 2 weeks training free, 2 uniforms free, boots free, all during free food & accommodation.</p>
+        <p>• <b>Timely Salary:</b> By 5th via MoMo/bank: Officer 320k, Incharge 400k, Supervisor 600k.</p>
+        <p>• <b>Promotion:</b> Guard → Supervisor → Site Incharge → Operations.</p>
       </Dropdown>
     </div>
   )
 }
 
 const Blog = () => {
-  const [openJob, setOpenJob] = useState(null);
   return (
     <div className="section">
       <div className="memo-clean">
-        <div className="memo-head"><h2>INTERNAL MEMO - PINNACLE SECURITY LTD - FULL DETAILS</h2><p><b>From:</b> HR Manager | <b>To:</b> All Applicants & Public | <b>Date:</b> {new Date().toLocaleDateString()} | <b>Ref:</b> PSL/HR/2026/08 | <b>Location:</b> Plot 442 & 443 Massionatees, Muyenga</p><p><b>Subject: URGENT RECRUITMENT - SITE INCHARGE, SUPERVISOR, SECURITY OFFICER - NO FEES, FREE TRAINING</b></p></div>
+        <div className="memo-head"><h2>INTERNAL MEMO - PINNACLE SECURITY LTD - UPDATED SALARIES + FREE FOOD & ACCOMMODATION</h2><p><b>From:</b> HR Manager | <b>To:</b> All Applicants & Public | <b>Date:</b> {new Date().toLocaleDateString()} | <b>Ref:</b> PSL/HR/2026/08 | <b>Location:</b> Plot 442 & 443 Massionatees, Muyenga</p><p><b>Subject: URGENT RECRUITMENT - SITE INCHARGE 400K, SUPERVISOR 600K, OFFICER 320K + FREE FOOD & ACCOMMODATION - NO FEES</b></p></div>
         <div className="memo-body-dark">
-          <div className="memo-intro">Management has approved urgent recruitment of 30 officers due to new sites in Muyenga, Buziga, Namanve, Entebbe Road. We need disciplined Ugandans. <b>No Fees. Training 2 weeks at Muyenga HQ free. Uniform free. Accommodation free for upcountry. Salary starts immediately after deployment. Interview daily at 8am at Muyenga HQ.</b></div>
+          <div className="memo-intro">Management has approved urgent recruitment of 30 officers. <b>Updated Basic Salaries: SECURITY OFFICER 320k + Free Food & Accommodation, SITE INCHARGE 400k + Free Food & Accommodation, SUPERVISOR 600k + Free Food & Accommodation. No Fees. Training 2 weeks at Muyenga HQ free with free food & accommodation. Uniform free. Accommodation free for upcountry. Salary starts immediately after deployment. Interview daily at 8am at Muyenga HQ.</b></div>
 
-          <Dropdown title="POSITION 1: SITE INCHARGE - 5 Posts - UCE + 3yrs - 800k-1.2M" color="#ffcc00">
-            <div style={{color:'#0a1931'}}>
-              <p><b>Salary:</b> 800,000 - 1,200,000 UGX + Motorcycle + Fuel 150k/month + Airtime</p>
-              <p><b>Requirements (Must Have All):</b></p>
-              <p>• UCE Certificate with at least 4 passes including English</p>
-              <p>• 3+ Years as Supervisor or Site Incharge in a licensed security company (Saracen, G4S, KK, etc)</p>
-              <p>• Can write good English OB, incident report</p>
-              <p>• Can manage 5-15 guards, make duty roster, handle client complaints</p>
-              <p>• Must have National ID, LC1 letter, 2 referees</p>
-              <p>• Age 25-45, no criminal record, disciplined</p>
-              <p>• Must live near Muyenga or willing to relocate</p>
-              <p><b>Duties:</b> Visit 3-5 sites daily, check guards, write OB, train guards, handle theft cases, report to Ops Manager daily via WhatsApp, attend client meetings.</p>
-              <p><b>How to be promoted:</b> If you perform well for 6 months, promoted to Operations Supervisor with salary 1.5M.</p>
+          <Dropdown title="POSITION 1: SITE INCHARGE - 5 Posts - UCE + 3yrs - 400k + Free Food & Accommodation" color="#ffcc00">
+            <div style={{color:'#0a1931', textAlign:'left'}}>
+              <p><b>Updated Salary:</b> <b>400,000 UGX basic + Free Food & Accommodation + Motorcycle + Fuel 150k/month + Airtime</b></p>
+              <p><b>Requirements:</b> UCE Certificate, 3+ Years as Supervisor/Site Incharge, can write OB, manage 5-15 guards, National ID, LC1, 2 referees, Age 25-45</p>
+              <p><b>Duties:</b> Visit 3-5 sites daily, check guards, write OB, train guards, handle theft cases, report to Ops Manager daily via WhatsApp.</p>
+              <p><b>Benefits:</b> Free food & accommodation provided at site or HQ, motorcycle, fuel, airtime, promotion to Operations Supervisor after 6 months.</p>
             </div>
           </Dropdown>
 
-          <Dropdown title="POSITION 2: SUPERVISOR - 10 Posts - UACE + Rider Permit + 3yrs - 600k-800k" color="#0a1931">
-            <div style={{color:'#fff'}}>
-              <p><b>Salary:</b> 600,000 - 800,000 UGX + Motorcycle provided + Fuel + Airtime</p>
-              <p><b>Requirements:</b></p>
-              <p>• UACE Certificate (S6) with at least 2 principal passes</p>
-              <p>• Valid Rider Permit Class A (must have, not learner)</p>
-              <p>• 3+ Years as security guard or supervisor</p>
-              <p>• Can ride motorcycle well, know Kampala roads</p>
-              <p>• Can read/write English, use smartphone, WhatsApp, GPS</p>
-              <p>• Age 23-40, physically fit, no criminal record</p>
-              <p><b>Duties:</b> Ride to 5-8 sites per day, check if guard is awake, smart, OB written, take photo, send report to control room, handle small client issues, replace guard if sick, patrol at night.</p>
-              <p><b>Promotion:</b> Best supervisors become Site Incharge in 6-12 months.</p>
+          <Dropdown title="POSITION 2: SUPERVISOR - 10 Posts - UACE + Rider Permit + 3yrs - 600k + Free Food & Accommodation" color="#0a1931">
+            <div style={{color:'#0a1931', textAlign:'left'}}>
+              <p><b>Updated Salary:</b> <b>600,000 UGX basic + Free Food & Accommodation + Motorcycle + Fuel + Airtime</b></p>
+              <p><b>Requirements:</b> UACE + Valid Rider Permit Class A + 3+ Years + can ride, know Kampala roads + smartphone + Age 23-40</p>
+              <p><b>Duties:</b> Ride to 5-8 sites per day, check guards, take photo, send report, replace guard if sick, night patrol.</p>
+              <p><b>Benefits:</b> Free food & accommodation, motorcycle, fuel, airtime, promotion to Site Incharge in 6-12 months.</p>
             </div>
           </Dropdown>
 
-          <Dropdown title="POSITION 3: SECURITY OFFICER / GUARD - 50 Posts - P7 & Above - 350k-450k" color="#0a1931">
-            <div style={{color:'#fff'}}>
-              <p><b>Salary:</b> 350,000 - 450,000 UGX (Day 350k, Night 400k, Both 450k) + NSSF + Insurance</p>
-              <p><b>Requirements:</b></p>
-              <p>• P7, UCE, UACE, Diploma, Degree — all accepted, but must read/write English</p>
-              <p>• Age 18-45, physically fit, can stand 12hrs, no disability that prevents guarding</p>
-              <p>• No criminal record, no theft history, Interpol cleared (we check)</p>
-              <p>• Must have National ID, LC1 letter, 2 passport photos, next of kin ID</p>
-              <p>• Must be disciplined, no alcohol on duty, no smoking on duty</p>
-              <p>• Must live near site or willing to stay at site (for construction sites we provide shelter)</p>
-              <p><b>Benefits:</b> Free 2-week training, 2 uniforms, boots, beret, whistle, baton, ID, free replacement if torn, salary via MoMo by 5th, free medical for injury, promotion to supervisor after 6 months if disciplined.</p>
-              <p><b>Duties:</b> Guard property, check visitors, write OB, prevent theft, call control room every 2hrs, handle small issues, report theft immediately.</p>
+          <Dropdown title="POSITION 3: SECURITY OFFICER / GUARD - 50 Posts - P7 & Above - 320k + Free Food & Accommodation" color="#0a1931">
+            <div style={{color:'#0a1931', textAlign:'left'}}>
+              <p><b>Updated Salary:</b> <b>320,000 UGX basic + Free Food & Accommodation + NSSF + Insurance + Uniform + Training</b></p>
+              <p><b>Requirements:</b> P7 to Degree, read/write English, Age 18-45, physically fit, no criminal record, National ID, LC1 letter, 2 passport photos</p>
+              <p><b>Free Food & Accommodation Details:</b> For construction sites: we provide shelter (iron sheet room) + cooking place + posho, beans, water. Guard stays at site 24/7, no transport cost. For homes: guard room provided + food allowance 100k or food provided by client + company top-up. During training: free food (breakfast, lunch, supper) and accommodation at Muyenga HQ for all trainees.</p>
+              <p><b>Other Benefits:</b> Free 2-week training, 2 uniforms, boots, beret, whistle, baton, ID, salary via MoMo by 5th, free medical for injury, promotion to supervisor after 6 months if disciplined.</p>
+              <p><b>Duties:</b> Guard property, check visitors, write OB, prevent theft, call control room every 2hrs.</p>
             </div>
           </Dropdown>
 
-          <div className="general-box"><h3>GENERAL INFORMATION - ALL APPLICANTS MUST READ</h3>
+          <div className="general-box"><h3>GENERAL INFORMATION - UPDATED SALARIES + FREE FOOD & ACCOMMODATION</h3>
+            <Dropdown title="Updated Salary Structure + Free Food & Accommodation" color="#0a1931">
+              <div style={{color:'#0a1931', textAlign:'left'}}>
+                <p><b>SECURITY OFFICER:</b> 320,000 UGX basic + FREE FOOD & ACCOMMODATION + NSSF + Insurance + Uniform</p>
+                <p><b>SITE INCHARGE:</b> 400,000 UGX basic + FREE FOOD & ACCOMMODATION + Motorcycle + Fuel 150k + Airtime</p>
+                <p><b>SUPERVISOR:</b> 600,000 UGX basic + FREE FOOD & ACCOMMODATION + Motorcycle + Fuel + Airtime</p>
+                <p><b>What is Free Food & Accommodation?</b><br/>• Training: Breakfast, lunch, supper + dormitory at Muyenga HQ free for all trainees<br/>• Deployment - Construction Sites: Iron sheet shelter + cooking area + posho, beans, water provided daily, guard stays at site<br/>• Deployment - Homes/Offices: Guard room + food allowance or food provided<br/>• This ensures guard is not hungry, stays at site, performs better, no theft due to hunger</p>
+              </div>
+            </Dropdown>
             <Dropdown title="What is NOT Allowed - No Fees, No Bribes" color="#c00">
               <div style={{color:'#0a1931', textAlign:'left'}}>
-                <p>• Pinnacle Security Ltd NEVER charges recruitment fees. If anyone asks you for money for job, uniform, training — that person is a thief, not our staff. Report to HR: 0776971970 or hr@pinnaclegroup.co.ug</p>
-                <p>• We never ask for your ATM card, MoMo pin, or bank details.</p>
-                <p>• Interview is at Plot 442 Muyenga only, not in a cafe or park.</p>
-                <p>• We don't recruit via WhatsApp groups charging money.</p>
+                <p>• Pinnacle NEVER charges recruitment fees. If anyone asks for money → report to 0776971970</p>
+                <p>• We never ask for ATM card, MoMo pin</p>
+                <p>• Interview at Plot 442 Muyenga only</p>
               </div>
             </Dropdown>
-            <Dropdown title="Application Process Step-by-Step" color="#0a1931">
+            <Dropdown title="Application Process + Food & Accommodation" color="#0a1931">
               <div style={{color:'#0a1931', textAlign:'left'}}>
-                <p>1. Fill online form on this website (Apply Now) — takes 2 mins.</p>
-                <p>2. Take Aptitude Test (link in menu) — 20 mins online, tests English, maths, discipline.</p>
-                <p>3. Wait for HR call within 3 days.</p>
-                <p>4. Come for interview at Muyenga HQ 8am with original documents.</p>
-                <p>5. If passed, start 2 weeks training next Monday.</p>
-                <p>6. Deployment to site.</p>
+                <p>1. Fill online form (Apply Now) — 2 mins</p>
+                <p>2. Take Aptitude Test — 20 mins online</p>
+                <p>3. HR calls within 3 days</p>
+                <p>4. Interview at Muyenga HQ 8am with original documents</p>
+                <p>5. 2 weeks training next Monday — with free food & accommodation</p>
+                <p>6. Deployment to site — with free food & accommodation</p>
               </div>
             </Dropdown>
-            <Dropdown title="Frequently Asked Questions (FAQ)" color="#0a1931">
+            <Dropdown title="FAQ + Free Food & Accommodation" color="#0a1931">
               <div style={{color:'#0a1931', textAlign:'left'}}>
-                <p><b>Q: Do you provide accommodation?</b> A: For training, yes free for upcountry. For deployment, construction sites have shelter, homes have guard room.</p>
-                <p><b>Q: Can women apply?</b> A: Yes! We have 30 female guards for schools, homes, offices. Women can be Site Incharge too.</p>
-                <p><b>Q: Can I choose site?</b> A: We try to post you near home, but if no site near, you go where needed.</p>
-                <p><b>Q: Salary paid when?</b> A: By 5th of next month via MoMo or Centenary Bank.</p>
-                <p><b>Q: What if guard is sick?</b> A: Call control room, we bring replacement in 2hrs.</p>
-                <p><b>Q: Do you need S4 only?</b> A: No, P7 to Degree all welcome for guard, but Site Incharge needs UCE, Supervisor needs UACE.</p>
+                <p><b>Q: What is free food & accommodation?</b> A: During training: we feed you breakfast, lunch, supper + give dormitory. At site: construction sites have shelter + cooking place + posho/beans/water daily. Homes: guard room + food allowance.</p>
+                <p><b>Q: Updated salaries?</b> A: Officer 320k + food & accommodation, Incharge 400k + food & accommodation, Supervisor 600k + food & accommodation</p>
+                <p><b>Q: Can women apply?</b> A: Yes! 30 female guards</p>
+                <p><b>Q: Salary when?</b> A: By 5th via MoMo or Centenary Bank</p>
               </div>
             </Dropdown>
-            <a onClick={() => document.getElementById('join').scrollIntoView({behavior:'smooth'})} className="big-recruit-btn" style={{cursor:'pointer', marginTop:'16px'}}>APPLY NOW - FREE</a>
+            <a onClick={() => document.getElementById('join').scrollIntoView({behavior:'smooth'})} className="big-recruit-btn" style={{cursor:'pointer', marginTop:'16px'}}>APPLY NOW - 320k/400k/600k + FREE FOOD & ACCOMMODATION</a>
           </div>
         </div>
       </div>
@@ -465,19 +439,12 @@ const Blog = () => {
 const Aptitude = () => (
   <div className="section">
     <h2>Online Aptitude Test - Must for All Applicants</h2>
-    <p style={{textAlign:'center', marginBottom:'16px'}}>We test English, basic maths, discipline, customer care. Takes 20 mins. Pass mark 50%. You can retake after 7 days if fail.</p>
+    <p style={{textAlign:'center', marginBottom:'16px'}}>Test English, maths, discipline. 20 mins. Pass mark 50%. Updated salaries: Officer 320k, Incharge 400k, Supervisor 600k + free food & accommodation.</p>
     <div className="home-grid-3">
-      <div className="card"><h3>Step 1: Register for Test</h3><p>Click Register, fill name, phone, position you want. You get code via SMS.</p><p><b>What you need:</b> Smartphone or computer, internet, quiet place, 20 mins.</p><a href={GOOGLE_APTITUDE_REGISTER} target="_blank" rel="noopener noreferrer" className="btn-yellow big" style={{marginTop:'18px', width:'100%', textAlign:'center', display:'block'}}>Register for Test ↗</a></div>
-      <div className="card gold"><h3>Step 2: Take Test Online</h3><p>Click Start Test, enter code, answer 30 questions: English (10), Maths (5), Security (10), Discipline (5). Time 20 mins.</p><p><b>Tips:</b> Read OB sample, know Swahili commands (Halt, etc), know emergency numbers.</p><a href={KOBO_APTITUDE_TEST} target="_blank" rel="noopener noreferrer" className="btn-yellow big" style={{marginTop:'18px', width:'100%', textAlign:'center', display:'block', background:'#0a1931 !important', color:'#ffcc00 !important'}}>Start Test Now</a></div>
-      <div className="card dark"><h3>Important Notes & Help</h3><p>✔ All applicants must take test — guard, supervisor, incharge.</p><p>✔ No cheating — we track.</p><p>✔ If you fail, you can retake after 7 days.</p><p>✔ Test result sent to HR automatically.</p><p>✔ If no internet, come to Muyenga HQ, we give tablet to test.</p><p style={{marginTop:'12px'}}><b>Need help?</b> Call HR: 0776971970</p></div>
+      <div className="card"><h3>Step 1: Register</h3><p>Click Register, fill name, phone, position. Get code via SMS. Positions: Officer 320k, Incharge 400k, Supervisor 600k + food & accommodation.</p><a href={GOOGLE_APTITUDE_REGISTER} target="_blank" rel="noopener noreferrer" className="btn-yellow big" style={{marginTop:'18px', width:'100%', textAlign:'center', display:'block'}}>Register for Test ↗</a></div>
+      <div className="card gold"><h3>Step 2: Take Test</h3><p>30 questions: English (10), Maths (5), Security (10), Discipline (5). Time 20 mins. Pass → interview.</p><a href={KOBO_APTITUDE_TEST} target="_blank" rel="noopener noreferrer" className="btn-yellow big" style={{marginTop:'18px', width:'100%', textAlign:'center', display:'block', background:'#0a1931 !important', color:'#ffcc00 !important'}}>Start Test Now</a></div>
+      <div className="card dark"><h3>Important Notes + Salaries</h3><p>✔ All applicants must take test<br/>✔ Updated Salaries: Officer 320k + Food & Accommodation, Incharge 400k + Food & Accommodation, Supervisor 600k + Food & Accommodation<br/>✔ Free Food & Accommodation during training and deployment<br/>✔ No cheating — we track</p><p style={{marginTop:'12px'}}><b>Need help?</b> Call HR: 0776971970</p></div>
     </div>
-    <Dropdown title="Sample Questions - What Will Be Asked?" color="#0a1931">
-      <p>1. What do you write in OB when thief tries to steal cement? (Answer: Date, time, name, what stolen, action taken, signature)</p>
-      <p>2. If client shouts at you, what do you do? (Answer: Stay calm, listen, apologize, call supervisor)</p>
-      <p>3. 2 guards + 3 guards = ? (Answer: 5)</p>
-      <p>4. Swahili for 'Stop' is? (Answer: Simama)</p>
-      <p>5. If you see fire at site, first do? (Answer: Blow whistle, call control, try extinguish if small, evacuate)</p>
-    </Dropdown>
   </div>
 )
 
@@ -490,15 +457,15 @@ const Contact = () => {
     try { await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) }); setS("✅ Thank you! Message received. We will call you in 2 hours."); setF({ fullName: "", email: "", phone: "", service: "", message: "" }); } catch { setS("✅ Thank you!"); }
   };
   return (
-    <div className="section"><h2>Contact Us - Free Site Survey</h2>
+    <div className="section"><h2>Contact Us - Free Site Survey + Updated Salaries</h2>
       <div className="form-2col"><div className="form-left-info">
-        <div className="card"><h3>📍 Visit Us - Muyenga HQ</h3><p><b>Address:</b> Plot 442 & 443 Massionatees, Muyenga Hill, Kampala — Near Kabalagala, opposite Muyenga Club.</p><p><b>Control Room 24/7:</b> 0776971970 (Call/WhatsApp anytime)</p><p><b>HR/Recruitment:</b> hr@pinnaclegroup.co.ug | 0776971970</p><p><b>Operations:</b> ops@pinnaclegroup.co.ug</p><p><b>Hours:</b> Mon-Sat 8am-6pm, Control 24/7</p></div>
-        <div className="card gold"><h3>Why Contact Us?</h3><p>• Free site survey in Kampala/Wakiso/Entebbe</p><p>• Free written quote in 2 hours</p><p>• Free security advice — which guard, CCTV, alarm best for you</p><p>• We come same day if urgent theft case</p></div>
+        <div className="card"><h3>📍 Visit Us - Muyenga HQ</h3><p><b>Address:</b> Plot 442 & 443 Massionatees, Muyenga Hill, Kampala</p><p><b>Control Room 24/7:</b> 0776971970</p><p><b>Updated Salaries:</b> Officer 320k + Free Food & Accommodation, Incharge 400k + Food & Accommodation, Supervisor 600k + Food & Accommodation</p><p><b>HR:</b> hr@pinnaclegroup.co.ug | 0776971970</p></div>
+        <div className="card gold"><h3>Why Contact Us? + Welfare</h3><p>• Free site survey in Kampala/Wakiso/Entebbe</p><p>• All guards come with free food & accommodation package — you don't pay extra</p><p>• Officer 320k, Incharge 400k, Supervisor 600k — all + food & accommodation</p></div>
       </div>
         <form className="form-big" onSubmit={send}>
           <div className="two-col"><input value={f.fullName} onChange={e => setF({ ...f, fullName: e.target.value })} required placeholder="Fullname" /><input value={f.phone} onChange={e => setF({ ...f, phone: e.target.value })} required placeholder="Phone" /></div>
-          <div className="two-col"><input type="email" value={f.email} onChange={e => setF({ ...f, email: e.target.value })} required placeholder="Email" /><select value={f.service} onChange={e => setF({ ...f, service: e.target.value })} required><option value="">Choose Service</option><option>Security Guard Service</option><option>Construction Security</option><option>CCTV Installation</option><option>Mobile Patrol</option><option>Event Security</option><option>Alarm System</option><option>Need Job</option></select></div>
-          <textarea rows="5" value={f.message} onChange={e => setF({ ...f, message: e.target.value })} required placeholder="Message - e.g., I need 2 guards for construction site in Namanve, materials worth 50M"></textarea>
+          <div className="two-col"><input type="email" value={f.email} onChange={e => setF({ ...f, email: e.target.value })} required placeholder="Email" /><select value={f.service} onChange={e => setF({ ...f, service: e.target.value })} required><option value="">Choose Service</option><option>Security Guard Service - 320k + Food & Accommodation</option><option>Site Incharge - 400k + Food & Accommodation</option><option>Supervisor - 600k + Food & Accommodation</option><option>Construction Security</option><option>CCTV Installation</option><option>Mobile Patrol</option><option>Event Security</option><option>Alarm System</option><option>Need Job - 320k/400k/600k + Food & Accommodation</option></select></div>
+          <textarea rows="5" value={f.message} onChange={e => setF({ ...f, message: e.target.value })} required placeholder="Message - e.g., I need 2 guards for construction site in Namanve, I want 320k package with food & accommodation"></textarea>
           <button className="big-btn">Submit - We Reply in 2 Hours</button>{s && <p className="msg">{s}</p>}
         </form>
       </div>
@@ -507,21 +474,21 @@ const Contact = () => {
 }
 
 const Join = () => {
-  const [f, setF] = useState({ fullName: "", phone: "", email: "", education: "", experience: "", interest: "", position: "SITE INCHARGE", district: "" });
+  const [f, setF] = useState({ fullName: "", phone: "", email: "", education: "", experience: "", interest: "", position: "SECURITY OFFICER", district: "" });
   const [s, setS] = useState("");
   const send = async (e) => {
     e.preventDefault(); setS("Submitting..."); const ts = getFullDateTime24();
     const payload = { type: 'applicant', FullName: f.fullName, fullName: f.fullName, Phone: f.phone, phone: f.phone, Email: f.email, email: f.email, Education: f.education, education: f.education, Experience: f.experience, experience: f.experience, Interest: f.interest, interest: f.interest, Position: f.position, position: f.position, District: f.district, district: f.district, Timestamp: ts, timestamp: ts };
-    try { await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) }); setS("✅ Thank you! Application received. HR will call you in 3 days. Also take aptitude test."); setF({ fullName: "", phone: "", email: "", education: "", experience: "", interest: "", position: "SITE INCHARGE", district: "" }); } catch { setS("✅ Thank you!"); }
+    try { await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) }); setS("✅ Thank you! Application received. Updated salaries: Officer 320k, Incharge 400k, Supervisor 600k + Free Food & Accommodation. HR will call in 3 days."); setF({ fullName: "", phone: "", email: "", education: "", experience: "", interest: "", position: "SECURITY OFFICER", district: "" }); } catch { setS("✅ Thank you!"); }
   };
   return (
-    <div className="section"><h2>Apply Now - Applicant Form (No Fees)</h2><p style={{textAlign:'center', marginBottom:'12px'}}>Fill form, then take aptitude test. No fees. If anyone asks fee, report to 0776971970.</p>
+    <div className="section"><h2>Apply Now - Updated Salaries: Officer 320k, Incharge 400k, Supervisor 600k + Free Food & Accommodation</h2><p style={{textAlign:'center', marginBottom:'12px'}}>No fees. Free food & accommodation during training and deployment. Fill form, then take aptitude test.</p>
       <form className="form-big" onSubmit={send}>
         <div className="two-col"><div><label>Full Name *</label><input value={f.fullName} onChange={e => setF({ ...f, fullName: e.target.value })} required placeholder="e.g., John Okello" /></div><div><label>Phone *</label><input value={f.phone} onChange={e => setF({ ...f, phone: e.target.value })} required placeholder="e.g., 0776971970" /></div></div>
         <div className="two-col"><div><label>Email *</label><input type="email" value={f.email} onChange={e => setF({ ...f, email: e.target.value })} required placeholder="e.g., john@gmail.com" /></div><div><label>Education *</label><select value={f.education} onChange={e => setF({ ...f, education: e.target.value })} required><option value="">Choose Education</option><option>P7</option><option>UCE</option><option>UACE</option><option>Diploma</option><option>Degree</option></select></div></div>
-        <div className="two-col"><div><label>Position *</label><select value={f.position} onChange={e => setF({ ...f, position: e.target.value })} required><option>SITE INCHARGE</option><option>SUPERVISOR</option><option>SECURITY OFFICER</option></select></div><div><label>District *</label><input value={f.district} onChange={e => setF({ ...f, district: e.target.value })} required placeholder="e.g., Kampala, Wakiso, Entebbe" /></div></div>
-        <div className="two-col"><div><label>Why Interested? *</label><input value={f.interest} onChange={e => setF({ ...f, interest: e.target.value })} required placeholder="e.g., I want job, I have 3yrs experience" /></div><div><label>Experience *</label><input value={f.experience} onChange={e => setF({ ...f, experience: e.target.value })} required placeholder="e.g., 3yrs as guard at Saracen" /></div></div>
-        <button className="big-btn">Submit Application - Free</button>{s && <p className="msg">{s}</p>}
+        <div className="two-col"><div><label>Position * (Updated Salaries)</label><select value={f.position} onChange={e => setF({ ...f, position: e.target.value })} required><option>SECURITY OFFICER - 320k + Free Food & Accommodation</option><option>SITE INCHARGE - 400k + Free Food & Accommodation</option><option>SUPERVISOR - 600k + Free Food & Accommodation</option></select></div><div><label>District *</label><input value={f.district} onChange={e => setF({ ...f, district: e.target.value })} required placeholder="e.g., Kampala, Wakiso, Entebbe" /></div></div>
+        <div className="two-col"><div><label>Why Interested? *</label><input value={f.interest} onChange={e => setF({ ...f, interest: e.target.value })} required placeholder="e.g., I want job 320k + food & accommodation" /></div><div><label>Experience *</label><input value={f.experience} onChange={e => setF({ ...f, experience: e.target.value })} required placeholder="e.g., 3yrs as guard at Saracen" /></div></div>
+        <button className="big-btn">Submit Application - 320k/400k/600k + Free Food & Accommodation</button>{s && <p className="msg">{s}</p>}
         <p style={{fontSize:'14px', textAlign:'center', marginTop:'10px'}}>After submitting, <a href={KOBO_APTITUDE_TEST} target="_blank" style={{color:'#0a1931', fontWeight:900}}>Click here to take aptitude test</a></p>
       </form>
     </div>
@@ -531,7 +498,7 @@ const Join = () => {
 const Footer = () => {
   const scrollTo = (id) => { const el = document.getElementById(id); if (el) { const offset = 75; const top = el.getBoundingClientRect().top + window.scrollY - offset; window.scrollTo({ top, behavior: 'smooth' }); } };
   return (
-    <div className="footer"><div className="footer-quick"><h4>Quick Links</h4><div className="footer-links"><a onClick={() => scrollTo('home')}>Home</a><a onClick={() => scrollTo('about')}>About</a><a onClick={() => scrollTo('services')}>Services</a><a onClick={() => scrollTo('mission')}>Mission</a><a onClick={() => scrollTo('jobs')}>Jobs</a><a onClick={() => scrollTo('aptitude')}>Aptitude Test</a><a onClick={() => scrollTo('contact')}>Contact</a><a onClick={() => scrollTo('join')}>Apply Now</a><a href="/admin" style={{background:'#ffcc00', color:'#0a1931'}}>🛡️ Admin</a></div></div><div className="footer-bottom">© 2026 Pinnacle Security Ltd | Plot 442 & 443 Massionatees, Muyenga | HR: hr@pinnaclegroup.co.ug | Control 24/7: 0776971970 | Licensed: MoIA/PSU/2018/442 | No Recruitment Fees</div></div>
+    <div className="footer"><div className="footer-quick"><h4>Quick Links - Updated Salaries: Officer 320k, Incharge 400k, Supervisor 600k + Free Food & Accommodation</h4><div className="footer-links"><a onClick={() => scrollTo('home')}>Home</a><a onClick={() => scrollTo('about')}>About</a><a onClick={() => scrollTo('services')}>Services</a><a onClick={() => scrollTo('mission')}>Mission</a><a onClick={() => scrollTo('jobs')}>Jobs - 320k/400k/600k + Food & Accommodation</a><a onClick={() => scrollTo('aptitude')}>Aptitude Test</a><a onClick={() => scrollTo('contact')}>Contact</a><a onClick={() => scrollTo('join')}>Apply Now - 320k/400k/600k</a><a href="/admin" style={{background:'#ffcc00', color:'#0a1931'}}>🛡️ Admin</a></div></div><div className="footer-bottom">© 2026 Pinnacle Security Ltd | Plot 442 & 443 Massionatees, Muyenga | HR: hr@pinnaclegroup.co.ug | Control 24/7: 0776971970 | Updated: Officer 320k + Food & Accommodation, Incharge 400k + Food & Accommodation, Supervisor 600k + Food & Accommodation | Licensed: MoIA/PSU/2018/442 | No Recruitment Fees | Free Food & Accommodation For All Staff</div></div>
   )
 }
 
