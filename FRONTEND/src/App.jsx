@@ -5,6 +5,20 @@ const GOOGLE_SHEET_WEBHOOK = "https://script.google.com/macros/s/AKfycbz0Fx9gSfP
 const KOBO_APTITUDE_TEST = "https://ee.kobotoolbox.org/x/ODCdeyaJ";
 const GOOGLE_APTITUDE_REGISTER = "https://forms.gle/W8JroZ8n8HGArq248";
 
+// Helper - Full Date Time 24hrs Uganda
+const getFullDateTime24 = () => {
+  return new Date().toLocaleString('en-GB', {
+    timeZone: 'Africa/Kampala',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+};
+
 // ========= ADMIN DASHBOARD - ARIAL 13px + CRUD =========
 const AdminDashboard = () => {
   const [auth, setAuth] = useState(false);
@@ -37,7 +51,27 @@ const AdminDashboard = () => {
 
   useEffect(() => { if (auth) load(); }, [auth]);
   const getVal = (obj, keys) => { for(let k of keys) if(obj[k] !== undefined && obj[k] !== null && obj[k] !== '') return obj[k]; return ''; }
-  const formatDate = (t) => { if(!t) return ''; try { return new Date(t).toLocaleString(); } catch { return t; } }
+  
+  // FIXED: Full Date + Time in 24hrs
+  const formatDate = (t) => { 
+    if(!t) return ''; 
+    try { 
+      // If already in 21/10/2026 format, return as is
+      if(String(t).includes('/') && String(t).includes(':')) return t;
+      const d = new Date(t);
+      if(isNaN(d.getTime())) return t;
+      return d.toLocaleString('en-GB', {
+        timeZone: 'Africa/Kampala',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      });
+    } catch { return t; } 
+  }
 
   const handleDelete = async (row) => {
     if(!window.confirm(`Delete ${getVal(row,['FullName','fullName'])} ?`)) return;
@@ -60,7 +94,8 @@ const AdminDashboard = () => {
   };
 
   const handleAddNew = async () => {
-    const payload = { ...form, timestamp: new Date().toISOString(), Timestamp: new Date().toISOString(), type: tab==='contacts'?'contact':'applicant' };
+    const ts = getFullDateTime24();
+    const payload = { ...form, timestamp: ts, Timestamp: ts, type: tab==='contacts'?'contact':'applicant' };
     try { await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) }); } catch {}
     setData(prev => [payload, ...prev]);
     setShowAdd(false);
@@ -143,11 +178,11 @@ const AdminDashboard = () => {
             <div style={{background:'#0a1931', padding:'14px 20px', fontWeight:'900', color:'#ffcc00', fontFamily:'Arial', fontSize:'13px'}}>📞 CONTACTS - {filteredContacts.length} Records</div>
             <div style={{overflowX:'auto'}}>
               <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px', fontFamily:'Arial', minWidth:'1350px'}}>
-                <thead><tr style={{background:'#0a1931', color:'#ffcc00', textAlign:'left', fontFamily:'Arial', fontSize:'13px'}}><th style={{padding:'12px'}}>Timestamp</th><th style={{padding:'12px'}}>FullName</th><th style={{padding:'12px'}}>Phone</th><th style={{padding:'12px'}}>Email</th><th style={{padding:'12px'}}>Service</th><th style={{padding:'12px'}}>Messages</th><th style={{padding:'12px'}}>Actions</th></tr></thead>
+                <thead><tr style={{background:'#0a1931', color:'#ffcc00', textAlign:'left', fontFamily:'Arial', fontSize:'13px'}}><th style={{padding:'12px'}}>Date & Time (24HRS)</th><th style={{padding:'12px'}}>FullName</th><th style={{padding:'12px'}}>Phone</th><th style={{padding:'12px'}}>Email</th><th style={{padding:'12px'}}>Service</th><th style={{padding:'12px'}}>Messages</th><th style={{padding:'12px'}}>Actions</th></tr></thead>
                 <tbody>{filteredContacts.map((d,i)=>{
                   const isEditing = editRow === getVal(d,['Timestamp','timestamp']);
                   return <tr key={i} style={{borderBottom:'1px solid #eee', background: i%2===0?'#fff':'#f8f9ff', fontFamily:'Arial', fontSize:'13px'}}>
-                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px'}}>{formatDate(getVal(d,['Timestamp','timestamp']))}</td>
+                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px', fontWeight:800, color:'#0a1931'}}>{formatDate(getVal(d,['Timestamp','timestamp']))}</td>
                     <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px'}}>{isEditing ? <input value={form.FullName||''} onChange={e=>setForm({...form, FullName:e.target.value, fullName:e.target.value})} style={{fontFamily:'Arial', fontSize:'13px', width:'100px'}}/> : getVal(d,['FullName','fullName'])}</td>
                     <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px'}}>{isEditing ? <input value={form.Phone||''} onChange={e=>setForm({...form, Phone:e.target.value, phone:e.target.value})} style={{fontFamily:'Arial', fontSize:'13px', width:'90px'}}/> : getVal(d,['Phone','phone'])}</td>
                     <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px'}}>{isEditing ? <input value={form.Email||''} onChange={e=>setForm({...form, Email:e.target.value, email:e.target.value})} style={{fontFamily:'Arial', fontSize:'13px', width:'120px'}}/> : getVal(d,['Email','email'])}</td>
@@ -166,11 +201,11 @@ const AdminDashboard = () => {
             <div style={{background:'#ffcc00', padding:'14px 20px', fontWeight:'900', color:'#0a1931', fontFamily:'Arial', fontSize:'13px'}}>📋 APPLICANTS - {filteredApplicants.length} Records</div>
             <div style={{overflowX:'auto'}}>
               <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px', fontFamily:'Arial', minWidth:'1600px'}}>
-                <thead><tr style={{background:'#0a1931', color:'#ffcc00', textAlign:'left', fontFamily:'Arial', fontSize:'13px'}}><th style={{padding:'12px'}}>Timestamp</th><th style={{padding:'12px'}}>FullName</th><th style={{padding:'12px'}}>Phone</th><th style={{padding:'12px'}}>Email</th><th style={{padding:'12px'}}>Position</th><th style={{padding:'12px'}}>Education</th><th style={{padding:'12px'}}>District</th><th style={{padding:'12px'}}>Experience</th><th style={{padding:'12px'}}>Interest</th><th style={{padding:'12px'}}>Actions</th></tr></thead>
+                <thead><tr style={{background:'#0a1931', color:'#ffcc00', textAlign:'left', fontFamily:'Arial', fontSize:'13px'}}><th style={{padding:'12px'}}>Date & Time (24HRS)</th><th style={{padding:'12px'}}>FullName</th><th style={{padding:'12px'}}>Phone</th><th style={{padding:'12px'}}>Email</th><th style={{padding:'12px'}}>Position</th><th style={{padding:'12px'}}>Education</th><th style={{padding:'12px'}}>District</th><th style={{padding:'12px'}}>Experience</th><th style={{padding:'12px'}}>Interest</th><th style={{padding:'12px'}}>Actions</th></tr></thead>
                 <tbody>{filteredApplicants.map((d,i)=>{
                   const isEditing = editRow === getVal(d,['Timestamp','timestamp']);
                   return <tr key={i} style={{borderBottom:'1px solid #eee', background: i%2===0?'#fff':'#fffbeb', fontFamily:'Arial', fontSize:'13px'}}>
-                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px'}}>{formatDate(getVal(d,['Timestamp','timestamp']))}</td>
+                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px', fontWeight:800, color:'#0a1931'}}>{formatDate(getVal(d,['Timestamp','timestamp']))}</td>
                     <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px'}}>{isEditing ? <input value={form.FullName||''} onChange={e=>setForm({...form, FullName:e.target.value, fullName:e.target.value})} style={{fontFamily:'Arial', fontSize:'13px', width:'90px'}}/> : getVal(d,['FullName','fullName'])}</td>
                     <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px'}}>{isEditing ? <input value={form.Phone||''} onChange={e=>setForm({...form, Phone:e.target.value, phone:e.target.value})} style={{fontFamily:'Arial', fontSize:'13px', width:'80px'}}/> : getVal(d,['Phone','phone'])}</td>
                     <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px'}}>{isEditing ? <input value={form.Email||''} onChange={e=>setForm({...form, Email:e.target.value, email:e.target.value})} style={{fontFamily:'Arial', fontSize:'13px', width:'100px'}}/> : getVal(d,['Email','email'])}</td>
@@ -315,7 +350,7 @@ const Contact = () => {
   const send = async (e) => {
     e.preventDefault();
     setS("Submitting...");
-    // FIXED - NOW SENDS ALL COLUMNS WITH CAPITAL LETTERS
+    const ts = getFullDateTime24();
     const payload = { 
       type: 'contact', 
       FullName: f.fullName,
@@ -329,8 +364,8 @@ const Contact = () => {
       Messages: f.message,
       message: f.message,
       Message: f.message,
-      Timestamp: new Date().toISOString(),
-      timestamp: new Date().toISOString()
+      Timestamp: ts,
+      timestamp: ts
     };
     try { 
       await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) }); 
@@ -358,7 +393,7 @@ const Join = () => {
   const send = async (e) => {
     e.preventDefault();
     setS("Submitting...");
-    // FIXED - NOW SENDS ALL COLUMNS WITH CAPITAL LETTERS
+    const ts = getFullDateTime24();
     const payload = { 
       type: 'applicant',
       FullName: f.fullName,
@@ -377,8 +412,8 @@ const Join = () => {
       position: f.position,
       District: f.district,
       district: f.district,
-      Timestamp: new Date().toISOString(),
-      timestamp: new Date().toISOString()
+      Timestamp: ts,
+      timestamp: ts
     };
     try { 
       await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) }); 
