@@ -5,7 +5,7 @@ const GOOGLE_SHEET_WEBHOOK = "https://script.google.com/macros/s/AKfycbz0Fx9gSfP
 const KOBO_APTITUDE_TEST = "https://ee.kobotoolbox.org/x/ODCdeyaJ";
 const GOOGLE_APTITUDE_REGISTER = "https://forms.gle/W8JroZ8n8HGArq248";
 
-// ========= ADMIN DASHBOARD - CONTACTS & APPLICANTS - ARIAL 12.5px + CRUD =========
+// ========= ADMIN DASHBOARD - ARIAL 13px + CRUD =========
 const AdminDashboard = () => {
   const [auth, setAuth] = useState(false);
   const [pass, setPass] = useState("");
@@ -39,26 +39,21 @@ const AdminDashboard = () => {
   const getVal = (obj, keys) => { for(let k of keys) if(obj[k] !== undefined && obj[k] !== null && obj[k] !== '') return obj[k]; return ''; }
   const formatDate = (t) => { if(!t) return ''; try { return new Date(t).toLocaleString(); } catch { return t; } }
 
-  // CRUD OPERATIONS
   const handleDelete = async (row) => {
     if(!window.confirm(`Delete ${getVal(row,['FullName','fullName'])} ?`)) return;
-    const payload = { action: 'delete', timestamp: getVal(row,['Timestamp','timestamp']), type: row.type || (tab==='contacts'?'contact':'applicant') };
-    try {
-      await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
-    } catch {}
+    const payload = { action: 'delete', timestamp: getVal(row,['Timestamp','timestamp']), type: tab==='contacts'?'contact':'applicant' };
+    try { await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) }); } catch {}
     setData(prev => prev.filter(r => getVal(r,['Timestamp','timestamp']) !== getVal(row,['Timestamp','timestamp'])));
   };
 
   const handleEdit = (row) => {
     setEditRow(getVal(row,['Timestamp','timestamp']));
-    setForm({...row});
+    setForm({...row, fullName: getVal(row,['FullName','fullName']), FullName: getVal(row,['FullName','fullName']), phone: getVal(row,['Phone','phone']), Phone: getVal(row,['Phone','phone']), email: getVal(row,['Email','email']), Email: getVal(row,['Email','email']), service: getVal(row,['Service','service']), Service: getVal(row,['Service','service']), message: getVal(row,['Messages','message']), Messages: getVal(row,['Messages','message']), position: getVal(row,['Position','position']), Position: getVal(row,['Position','position']), education: getVal(row,['Education','education']), Education: getVal(row,['Education','education']), district: getVal(row,['District','district']), District: getVal(row,['District','district']), experience: getVal(row,['Experience','experience']), Experience: getVal(row,['Experience','experience']), interest: getVal(row,['Interest','interest']), Interest: getVal(row,['Interest','interest']) });
   };
 
   const handleSave = async () => {
-    const payload = { action: 'update', ...form, timestamp: form.timestamp || form.Timestamp, type: tab==='contacts'?'contact':'applicant' };
-    try {
-      await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
-    } catch {}
+    const payload = { action: 'update', ...form, timestamp: editRow, type: tab==='contacts'?'contact':'applicant' };
+    try { await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) }); } catch {}
     setData(prev => prev.map(r => getVal(r,['Timestamp','timestamp']) === editRow ? {...r, ...form} : r));
     setEditRow(null);
     setForm({});
@@ -66,9 +61,7 @@ const AdminDashboard = () => {
 
   const handleAddNew = async () => {
     const payload = { ...form, timestamp: new Date().toISOString(), type: tab==='contacts'?'contact':'applicant' };
-    try {
-      await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
-    } catch {}
+    try { await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) }); } catch {}
     setData(prev => [payload, ...prev]);
     setShowAdd(false);
     setForm({});
@@ -76,13 +69,13 @@ const AdminDashboard = () => {
 
   if (!auth) {
     return (
-      <div style={{minHeight:'100vh', background:'#0a1931', display:'flex', justifyContent:'center', alignItems:'center', fontFamily:'Arial'}}>
-        <div style={{background:'#fff', padding:'30px', borderRadius:'16px', width:'90%', maxWidth:'380px', textAlign:'center'}}>
+      <div style={{minHeight:'100vh', background:'#0a1931', display:'flex', justifyContent:'center', alignItems:'center', fontFamily:'Arial', fontSize:'13px'}}>
+        <div style={{background:'#fff', padding:'30px', borderRadius:'16px', width:'90%', maxWidth:'380px', textAlign:'center', fontFamily:'Arial', fontSize:'13px'}}>
           <h2 style={{fontWeight:'900', color:'#0a1931', fontFamily:'Arial', fontSize:'16px'}}>🛡️ PINNACLE ADMIN</h2>
-          <p style={{fontSize:'12.5px', color:'#666', marginTop:'6px', fontFamily:'Arial'}}>PSL db - Contacts & Applicants</p>
-          <input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="Admin Password" style={{width:'100%', padding:'14px', borderRadius:'10px', marginTop:'15px', border:'2px solid #0a1931', fontFamily:'Arial', fontSize:'12.5px'}}/>
-          <button onClick={login} style={{width:'100%', marginTop:'12px', background:'#ffcc00', padding:'14px', borderRadius:'10px', fontWeight:'900', border:'none', cursor:'pointer', fontFamily:'Arial', fontSize:'12.5px'}}>LOGIN</button>
-          <a href="/" style={{display:'block', marginTop:'14px', color:'#0a1931', fontSize:'12.5px', textDecoration:'none', fontWeight:'800', fontFamily:'Arial'}}>← Back to Website</a>
+          <p style={{fontSize:'13px', color:'#666', marginTop:'6px', fontFamily:'Arial'}}>PSL db - Contacts & Applicants</p>
+          <input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="Admin Password" style={{width:'100%', padding:'14px', borderRadius:'10px', marginTop:'15px', border:'2px solid #0a1931', fontFamily:'Arial', fontSize:'13px'}}/>
+          <button onClick={login} style={{width:'100%', marginTop:'12px', background:'#ffcc00', padding:'14px', borderRadius:'10px', fontWeight:'900', border:'none', cursor:'pointer', fontFamily:'Arial', fontSize:'13px'}}>LOGIN</button>
+          <a href="/" style={{display:'block', marginTop:'14px', color:'#0a1931', fontSize:'13px', textDecoration:'none', fontWeight:'800', fontFamily:'Arial'}}>← Back to Website</a>
         </div>
       </div>
     )
@@ -94,78 +87,73 @@ const AdminDashboard = () => {
   const filteredContacts = contacts.filter(d => `${getVal(d,['FullName','fullName'])} ${getVal(d,['Phone','phone'])} ${getVal(d,['Email','email'])} ${getVal(d,['Service','service'])} ${getVal(d,['Messages','message'])}`.toLowerCase().includes(search.toLowerCase()));
   const filteredApplicants = applicants.filter(d => `${getVal(d,['FullName','fullName'])} ${getVal(d,['Phone','phone'])} ${getVal(d,['Email','email'])} ${getVal(d,['Position','position'])} ${getVal(d,['Education','education'])} ${getVal(d,['District','district'])} ${getVal(d,['Experience','experience'])} ${getVal(d,['Interest','interest'])}`.toLowerCase().includes(search.toLowerCase()));
 
-  const ADMIN_STYLE = { background:'#f4f6f9', minHeight:'100vh', fontFamily:'Arial', fontSize:'12.5px', padding:'20px' };
-
   return (
-    <div style={ADMIN_STYLE}>
+    <div style={{background:'#f4f6f9', minHeight:'100vh', fontFamily:'Arial', fontSize:'13px', padding:'20px'}}>
       <div style={{maxWidth:'1600px', margin:'auto'}}>
         <div style={{display:'flex', justifyContent:'space-between', flexWrap:'wrap', gap:'12px', alignItems:'center', marginBottom:'20px'}}>
           <h1 style={{fontWeight:'900', color:'#0a1931', fontSize:'14px', fontFamily:'Arial'}}>PSL db Admin - {data.length} total</h1>
           <div style={{display:'flex', gap:'8px', flexWrap:'wrap'}}>
-            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search..." style={{padding:'10px 16px', borderRadius:'20px', border:'1px solid #ddd', width:'260px', fontFamily:'Arial', fontSize:'12.5px'}}/>
-            <button onClick={()=>{setForm({}); setShowAdd(true)}} style={{background:'#ffcc00', color:'#0a1931', padding:'10px 18px', borderRadius:'20px', fontWeight:'800', border:'none', cursor:'pointer', fontFamily:'Arial', fontSize:'12.5px'}}>➕ Add New</button>
-            <button onClick={load} style={{background:'#0a1931', color:'#ffcc00', padding:'10px 18px', borderRadius:'20px', fontWeight:'800', border:'none', cursor:'pointer', fontFamily:'Arial', fontSize:'12.5px'}}>{loading?'Loading...':'🔄 Refresh'}</button>
-            <a href="/" style={{background:'#fff', color:'#0a1931', padding:'10px 18px', borderRadius:'20px', fontWeight:'800', textDecoration:'none', border:'2px solid #0a1931', fontFamily:'Arial', fontSize:'12.5px'}}>Website</a>
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search..." style={{padding:'10px 16px', borderRadius:'20px', border:'1px solid #ddd', width:'260px', fontFamily:'Arial', fontSize:'13px'}}/>
+            <button onClick={()=>{setForm({}); setShowAdd(true)}} style={{background:'#ffcc00', color:'#0a1931', padding:'10px 18px', borderRadius:'20px', fontWeight:'800', border:'none', cursor:'pointer', fontFamily:'Arial', fontSize:'13px'}}>➕ Add New</button>
+            <button onClick={load} style={{background:'#0a1931', color:'#ffcc00', padding:'10px 18px', borderRadius:'20px', fontWeight:'800', border:'none', cursor:'pointer', fontFamily:'Arial', fontSize:'13px'}}>{loading?'Loading...':'🔄 Refresh'}</button>
+            <a href="/" style={{background:'#fff', color:'#0a1931', padding:'10px 18px', borderRadius:'20px', fontWeight:'800', textDecoration:'none', border:'2px solid #0a1931', fontFamily:'Arial', fontSize:'13px'}}>Website</a>
           </div>
         </div>
 
         <div style={{display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'12px', marginBottom:'20px'}}>
-          <div onClick={()=>setTab('contacts')} style={{background:tab==='contacts'?'#0a1931':'#fff', color:tab==='contacts'?'#ffcc00':'#0a1931', padding:'16px', borderRadius:'12px', cursor:'pointer', borderLeft:'5px solid #0a1931', fontFamily:'Arial', fontSize:'12.5px'}}><p style={{fontSize:'11px', fontWeight:'800', fontFamily:'Arial'}}>CONTACTS</p><h2 style={{fontSize:'22px', fontWeight:'900', fontFamily:'Arial'}}>{contacts.length}</h2></div>
-          <div onClick={()=>setTab('applicants')} style={{background:tab==='applicants'?'#ffcc00':'#fff', padding:'16px', borderRadius:'12px', cursor:'pointer', borderLeft:'5px solid #ffcc00', fontFamily:'Arial', fontSize:'12.5px'}}><p style={{fontSize:'11px', fontWeight:'800', fontFamily:'Arial'}}>APPLICANTS</p><h2 style={{fontSize:'22px', fontWeight:'900', fontFamily:'Arial'}}>{applicants.length}</h2></div>
-          <div style={{background:'#fff', padding:'16px', borderRadius:'12px', borderLeft:'5px solid #0a1931', fontFamily:'Arial', fontSize:'12.5px'}}><p style={{fontSize:'11px', fontWeight:'800', fontFamily:'Arial'}}>TOTAL</p><h2 style={{fontSize:'22px', fontWeight:'900', color:'#0a1931', fontFamily:'Arial'}}>{data.length}</h2></div>
+          <div onClick={()=>setTab('contacts')} style={{background:tab==='contacts'?'#0a1931':'#fff', color:tab==='contacts'?'#ffcc00':'#0a1931', padding:'16px', borderRadius:'12px', cursor:'pointer', borderLeft:'5px solid #0a1931', fontFamily:'Arial', fontSize:'13px'}}><p style={{fontSize:'11px', fontWeight:'800', fontFamily:'Arial'}}>CONTACTS</p><h2 style={{fontSize:'22px', fontWeight:'900', fontFamily:'Arial'}}>{contacts.length}</h2></div>
+          <div onClick={()=>setTab('applicants')} style={{background:tab==='applicants'?'#ffcc00':'#fff', padding:'16px', borderRadius:'12px', cursor:'pointer', borderLeft:'5px solid #ffcc00', fontFamily:'Arial', fontSize:'13px'}}><p style={{fontSize:'11px', fontWeight:'800', fontFamily:'Arial'}}>APPLICANTS</p><h2 style={{fontSize:'22px', fontWeight:'900', fontFamily:'Arial'}}>{applicants.length}</h2></div>
+          <div style={{background:'#fff', padding:'16px', borderRadius:'12px', borderLeft:'5px solid #0a1931', fontFamily:'Arial', fontSize:'13px'}}><p style={{fontSize:'11px', fontWeight:'800', fontFamily:'Arial'}}>TOTAL</p><h2 style={{fontSize:'22px', fontWeight:'900', color:'#0a1931', fontFamily:'Arial'}}>{data.length}</h2></div>
         </div>
 
-        {/* ADD MODAL */}
         {showAdd && (
           <div style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.6)', zIndex:10000, display:'flex', justifyContent:'center', alignItems:'center', padding:'20px'}}>
-            <div style={{background:'#fff', padding:'20px', borderRadius:'12px', width:'90%', maxWidth:'500px', fontFamily:'Arial', fontSize:'12.5px'}}>
+            <div style={{background:'#fff', padding:'20px', borderRadius:'12px', width:'90%', maxWidth:'500px', fontFamily:'Arial', fontSize:'13px'}}>
               <h3 style={{fontFamily:'Arial', fontSize:'13px'}}>Add New {tab}</h3>
               {tab==='contacts' ? (
                 <>
-                  <input placeholder="FullName" value={form.fullName||''} onChange={e=>setForm({...form, fullName:e.target.value, FullName:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'12.5px', border:'1px solid #ccc', borderRadius:'8px'}}/>
-                  <input placeholder="Phone" value={form.phone||''} onChange={e=>setForm({...form, phone:e.target.value, Phone:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'12.5px', border:'1px solid #ccc', borderRadius:'8px'}}/>
-                  <input placeholder="Email" value={form.email||''} onChange={e=>setForm({...form, email:e.target.value, Email:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'12.5px', border:'1px solid #ccc', borderRadius:'8px'}}/>
-                  <input placeholder="Service" value={form.service||''} onChange={e=>setForm({...form, service:e.target.value, Service:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'12.5px', border:'1px solid #ccc', borderRadius:'8px'}}/>
-                  <textarea placeholder="Messages" value={form.message||''} onChange={e=>setForm({...form, message:e.target.value, Messages:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'12.5px', border:'1px solid #ccc', borderRadius:'8px'}}/>
+                  <input placeholder="FullName" value={form.FullName||''} onChange={e=>setForm({...form, FullName:e.target.value, fullName:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'13px', border:'1px solid #ccc', borderRadius:'8px'}}/>
+                  <input placeholder="Phone" value={form.Phone||''} onChange={e=>setForm({...form, Phone:e.target.value, phone:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'13px', border:'1px solid #ccc', borderRadius:'8px'}}/>
+                  <input placeholder="Email" value={form.Email||''} onChange={e=>setForm({...form, Email:e.target.value, email:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'13px', border:'1px solid #ccc', borderRadius:'8px'}}/>
+                  <input placeholder="Service" value={form.Service||''} onChange={e=>setForm({...form, Service:e.target.value, service:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'13px', border:'1px solid #ccc', borderRadius:'8px'}}/>
+                  <textarea placeholder="Messages" value={form.Messages||''} onChange={e=>setForm({...form, Messages:e.target.value, message:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'13px', border:'1px solid #ccc', borderRadius:'8px'}}/>
                 </>
               ) : (
                 <>
-                  <input placeholder="FullName" value={form.fullName||''} onChange={e=>setForm({...form, fullName:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'12.5px', border:'1px solid #ccc', borderRadius:'8px'}}/>
-                  <input placeholder="Phone" value={form.phone||''} onChange={e=>setForm({...form, phone:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'12.5px', border:'1px solid #ccc', borderRadius:'8px'}}/>
-                  <input placeholder="Email" value={form.email||''} onChange={e=>setForm({...form, email:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'12.5px', border:'1px solid #ccc', borderRadius:'8px'}}/>
-                  <input placeholder="Position" value={form.position||''} onChange={e=>setForm({...form, position:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'12.5px', border:'1px solid #ccc', borderRadius:'8px'}}/>
-                  <input placeholder="Education" value={form.education||''} onChange={e=>setForm({...form, education:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'12.5px', border:'1px solid #ccc', borderRadius:'8px'}}/>
-                  <input placeholder="District" value={form.district||''} onChange={e=>setForm({...form, district:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'12.5px', border:'1px solid #ccc', borderRadius:'8px'}}/>
-                  <input placeholder="Experience" value={form.experience||''} onChange={e=>setForm({...form, experience:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'12.5px', border:'1px solid #ccc', borderRadius:'8px'}}/>
-                  <input placeholder="Interest" value={form.interest||''} onChange={e=>setForm({...form, interest:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'12.5px', border:'1px solid #ccc', borderRadius:'8px'}}/>
+                  <input placeholder="FullName" value={form.FullName||''} onChange={e=>setForm({...form, FullName:e.target.value, fullName:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'13px', border:'1px solid #ccc', borderRadius:'8px'}}/>
+                  <input placeholder="Phone" value={form.Phone||''} onChange={e=>setForm({...form, Phone:e.target.value, phone:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'13px', border:'1px solid #ccc', borderRadius:'8px'}}/>
+                  <input placeholder="Email" value={form.Email||''} onChange={e=>setForm({...form, Email:e.target.value, email:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'13px', border:'1px solid #ccc', borderRadius:'8px'}}/>
+                  <input placeholder="Position" value={form.Position||''} onChange={e=>setForm({...form, Position:e.target.value, position:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'13px', border:'1px solid #ccc', borderRadius:'8px'}}/>
+                  <input placeholder="Education" value={form.Education||''} onChange={e=>setForm({...form, Education:e.target.value, education:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'13px', border:'1px solid #ccc', borderRadius:'8px'}}/>
+                  <input placeholder="District" value={form.District||''} onChange={e=>setForm({...form, District:e.target.value, district:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'13px', border:'1px solid #ccc', borderRadius:'8px'}}/>
+                  <input placeholder="Experience" value={form.Experience||''} onChange={e=>setForm({...form, Experience:e.target.value, experience:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'13px', border:'1px solid #ccc', borderRadius:'8px'}}/>
+                  <input placeholder="Interest" value={form.Interest||''} onChange={e=>setForm({...form, Interest:e.target.value, interest:e.target.value})} style={{width:'100%', padding:'10px', marginTop:'8px', fontFamily:'Arial', fontSize:'13px', border:'1px solid #ccc', borderRadius:'8px'}}/>
                 </>
               )}
               <div style={{display:'flex', gap:'8px', marginTop:'12px'}}>
-                <button onClick={handleAddNew} style={{background:'#0a1931', color:'#ffcc00', padding:'10px 18px', borderRadius:'8px', border:'none', cursor:'pointer', fontFamily:'Arial', fontSize:'12.5px', flex:1}}>Save</button>
-                <button onClick={()=>setShowAdd(false)} style={{background:'#ccc', padding:'10px 18px', borderRadius:'8px', border:'none', cursor:'pointer', fontFamily:'Arial', fontSize:'12.5px', flex:1}}>Cancel</button>
+                <button onClick={handleAddNew} style={{background:'#0a1931', color:'#ffcc00', padding:'10px 18px', borderRadius:'8px', border:'none', cursor:'pointer', fontFamily:'Arial', fontSize:'13px', flex:1}}>Save</button>
+                <button onClick={()=>setShowAdd(false)} style={{background:'#ccc', padding:'10px 18px', borderRadius:'8px', border:'none', cursor:'pointer', fontFamily:'Arial', fontSize:'13px', flex:1}}>Cancel</button>
               </div>
             </div>
           </div>
         )}
 
         {tab === 'contacts' && (
-          <div style={{background:'#fff', borderRadius:'16px', overflow:'hidden', boxShadow:'0 4px 12px rgba(0,0,0,0.06)', fontFamily:'Arial', fontSize:'12.5px'}}>
-            <div style={{background:'#0a1931', padding:'14px 20px', fontWeight:'900', color:'#ffcc00', fontFamily:'Arial', fontSize:'12.5px'}}>📞 CONTACTS - {filteredContacts.length} Records</div>
+          <div style={{background:'#fff', borderRadius:'16px', overflow:'hidden', boxShadow:'0 4px 12px rgba(0,0,0,0.06)', fontFamily:'Arial', fontSize:'13px'}}>
+            <div style={{background:'#0a1931', padding:'14px 20px', fontWeight:'900', color:'#ffcc00', fontFamily:'Arial', fontSize:'13px'}}>📞 CONTACTS - {filteredContacts.length} Records</div>
             <div style={{overflowX:'auto'}}>
-              <table style={{width:'100%', borderCollapse:'collapse', fontSize:'12.5px', fontFamily:'Arial', minWidth:'1350px'}}>
-                <thead><tr style={{background:'#0a1931', color:'#ffcc00', textAlign:'left', fontFamily:'Arial', fontSize:'12.5px'}}><th style={{padding:'12px'}}>Timestamp</th><th style={{padding:'12px'}}>FullName</th><th style={{padding:'12px'}}>Phone</th><th style={{padding:'12px'}}>Email</th><th style={{padding:'12px'}}>Service</th><th style={{padding:'12px'}}>Messages</th><th style={{padding:'12px'}}>Actions</th></tr></thead>
+              <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px', fontFamily:'Arial', minWidth:'1350px'}}>
+                <thead><tr style={{background:'#0a1931', color:'#ffcc00', textAlign:'left', fontFamily:'Arial', fontSize:'13px'}}><th style={{padding:'12px'}}>Timestamp</th><th style={{padding:'12px'}}>FullName</th><th style={{padding:'12px'}}>Phone</th><th style={{padding:'12px'}}>Email</th><th style={{padding:'12px'}}>Service</th><th style={{padding:'12px'}}>Messages</th><th style={{padding:'12px'}}>Actions</th></tr></thead>
                 <tbody>{filteredContacts.map((d,i)=>{
                   const isEditing = editRow === getVal(d,['Timestamp','timestamp']);
-                  return <tr key={i} style={{borderBottom:'1px solid #eee', background: i%2===0?'#fff':'#f8f9ff', fontFamily:'Arial', fontSize:'12.5px'}}>
-                    <td style={{padding:'8px', fontSize:'12.5px', fontFamily:'Arial'}}>{formatDate(getVal(d,['Timestamp','timestamp']))}</td>
-                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'12.5px'}}>{isEditing ? <input value={form.fullName||form.FullName||''} onChange={e=>setForm({...form, fullName:e.target.value, FullName:e.target.value})} style={{fontFamily:'Arial', fontSize:'12.5px', width:'100px'}}/> : getVal(d,['FullName','fullName'])}</td>
-                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'12.5px'}}>{isEditing ? <input value={form.phone||form.Phone||''} onChange={e=>setForm({...form, phone:e.target.value, Phone:e.target.value})} style={{fontFamily:'Arial', fontSize:'12.5px', width:'90px'}}/> : getVal(d,['Phone','phone'])}</td>
-                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'12.5px'}}>{isEditing ? <input value={form.email||form.Email||''} onChange={e=>setForm({...form, email:e.target.value, Email:e.target.value})} style={{fontFamily:'Arial', fontSize:'12.5px', width:'120px'}}/> : getVal(d,['Email','email'])}</td>
-                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'12.5px'}}>{isEditing ? <input value={form.service||form.Service||''} onChange={e=>setForm({...form, service:e.target.value, Service:e.target.value})} style={{fontFamily:'Arial', fontSize:'12.5px', width:'100px'}}/> : getVal(d,['Service','service'])}</td>
-                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'12.5px'}}>{isEditing ? <input value={form.message||form.Messages||''} onChange={e=>setForm({...form, message:e.target.value, Messages:e.target.value})} style={{fontFamily:'Arial', fontSize:'12.5px', width:'150px'}}/> : getVal(d,['Messages','message'])}</td>
-                    <td style={{padding:'8px', display:'flex', gap:'4px', fontFamily:'Arial', fontSize:'12.5px'}}>
-                      {isEditing ? <><button onClick={handleSave} style={{background:'#0a1931', color:'#ffcc00', border:'none', padding:'4px 8px', borderRadius:'4px', cursor:'pointer', fontFamily:'Arial', fontSize:'12.5px'}}>Save</button><button onClick={()=>setEditRow(null)} style={{background:'#ccc', border:'none', padding:'4px 8px', borderRadius:'4px', cursor:'pointer', fontFamily:'Arial', fontSize:'12.5px'}}>Cancel</button></> : <><button onClick={()=>handleEdit(d)} style={{background:'#ffcc00', border:'none', padding:'4px 8px', borderRadius:'4px', cursor:'pointer', fontFamily:'Arial', fontSize:'12.5px'}}>Edit</button><button onClick={()=>handleDelete(d)} style={{background:'#c00', color:'#fff', border:'none', padding:'4px 8px', borderRadius:'4px', cursor:'pointer', fontFamily:'Arial', fontSize:'12.5px'}}>Delete</button></>}
-                    </td>
+                  return <tr key={i} style={{borderBottom:'1px solid #eee', background: i%2===0?'#fff':'#f8f9ff', fontFamily:'Arial', fontSize:'13px'}}>
+                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px'}}>{formatDate(getVal(d,['Timestamp','timestamp']))}</td>
+                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px'}}>{isEditing ? <input value={form.FullName||''} onChange={e=>setForm({...form, FullName:e.target.value, fullName:e.target.value})} style={{fontFamily:'Arial', fontSize:'13px', width:'100px'}}/> : getVal(d,['FullName','fullName'])}</td>
+                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px'}}>{isEditing ? <input value={form.Phone||''} onChange={e=>setForm({...form, Phone:e.target.value, phone:e.target.value})} style={{fontFamily:'Arial', fontSize:'13px', width:'90px'}}/> : getVal(d,['Phone','phone'])}</td>
+                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px'}}>{isEditing ? <input value={form.Email||''} onChange={e=>setForm({...form, Email:e.target.value, email:e.target.value})} style={{fontFamily:'Arial', fontSize:'13px', width:'120px'}}/> : getVal(d,['Email','email'])}</td>
+                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px'}}>{isEditing ? <input value={form.Service||''} onChange={e=>setForm({...form, Service:e.target.value, service:e.target.value})} style={{fontFamily:'Arial', fontSize:'13px', width:'100px'}}/> : getVal(d,['Service','service'])}</td>
+                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px'}}>{isEditing ? <input value={form.Messages||''} onChange={e=>setForm({...form, Messages:e.target.value, message:e.target.value})} style={{fontFamily:'Arial', fontSize:'13px', width:'150px'}}/> : getVal(d,['Messages','message'])}</td>
+                    <td style={{padding:'8px', display:'flex', gap:'4px', fontFamily:'Arial', fontSize:'13px'}}>{isEditing ? <><button onClick={handleSave} style={{background:'#0a1931', color:'#ffcc00', border:'none', padding:'4px 8px', borderRadius:'4px', cursor:'pointer', fontFamily:'Arial', fontSize:'13px'}}>Save</button><button onClick={()=>setEditRow(null)} style={{background:'#ccc', border:'none', padding:'4px 8px', borderRadius:'4px', cursor:'pointer', fontFamily:'Arial', fontSize:'13px'}}>Cancel</button></> : <><button onClick={()=>handleEdit(d)} style={{background:'#ffcc00', border:'none', padding:'4px 8px', borderRadius:'4px', cursor:'pointer', fontFamily:'Arial', fontSize:'13px'}}>Edit</button><button onClick={()=>handleDelete(d)} style={{background:'#c00', color:'#fff', border:'none', padding:'4px 8px', borderRadius:'4px', cursor:'pointer', fontFamily:'Arial', fontSize:'13px'}}>Delete</button></>}</td>
                   </tr>
                 })}</tbody>
               </table>
@@ -174,26 +162,24 @@ const AdminDashboard = () => {
         )}
 
         {tab === 'applicants' && (
-          <div style={{background:'#fff', borderRadius:'16px', overflow:'hidden', boxShadow:'0 4px 12px rgba(0,0,0,0.06)', fontFamily:'Arial', fontSize:'12.5px'}}>
-            <div style={{background:'#ffcc00', padding:'14px 20px', fontWeight:'900', color:'#0a1931', fontFamily:'Arial', fontSize:'12.5px'}}>📋 APPLICANTS - {filteredApplicants.length} Records</div>
+          <div style={{background:'#fff', borderRadius:'16px', overflow:'hidden', boxShadow:'0 4px 12px rgba(0,0,0,0.06)', fontFamily:'Arial', fontSize:'13px'}}>
+            <div style={{background:'#ffcc00', padding:'14px 20px', fontWeight:'900', color:'#0a1931', fontFamily:'Arial', fontSize:'13px'}}>📋 APPLICANTS - {filteredApplicants.length} Records</div>
             <div style={{overflowX:'auto'}}>
-              <table style={{width:'100%', borderCollapse:'collapse', fontSize:'12.5px', fontFamily:'Arial', minWidth:'1600px'}}>
-                <thead><tr style={{background:'#0a1931', color:'#ffcc00', textAlign:'left', fontFamily:'Arial', fontSize:'12.5px'}}><th style={{padding:'12px'}}>Timestamp</th><th style={{padding:'12px'}}>FullName</th><th style={{padding:'12px'}}>Phone</th><th style={{padding:'12px'}}>Email</th><th style={{padding:'12px'}}>Position</th><th style={{padding:'12px'}}>Education</th><th style={{padding:'12px'}}>District</th><th style={{padding:'12px'}}>Experience</th><th style={{padding:'12px'}}>Interest</th><th style={{padding:'12px'}}>Actions</th></tr></thead>
+              <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px', fontFamily:'Arial', minWidth:'1600px'}}>
+                <thead><tr style={{background:'#0a1931', color:'#ffcc00', textAlign:'left', fontFamily:'Arial', fontSize:'13px'}}><th style={{padding:'12px'}}>Timestamp</th><th style={{padding:'12px'}}>FullName</th><th style={{padding:'12px'}}>Phone</th><th style={{padding:'12px'}}>Email</th><th style={{padding:'12px'}}>Position</th><th style={{padding:'12px'}}>Education</th><th style={{padding:'12px'}}>District</th><th style={{padding:'12px'}}>Experience</th><th style={{padding:'12px'}}>Interest</th><th style={{padding:'12px'}}>Actions</th></tr></thead>
                 <tbody>{filteredApplicants.map((d,i)=>{
                   const isEditing = editRow === getVal(d,['Timestamp','timestamp']);
-                  return <tr key={i} style={{borderBottom:'1px solid #eee', background: i%2===0?'#fff':'#fffbeb', fontFamily:'Arial', fontSize:'12.5px'}}>
-                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'12.5px'}}>{formatDate(getVal(d,['Timestamp','timestamp']))}</td>
-                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'12.5px'}}>{isEditing ? <input value={form.fullName||''} onChange={e=>setForm({...form, fullName:e.target.value})} style={{fontFamily:'Arial', fontSize:'12.5px', width:'90px'}}/> : getVal(d,['FullName','fullName'])}</td>
-                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'12.5px'}}>{isEditing ? <input value={form.phone||''} onChange={e=>setForm({...form, phone:e.target.value})} style={{fontFamily:'Arial', fontSize:'12.5px', width:'80px'}}/> : getVal(d,['Phone','phone'])}</td>
-                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'12.5px'}}>{isEditing ? <input value={form.email||''} onChange={e=>setForm({...form, email:e.target.value})} style={{fontFamily:'Arial', fontSize:'12.5px', width:'100px'}}/> : getVal(d,['Email','email'])}</td>
-                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'12.5px'}}>{isEditing ? <input value={form.position||''} onChange={e=>setForm({...form, position:e.target.value})} style={{fontFamily:'Arial', fontSize:'12.5px', width:'80px'}}/> : getVal(d,['Position','position'])}</td>
-                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'12.5px'}}>{isEditing ? <input value={form.education||''} onChange={e=>setForm({...form, education:e.target.value})} style={{fontFamily:'Arial', fontSize:'12.5px', width:'60px'}}/> : getVal(d,['Education','education'])}</td>
-                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'12.5px'}}>{isEditing ? <input value={form.district||''} onChange={e=>setForm({...form, district:e.target.value})} style={{fontFamily:'Arial', fontSize:'12.5px', width:'70px'}}/> : getVal(d,['District','district'])}</td>
-                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'12.5px'}}>{isEditing ? <input value={form.experience||''} onChange={e=>setForm({...form, experience:e.target.value})} style={{fontFamily:'Arial', fontSize:'12.5px', width:'80px'}}/> : getVal(d,['Experience','experience'])}</td>
-                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'12.5px'}}>{isEditing ? <input value={form.interest||''} onChange={e=>setForm({...form, interest:e.target.value})} style={{fontFamily:'Arial', fontSize:'12.5px', width:'80px'}}/> : getVal(d,['Interest','interest'])}</td>
-                    <td style={{padding:'8px', display:'flex', gap:'4px', fontFamily:'Arial', fontSize:'12.5px'}}>
-                      {isEditing ? <><button onClick={handleSave} style={{background:'#0a1931', color:'#ffcc00', border:'none', padding:'4px 8px', borderRadius:'4px', cursor:'pointer', fontFamily:'Arial', fontSize:'12.5px'}}>Save</button><button onClick={()=>setEditRow(null)} style={{background:'#ccc', border:'none', padding:'4px 8px', borderRadius:'4px', cursor:'pointer', fontFamily:'Arial', fontSize:'12.5px'}}>Cancel</button></> : <><button onClick={()=>handleEdit(d)} style={{background:'#ffcc00', border:'none', padding:'4px 8px', borderRadius:'4px', cursor:'pointer', fontFamily:'Arial', fontSize:'12.5px'}}>Edit</button><button onClick={()=>handleDelete(d)} style={{background:'#c00', color:'#fff', border:'none', padding:'4px 8px', borderRadius:'4px', cursor:'pointer', fontFamily:'Arial', fontSize:'12.5px'}}>Delete</button></>}
-                    </td>
+                  return <tr key={i} style={{borderBottom:'1px solid #eee', background: i%2===0?'#fff':'#fffbeb', fontFamily:'Arial', fontSize:'13px'}}>
+                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px'}}>{formatDate(getVal(d,['Timestamp','timestamp']))}</td>
+                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px'}}>{isEditing ? <input value={form.FullName||''} onChange={e=>setForm({...form, FullName:e.target.value, fullName:e.target.value})} style={{fontFamily:'Arial', fontSize:'13px', width:'90px'}}/> : getVal(d,['FullName','fullName'])}</td>
+                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px'}}>{isEditing ? <input value={form.Phone||''} onChange={e=>setForm({...form, Phone:e.target.value, phone:e.target.value})} style={{fontFamily:'Arial', fontSize:'13px', width:'80px'}}/> : getVal(d,['Phone','phone'])}</td>
+                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px'}}>{isEditing ? <input value={form.Email||''} onChange={e=>setForm({...form, Email:e.target.value, email:e.target.value})} style={{fontFamily:'Arial', fontSize:'13px', width:'100px'}}/> : getVal(d,['Email','email'])}</td>
+                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px'}}>{isEditing ? <input value={form.Position||''} onChange={e=>setForm({...form, Position:e.target.value, position:e.target.value})} style={{fontFamily:'Arial', fontSize:'13px', width:'80px'}}/> : getVal(d,['Position','position'])}</td>
+                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px'}}>{isEditing ? <input value={form.Education||''} onChange={e=>setForm({...form, Education:e.target.value, education:e.target.value})} style={{fontFamily:'Arial', fontSize:'13px', width:'60px'}}/> : getVal(d,['Education','education'])}</td>
+                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px'}}>{isEditing ? <input value={form.District||''} onChange={e=>setForm({...form, District:e.target.value, district:e.target.value})} style={{fontFamily:'Arial', fontSize:'13px', width:'70px'}}/> : getVal(d,['District','district'])}</td>
+                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px'}}>{isEditing ? <input value={form.Experience||''} onChange={e=>setForm({...form, Experience:e.target.value, experience:e.target.value})} style={{fontFamily:'Arial', fontSize:'13px', width:'80px'}}/> : getVal(d,['Experience','experience'])}</td>
+                    <td style={{padding:'8px', fontFamily:'Arial', fontSize:'13px'}}>{isEditing ? <input value={form.Interest||''} onChange={e=>setForm({...form, Interest:e.target.value, interest:e.target.value})} style={{fontFamily:'Arial', fontSize:'13px', width:'80px'}}/> : getVal(d,['Interest','interest'])}</td>
+                    <td style={{padding:'8px', display:'flex', gap:'4px', fontFamily:'Arial', fontSize:'13px'}}>{isEditing ? <><button onClick={handleSave} style={{background:'#0a1931', color:'#ffcc00', border:'none', padding:'4px 8px', borderRadius:'4px', cursor:'pointer', fontFamily:'Arial', fontSize:'13px'}}>Save</button><button onClick={()=>setEditRow(null)} style={{background:'#ccc', border:'none', padding:'4px 8px', borderRadius:'4px', cursor:'pointer', fontFamily:'Arial', fontSize:'13px'}}>Cancel</button></> : <><button onClick={()=>handleEdit(d)} style={{background:'#ffcc00', border:'none', padding:'4px 8px', borderRadius:'4px', cursor:'pointer', fontFamily:'Arial', fontSize:'13px'}}>Edit</button><button onClick={()=>handleDelete(d)} style={{background:'#c00', color:'#fff', border:'none', padding:'4px 8px', borderRadius:'4px', cursor:'pointer', fontFamily:'Arial', fontSize:'13px'}}>Delete</button></>}</td>
                   </tr>
                 })}</tbody>
               </table>
@@ -205,7 +191,6 @@ const AdminDashboard = () => {
   )
 }
 
-// ========= WEBSITE COMPONENTS - UNCHANGED =========
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const scrollTo = (id) => {
@@ -251,9 +236,7 @@ const Home = () => {
       <div className="hero">
         <h1>{slides[i].t}</h1>
         <p>{slides[i].d}</p>
-        <div className="dots">
-          {[0, 1, 2].map(n => <span key={n} className={n === i ? 'dot on' : 'dot'} onClick={() => setI(n)}></span>)}
-        </div>
+        <div className="dots">{[0, 1, 2].map(n => <span key={n} className={n === i ? 'dot on' : 'dot'} onClick={() => setI(n)}></span>)}</div>
         <div style={{display:'flex', gap:'12px', justifyContent:'center', flexWrap:'wrap', marginTop:'12px'}}>
           <a onClick={() => document.getElementById('join').scrollIntoView({behavior:'smooth'})} className="btn-yellow big" style={{cursor:'pointer'}}>Apply Now</a>
           <a onClick={() => document.getElementById('aptitude').scrollIntoView({behavior:'smooth'})} className="btn-yellow big" style={{background:'#fff !important', cursor:'pointer'}}>Aptitude Test</a>
@@ -261,27 +244,9 @@ const Home = () => {
       </div>
       <div style={{marginTop:'22px'}}>
         <div className="home-grid-3">
-          <div className="card">
-            <h3>Who We Are</h3>
-            <p>Pinnacle Security Ltd is a licensed company at <b>Plot 442 & 443 Massionatees, Muyenga</b>. Licensed by URSB and Ministry of Internal Affairs.</p>
-            <p style={{marginTop:'12px'}}>We protect <b>60+ sites</b> with <b>150+ trained officers</b> across Kampala, Wakiso, Mukono, Entebbe.</p>
-            <p style={{marginTop:'12px'}}>Our <b>24/7 Control Room 0776971970</b> ensures rapid response day and night. No hidden fees.</p>
-          </div>
-          <div className="card gold">
-            <h3>Core Services</h3>
-            <p><b>Guard Service:</b> Armed & unarmed guards with supervision and rapid response.</p>
-            <p><b>Construction Security:</b> Protect cement, iron bars, tools - material control.</p>
-            <p><b>CCTV:</b> Hikvision/Dahua 4-camera system, phone viewing, 2-year warranty.</p>
-            <p><b>Mobile Patrol:</b> Patrol car day & night visits, 10min emergency response.</p>
-            <a onClick={() => document.getElementById('services').scrollIntoView({behavior:'smooth'})} style={{color:'#0a1931', fontWeight:'900', fontSize:'16px', marginTop:'12px', display:'inline-block', cursor:'pointer'}}>View All Services →</a>
-          </div>
-          <div className="card dark">
-            <h3> URGENT RECRUITMENT</h3>
-            <p><b>SITE INCHARGE:</b> UCE + 3yrs experience.</p>
-            <p style={{marginTop:'10px'}}><b>SUPERVISOR:</b> UACE + Rider Permit + 3yrs.</p>
-            <p style={{marginTop:'10px', background:'rgba(255,204,0,0.15)', padding:'10px', borderRadius:'10px'}}>Free 2 weeks training at Muyenga HQ. No fees.</p>
-            <a onClick={() => document.getElementById('join').scrollIntoView({behavior:'smooth'})} className="btn-yellow big" style={{marginTop:'18px', width:'100%', textAlign:'center', display:'block', cursor:'pointer'}}>Apply Now - Applicant Form</a>
-          </div>
+          <div className="card"><h3>Who We Are</h3><p>Pinnacle Security Ltd is a licensed company at <b>Plot 442 & 443 Massionatees, Muyenga</b>.</p></div>
+          <div className="card gold"><h3>Core Services</h3><p><b>Guard Service:</b> Armed & unarmed guards</p><p><b>Construction Security:</b> Protect cement, iron bars</p><p><b>CCTV:</b> Hikvision/Dahua</p><p><b>Mobile Patrol:</b> 10min response</p></div>
+          <div className="card dark"><h3> URGENT RECRUITMENT</h3><p><b>SITE INCHARGE:</b> UCE + 3yrs</p><p style={{marginTop:'10px'}}><b>SUPERVISOR:</b> UACE + Rider Permit + 3yrs</p><a onClick={() => document.getElementById('join').scrollIntoView({behavior:'smooth'})} className="btn-yellow big" style={{marginTop:'18px', width:'100%', textAlign:'center', display:'block', cursor:'pointer'}}>Apply Now</a></div>
         </div>
       </div>
     </div>
@@ -291,14 +256,7 @@ const Home = () => {
 const About = () => (
   <div className="section">
     <h2>About Pinnacle Security Ltd</h2>
-    <div className="about-hero">
-      <h3>Pinnacle Security Ltd - Protecting What Matters Most Since 2018</h3>
-      <p><b>Who We Are & Location:</b> Located at <b>Plot 442 & 443 Massionatees, Off Kironde Road, Muyenga Hill, Kampala - Uganda</b>, Pinnacle Security Limited is a fully licensed Private Security Organization registered under URSB, PSFU and Ministry of Internal Affairs.</p>
-      <p><b>Our Capacity, Team & Coverage:</b> With <b>60+ Active Sites, 150+ Trained Officers and 24/7 Control Room 0776971970</b>, we have the manpower, technology and infrastructure to protect what matters most.</p>
-      <p><b>What Makes Us Different:</b> Unlike other security companies that exploit guards with low pay and hidden fees, we believe in <b>No Hidden Fees, No Exploitation, Free Training for all recruits</b>.</p>
-      <p><b>Our Services & Technology:</b> Our core services include Security Guard Service, Construction Site Security, CCTV Installation & Monitoring, Mobile Patrol & Rapid Response, Event Security & Bouncers, and Alarm Systems & Electric Fences.</p>
-      <p><b>Our Promise:</b> Our promise is simple - to protect lives, property and investments with discipline, integrity and courage. We want to be <b>Uganda's most trusted security company by 2030</b>.</p>
-    </div>
+    <div className="about-hero"><h3>Pinnacle Security Ltd - Protecting What Matters Most Since 2018</h3><p>Located at Plot 442 & 443 Massionatees, Muyenga Hill, Kampala</p></div>
   </div>
 )
 
@@ -306,12 +264,12 @@ const Services = () => (
   <div className="section">
     <h2>Our Security Services</h2>
     <div className="services-grid">
-      <div className="service-card-full"><h3>1. Security Guard Service - Armed & Unarmed</h3><p>Best for homes, shops, offices, schools, hotels. From 450k per guard per month.</p></div>
-      <div className="service-card-full"><h3>2. Construction Site Security</h3><p>Special guards trained for building sites - we understand theft of cement, D12/D16 iron bars, timber, tools.</p></div>
-      <div className="service-card-full"><h3>3. CCTV Installation & Monitoring</h3><p>Watch your home/business on phone from anywhere. From 2.5M for 4 cameras full set.</p></div>
-      <div className="service-card-full"><h3>4. Mobile Patrol & Rapid Response</h3><p>Patrol car with 2 armed officers patrols every 2 hours. 10-min rapid response.</p></div>
-      <div className="service-card-full"><h3>5. Event Security & Bouncers</h3><p>For weddings, introductions, concerts, conferences, corporate events.</p></div>
-      <div className="service-card-full"><h3>6. Alarm Systems & Electric Fences</h3><p>Intruder alarm calls your phone + control room. From 3.5M.</p></div>
+      <div className="service-card-full"><h3>1. Security Guard Service</h3><p>Best for homes, shops, offices</p></div>
+      <div className="service-card-full"><h3>2. Construction Site Security</h3><p>Special guards for building sites</p></div>
+      <div className="service-card-full"><h3>3. CCTV Installation</h3><p>Watch on phone from anywhere</p></div>
+      <div className="service-card-full"><h3>4. Mobile Patrol</h3><p>Patrol car with rapid response</p></div>
+      <div className="service-card-full"><h3>5. Event Security</h3><p>For weddings, concerts</p></div>
+      <div className="service-card-full"><h3>6. Alarm Systems</h3><p>Intruder alarm calls your phone</p></div>
     </div>
   </div>
 )
@@ -320,8 +278,8 @@ const MissionPage = () => (
   <div className="section">
     <h2>Our Mission, Vision & Values</h2>
     <div className="mission-grid">
-      <div className="mission-card"><h3>Our Mission</h3><p>To provide <b>professional, affordable, and reliable security solutions</b> to homes, businesses, construction sites, schools, hotels and events in Uganda.</p></div>
-      <div className="mission-card gold"><h3>Our Vision</h3><p>To be <b>Uganda's most trusted and most respected security company by 2030</b>.</p></div>
+      <div className="mission-card"><h3>Our Mission</h3><p>To provide professional security solutions</p></div>
+      <div className="mission-card gold"><h3>Our Vision</h3><p>To be Uganda's most trusted company by 2030</p></div>
       <div className="mission-card dark"><h3>Core Values - DISCIPLINE</h3><div className="values-list"><div><b>D - Discipline</b></div><div><b>I - Integrity</b></div><div><b>S - Service</b></div><div><b>C - Courage</b></div><div><b>P - Professionalism</b></div></div></div>
     </div>
   </div>
@@ -331,10 +289,10 @@ const Blog = () => (
   <div className="section">
     <div className="memo-clean">
       <div className="memo-head"><h2>INTERNAL MEMO - PINNACLE SECURITY LTD</h2><p><b>From:</b> HR Manager | <b>To:</b> All Applicants | <b>Date:</b> {new Date().toLocaleDateString()} | <b>Ref:</b> PSL/HR/2026/08</p><p><b>Subject: URGENT RECRUITMENT</b></p></div>
-      <div className="memo-body-dark"><div className="memo-intro">Management has approved recruitment. Applications are <b>No Fees</b>. Training <b>2 weeks at Muyenga HQ Plot 442/443</b>.</div>
-        <div className="job-box"><div className="job-header">POSITION 1: SITE INCHARGE</div><div className="job-content"><p><b>Requirements:</b> UCE, 3+ Years security, 25-45 years</p></div></div>
-        <div className="job-box gold-border"><div className="job-header gold">POSITION 2: SUPERVISOR</div><div className="job-content"><p><b>Requirements:</b> UACE, Rider Permit Class A, 3+ Years supervisor</p></div></div>
-        <div className="general-box"><h3>GENERAL RECRUITMENT: SECURITY OFFICER</h3><a onClick={() => document.getElementById('join').scrollIntoView({behavior:'smooth'})} className="big-recruit-btn" style={{cursor:'pointer'}}>APPLY NOW - Applicant Form</a></div>
+      <div className="memo-body-dark"><div className="memo-intro">Management has approved recruitment. No Fees. Training 2 weeks at Muyenga HQ</div>
+        <div className="job-box"><div className="job-header">POSITION 1: SITE INCHARGE</div><div className="job-content"><p><b>Requirements:</b> UCE, 3+ Years security</p></div></div>
+        <div className="job-box gold-border"><div className="job-header gold">POSITION 2: SUPERVISOR</div><div className="job-content"><p><b>Requirements:</b> UACE, Rider Permit</p></div></div>
+        <div className="general-box"><h3>GENERAL RECRUITMENT: SECURITY OFFICER</h3><a onClick={() => document.getElementById('join').scrollIntoView({behavior:'smooth'})} className="big-recruit-btn" style={{cursor:'pointer'}}>APPLY NOW</a></div>
       </div>
     </div>
   </div>
@@ -344,9 +302,9 @@ const Aptitude = () => (
   <div className="section">
     <h2>Online Aptitude Test</h2>
     <div className="home-grid-3">
-      <div className="card"><h3>Step 1: Register For Aptitude Test</h3><a href={GOOGLE_APTITUDE_REGISTER} target="_blank" rel="noopener noreferrer" className="btn-yellow big" style={{marginTop:'18px', width:'100%', textAlign:'center', display:'block'}}>Register For Aptitude Test ↗</a></div>
-      <div className="card gold"><h3>Step 2: Take Online Aptitude Test</h3><a href={KOBO_APTITUDE_TEST} target="_blank" rel="noopener noreferrer" className="btn-yellow big" style={{marginTop:'18px', width:'100%', textAlign:'center', display:'block', background:'#0a1931 !important', color:'#ffcc00 !important'}}>Start Aptitude Test Now</a></div>
-      <div className="card dark"><h3>Important Information</h3><p>All applicants for SITE INCHARGE, SUPERVISOR, SECURITY OFFICER must take test.</p></div>
+      <div className="card"><h3>Step 1: Register</h3><a href={GOOGLE_APTITUDE_REGISTER} target="_blank" rel="noopener noreferrer" className="btn-yellow big" style={{marginTop:'18px', width:'100%', textAlign:'center', display:'block'}}>Register ↗</a></div>
+      <div className="card gold"><h3>Step 2: Take Test</h3><a href={KOBO_APTITUDE_TEST} target="_blank" rel="noopener noreferrer" className="btn-yellow big" style={{marginTop:'18px', width:'100%', textAlign:'center', display:'block', background:'#0a1931 !important', color:'#ffcc00 !important'}}>Start Test</a></div>
+      <div className="card dark"><h3>Important</h3><p>All applicants must take test</p></div>
     </div>
   </div>
 )
@@ -358,21 +316,15 @@ const Contact = () => {
     e.preventDefault();
     setS("Submitting...");
     const payload = { type: 'contact', fullName: f.fullName, phone: f.phone, email: f.email, service: f.service, message: f.message, timestamp: new Date().toISOString() };
-    try {
-      await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
-      setS("✅ Thank you! We will contact you soon.");
-      setF({ fullName: "", email: "", phone: "", service: "", message: "" });
-    } catch { setS("✅ Thank you! We will contact you soon."); }
+    try { await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) }); setS("✅ Thank you!"); setF({ fullName: "", email: "", phone: "", service: "", message: "" }); } catch { setS("✅ Thank you!"); }
   };
   return (
-    <div className="section">
-      <h2>Contact Us</h2>
-      <div className="form-2col">
-        <div className="form-left-info"><div className="card"><h3>Visit Us</h3><p>Plot 442 & 443 Massionatees, Muyenga Hill, Kampala.<br/>Control 24/7: 0776971970</p></div></div>
+    <div className="section"><h2>Contact Us</h2>
+      <div className="form-2col"><div className="form-left-info"><div className="card"><h3>Visit Us</h3><p>Plot 442 & 443 Massionatees, Muyenga Hill, Kampala. Control 24/7: 0776971970</p></div></div>
         <form className="form-big" onSubmit={send}>
           <div className="two-col"><input value={f.fullName} onChange={e => setF({ ...f, fullName: e.target.value })} required placeholder="Fullname" /><input value={f.phone} onChange={e => setF({ ...f, phone: e.target.value })} required placeholder="Phone" /></div>
           <div className="two-col"><input type="email" value={f.email} onChange={e => setF({ ...f, email: e.target.value })} required placeholder="Email" /><select value={f.service} onChange={e => setF({ ...f, service: e.target.value })} required><option value="">Choose Service</option><option>Security Guard Service</option><option>Construction Security</option><option>CCTV Installation</option><option>Mobile Patrol</option><option>Event Security</option><option>Alarm System</option></select></div>
-          <textarea rows="5" value={f.message} onChange={e => setF({ ...f, message: e.target.value })} required placeholder="Message / Location"></textarea>
+          <textarea rows="5" value={f.message} onChange={e => setF({ ...f, message: e.target.value })} required placeholder="Message"></textarea>
           <button className="big-btn">Submit</button>{s && <p className="msg">{s}</p>}
         </form>
       </div>
@@ -387,15 +339,10 @@ const Join = () => {
     e.preventDefault();
     setS("Submitting...");
     const payload = { type: 'applicant', fullName: f.fullName, phone: f.phone, email: f.email, education: f.education, experience: f.experience, interest: f.interest, position: f.position, district: f.district, timestamp: new Date().toISOString() };
-    try {
-      await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
-      setS("✅ Thank you! We will contact you soon.");
-      setF({ fullName: "", phone: "", email: "", education: "", experience: "", interest: "", position: "SITE INCHARGE", district: "" });
-    } catch { setS("✅ Thank you! We will contact you soon."); }
+    try { await fetch(GOOGLE_SHEET_WEBHOOK, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) }); setS("✅ Thank you!"); setF({ fullName: "", phone: "", email: "", education: "", experience: "", interest: "", position: "SITE INCHARGE", district: "" }); } catch { setS("✅ Thank you!"); }
   };
   return (
-    <div className="section">
-      <h2>Apply Now - Applicant Form</h2>
+    <div className="section"><h2>Apply Now - Applicant Form</h2>
       <form className="form-big" onSubmit={send}>
         <div className="two-col"><div><label>Full Name *</label><input value={f.fullName} onChange={e => setF({ ...f, fullName: e.target.value })} required placeholder="Fullname" /></div><div><label>Phone *</label><input value={f.phone} onChange={e => setF({ ...f, phone: e.target.value })} required placeholder="Phone" /></div></div>
         <div className="two-col"><div><label>Email *</label><input type="email" value={f.email} onChange={e => setF({ ...f, email: e.target.value })} required placeholder="Email" /></div><div><label>Education *</label><select value={f.education} onChange={e => setF({ ...f, education: e.target.value })} required><option value="">Choose</option><option>P7</option><option>UCE</option><option>UACE</option><option>Diploma</option><option>Degree</option></select></div></div>
@@ -421,15 +368,7 @@ const Footer = () => {
       <div className="footer-quick">
         <h4>Quick Links</h4>
         <div className="footer-links">
-          <a onClick={() => scrollTo('home')}>Home</a>
-          <a onClick={() => scrollTo('about')}>About</a>
-          <a onClick={() => scrollTo('services')}>Services</a>
-          <a onClick={() => scrollTo('mission')}>Mission</a>
-          <a onClick={() => scrollTo('jobs')}>Jobs</a>
-          <a onClick={() => scrollTo('aptitude')}>Aptitude Test</a>
-          <a onClick={() => scrollTo('contact')}>Contact</a>
-          <a onClick={() => scrollTo('join')}>Apply Now</a>
-          <a href="/admin" style={{background:'#ffcc00', color:'#0a1931'}}>🛡️ Admin</a>
+          <a onClick={() => scrollTo('home')}>Home</a><a onClick={() => scrollTo('about')}>About</a><a onClick={() => scrollTo('services')}>Services</a><a onClick={() => scrollTo('mission')}>Mission</a><a onClick={() => scrollTo('jobs')}>Jobs</a><a onClick={() => scrollTo('aptitude')}>Aptitude Test</a><a onClick={() => scrollTo('contact')}>Contact</a><a onClick={() => scrollTo('join')}>Apply Now</a><a href="/admin" style={{background:'#ffcc00', color:'#0a1931'}}>🛡️ Admin</a>
         </div>
       </div>
       <div className="footer-bottom">© 2026 Pinnacle Security Ltd | Plot 442 & 443 Massionatees, Muyenga | HR: hr@pinnaclegroup.co.ug | Control 24/7: 0776971970</div>
@@ -454,9 +393,9 @@ const MainSite = () => (
       .form-big{max-width:900px; margin:18px auto; background:#fff; padding:24px; border-radius:16px; display:flex; flex-direction:column; gap:16px; box-shadow:0 6px 20px rgba(0,0,0,0.08)}.form-big input,.form-big select,.form-big textarea{padding:16px; border:2px solid #0a1931; border-radius:10px; font-size:17px; width:100%; background:#ffffff !important; color:#0a1931 !important}.form-big label{font-size:15px; font-weight:800; color:#0a1931; margin-bottom:4px; display:block}.two-col{display:grid; grid-template-columns:1fr 1fr; gap:16px} @media(max-width:700px){.two-col{grid-template-columns:1fr}}.form-2col{display:grid; grid-template-columns:300px 1fr; gap:18px} @media(max-width:900px){.form-2col{grid-template-columns:1fr}}.big-btn{background:#0a1931; color:#ffcc00; padding:18px; border:none; border-radius:12px; font-weight:900; cursor:pointer; font-size:19px}.msg{padding:14px; background:#d4edda; border-radius:10px; font-size:16px; text-align:center; font-weight:700}
       .footer{background:#0a1931; color:#aaa; text-align:center; padding:0; font-size:13px; margin-top:24px; line-height:1.8}.footer-quick{background:#0f2040; padding:20px 18px; border-bottom:1px solid #1e3a5f}.footer-quick h4{color:#ffcc00; font-size:16px; font-weight:900; margin-bottom:12px; letter-spacing:1px}.footer-links{display:flex; gap:14px; justify-content:center; flex-wrap:wrap}.footer-links a{color:#fff; text-decoration:none; font-size:14px; font-weight:700; padding:6px 12px; border:1px solid #1e3a5f; border-radius:20px; transition:all 0.2s; cursor:pointer}.footer-links a:hover{background:#ffcc00; color:#0a1931; border-color:#ffcc00}.footer-bottom{padding:18px; background:#0a1931}
       @media(max-width:850px){.menu-btn{display:block}.links{display:none; flex-direction:column; align-items:flex-start; padding-top:14px}.links.show{display:flex} body{padding-top:68px}}
-      .service-card-full{background:#fff; padding:20px; border-radius:12px; margin-bottom:14px; border-left:5px solid #0a1931}.service-card-full h3{color:#0a1931; font-weight:900; margin-bottom:8px}.svc-desc{color:#333; margin-bottom:8px}.svc-details div{margin-bottom:6px; font-size:15px}
-      .mission-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px} @media(max-width:900px){.mission-grid{grid-template-columns:1fr}}.mission-card{background:#fff; padding:18px; border-radius:12px; border-left:5px solid #0a1931}.mission-card.gold{border-left-color:#ffcc00; background:#fffbeb}.mission-card.dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; border-left-color:#ffcc00}.m-icon{font-size:28px; margin-bottom:8px}.values-list div{margin-bottom:8px; font-size:15px}
-      .memo-clean{max-width:1000px; margin:auto}.memo-head{background:#fff; padding:16px; border-radius:12px 12px 0 0; border:2px solid #0a1931; border-bottom:none; text-align:center}.memo-head h2{font-size:18px; border:none; margin-bottom:8px}.memo-body-dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; padding:18px; border-radius:0 0 12px 12px}.memo-intro{background:rgba(255,255,255,0.08); padding:12px; border-radius:8px; margin-bottom:14px}.job-box{background:#fff; color:#0a1931; border-radius:10px; margin-bottom:14px; overflow:hidden}.job-box.gold-border{border:2px solid #ffcc00}.job-header{background:#0a1931; color:#ffcc00; padding:12px; font-weight:900; text-align:center}.job-header.gold{background:#ffcc00; color:#0a1931}.job-content{padding:14px}.req-title{font-weight:900; margin-bottom:8px; border-bottom:2px solid #ffcc00; padding-bottom:4px}.req-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:14px} @media(max-width:700px){.req-grid{grid-template-columns:1fr}}.req-grid span{font-weight:800}.duty{margin-top:10px; background:#f1f5f9; padding:10px; border-radius:8px; font-size:14px}.general-box{background:#fff; color:#0a1931; padding:14px; border-radius:10px; text-align:center; margin-bottom:14px; border:2px dashed #0a1931}.req-inline{display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin:10px 0}.req-inline span{background:#0a1931; color:#ffcc00; padding:4px 10px; border-radius:15px; font-size:12px; font-weight:800}.big-recruit-btn{background:#ffcc00; color:#0a1931; padding:12px 20px; border-radius:25px; font-weight:900; display:inline-block; margin-top:10px; text-decoration:none}.apply-footer{background:rgba(255,255,255,0.08); padding:12px; border-radius:8px; margin-top:14px; font-size:14px}
+      .service-card-full{background:#fff; padding:20px; border-radius:12px; margin-bottom:14px; border-left:5px solid #0a1931}.service-card-full h3{color:#0a1931; font-weight:900; margin-bottom:8px}
+      .mission-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px} @media(max-width:900px){.mission-grid{grid-template-columns:1fr}}.mission-card{background:#fff; padding:18px; border-radius:12px; border-left:5px solid #0a1931}.mission-card.gold{border-left-color:#ffcc00; background:#fffbeb}.mission-card.dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; border-left-color:#ffcc00}.values-list div{margin-bottom:8px; font-size:15px}
+      .memo-clean{max-width:1000px; margin:auto}.memo-head{background:#fff; padding:16px; border-radius:12px 12px 0 0; border:2px solid #0a1931; border-bottom:none; text-align:center}.memo-head h2{font-size:18px; border:none; margin-bottom:8px}.memo-body-dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; padding:18px; border-radius:0 0 12px 12px}.memo-intro{background:rgba(255,255,255,0.08); padding:12px; border-radius:8px; margin-bottom:14px}.job-box{background:#fff; color:#0a1931; border-radius:10px; margin-bottom:14px; overflow:hidden}.job-box.gold-border{border:2px solid #ffcc00}.job-header{background:#0a1931; color:#ffcc00; padding:12px; font-weight:900; text-align:center}.job-header.gold{background:#ffcc00; color:#0a1931}.job-content{padding:14px}.general-box{background:#fff; color:#0a1931; padding:14px; border-radius:10px; text-align:center; margin-bottom:14px; border:2px dashed #0a1931}.big-recruit-btn{background:#ffcc00; color:#0a1931; padding:12px 20px; border-radius:25px; font-weight:900; display:inline-block; margin-top:10px; text-decoration:none}
       .services-grid{display:grid; grid-template-columns:1fr; gap:12px}
     `}</style>
     <Navbar />
