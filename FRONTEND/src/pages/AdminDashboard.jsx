@@ -18,7 +18,7 @@ const AdminDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(30);
   const [selected, setSelected] = useState([]);
-  const [detailRow, setDetailRow] = useState(null); // NEW - Right side panel
+  const [detailRow, setDetailRow] = useState(null);
 
   const login = () => pass === ADMIN_PASSWORD ? setAuth(true) : alert("Wrong Password!");
   
@@ -53,9 +53,7 @@ const AdminDashboard = () => {
     if(!t) return '-'; 
     try { 
       const d = new Date(t);
-      if(isNaN(d.getTime())){
-        return t;
-      }
+      if(isNaN(d.getTime())){ return t; }
       return d.toLocaleString('en-GB', {
         timeZone: 'Africa/Kampala',
         day: '2-digit',
@@ -69,23 +67,52 @@ const AdminDashboard = () => {
     } catch { return t; } 
   }
 
+  // FIXED: SINGLE DELETE - Deletes from BOTH Dashboard + Sheet
   const handleDelete = async (row) => {
     const ts = getVal(row,['Timestamp','timestamp']);
+    const name = getVal(row,['FullName','fullName']) || 'this record';
+    if(!window.confirm(`Delete ${name} ?\n\nThis will delete from Dashboard AND Google Sheet permanently.`)) return;
+    
+    // 1. Delete from dashboard immediately
     setData(prev => prev.filter(r => getVal(r,['Timestamp','timestamp']) !== ts));
     setSelected(prev=>prev.filter(id=>id!==ts));
-    setDetailRow(null);
-    const payload = { action:'delete', timestamp:ts, type:tab };
-    await fetch(GOOGLE_SHEET_WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+    if(detailRow && getVal(detailRow,['Timestamp','timestamp'])===ts) setDetailRow(null);
+    
+    // 2. Delete from Google Sheet
+    try{
+      const payload = { action:'delete', timestamp: ts, Timestamp: ts, type: tab };
+      await fetch(GOOGLE_SHEET_WEBHOOK,{
+        method:'POST',
+        mode:'no-cors',
+        headers:{'Content-Type':'text/plain'},
+        body:JSON.stringify(payload)
+      });
+    }catch(e){ console.log(e); }
   };
 
+  // FIXED: BULK DELETE - Deletes multiple at once from BOTH
   const handleBulkDelete = async () => {
     if(selected.length===0) return;
+    if(!window.confirm(`Delete ${selected.length} selected records?\n\nThis will delete from Dashboard AND Google Sheet permanently.`)) return;
+    
     const toDelete = [...selected];
+    
+    // 1. Delete from dashboard immediately
     setData(prev => prev.filter(r => !toDelete.includes(getVal(r,['Timestamp','timestamp']))));
     setSelected([]);
     setDetailRow(null);
-    const payload = { action:'bulkDelete', timestamps: toDelete, type: tab };
-    await fetch(GOOGLE_SHEET_WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+    
+    // 2. Delete from Google Sheet
+    try{
+      const payload = { action:'bulkDelete', timestamps: toDelete, type: tab };
+      await fetch(GOOGLE_SHEET_WEBHOOK,{
+        method:'POST',
+        mode:'no-cors',
+        headers:{'Content-Type':'text/plain'},
+        body:JSON.stringify(payload)
+      });
+      alert(`${toDelete.length} records deleted from Dashboard and Sheet!`);
+    }catch(e){ console.log(e); }
   };
 
   const toggleSelect = (ts) => setSelected(prev => prev.includes(ts) ? prev.filter(id=>id!==ts) : [...prev, ts]);
@@ -270,7 +297,6 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {/* RIGHT SIDE DRAWER - Contact & Applicant Details */}
       {detailRow && (
         <div style={{position:'fixed',inset:0,zIndex:10001,display:'flex',justifyContent:'flex-end'}}>
           <div onClick={()=>setDetailRow(null)} style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.45)',backdropFilter:'blur(3px)'}}></div>
@@ -282,15 +308,13 @@ const AdminDashboard = () => {
               </div>
               <p style={{fontSize:'11px',marginTop:'10px',opacity:0.8,background:'rgba(255,255,255,0.1)',padding:'6px 10px',borderRadius:'20px',display:'inline-block'}}>🕒 {formatDate(getVal(detailRow,['Timestamp','timestamp']))}</p>
             </div>
-
             <div style={{padding:'20px',display:'grid',gap:'14px'}}>
               <div style={{display:'grid',gap:'12px'}}>
-                <div style={{background:'#f8fafc',padding:'12px 14px',borderRadius:'12px',border:'1px solid #eef'}}><p style={{fontSize:'10px',fontWeight:800,color:'#64748b',letterSpacing:'1px'}}>FULL NAME</p><p style={{fontSize:'13px',fontWeight:800,marginTop:'4px',color:'#0a1931'}}>{getVal(detailRow,['FullName','fullName'])||'-'}</p></div>
+                <div style={{background:'#f8fafc',padding:'12px 14px',borderRadius:'12px',border:'1px solid #eef'}}><p style={{fontSize:'10px',fontWeight:800,color:'#64748b'}}>FULL NAME</p><p style={{fontSize:'13px',fontWeight:800,marginTop:'4px',color:'#0a1931'}}>{getVal(detailRow,['FullName','fullName'])||'-'}</p></div>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px'}}>
                   <div style={{background:'#f8fafc',padding:'12px 14px',borderRadius:'12px',border:'1px solid #eef'}}><p style={{fontSize:'10px',fontWeight:800,color:'#64748b'}}>PHONE</p><p style={{fontSize:'13px',fontWeight:700,marginTop:'4px'}}>{getVal(detailRow,['Phone','phone'])||'-'}</p><a href={`tel:${getVal(detailRow,['Phone','phone'])}`} style={{fontSize:'11px',color:'#0a1931',fontWeight:800,textDecoration:'none',background:'#ffcc00',padding:'4px 10px',borderRadius:'20px',marginTop:'6px',display:'inline-block'}}>📞 Call</a></div>
                   <div style={{background:'#f8fafc',padding:'12px 14px',borderRadius:'12px',border:'1px solid #eef'}}><p style={{fontSize:'10px',fontWeight:800,color:'#64748b'}}>EMAIL</p><p style={{fontSize:'12px',fontWeight:600,marginTop:'4px',wordBreak:'break-all'}}>{getVal(detailRow,['Email','email'])||'-'}</p></div>
                 </div>
-
                 {tab==='contacts' ? (
                   <>
                     <div style={{background:'#eef2ff',padding:'12px 14px',borderRadius:'12px',border:'1px solid #e0e7ff'}}><p style={{fontSize:'10px',fontWeight:800,color:'#3730a3'}}>SERVICE REQUESTED</p><p style={{fontSize:'13px',fontWeight:800,marginTop:'4px',color:'#3730a3'}}>{getVal(detailRow,['Service','service'])||'-'}</p></div>
@@ -306,12 +330,10 @@ const AdminDashboard = () => {
                       <div style={{background:'#f8fafc',padding:'12px 14px',borderRadius:'12px',border:'1px solid #eef'}}><p style={{fontSize:'10px',fontWeight:800,color:'#64748b'}}>DISTRICT</p><p style={{fontSize:'13px',fontWeight:700,marginTop:'4px'}}>{getVal(detailRow,['District','district'])||'-'}</p></div>
                       <div style={{background:'#f8fafc',padding:'12px 14px',borderRadius:'12px',border:'1px solid #eef'}}><p style={{fontSize:'10px',fontWeight:800,color:'#64748b'}}>EXPERIENCE</p><p style={{fontSize:'13px',fontWeight:700,marginTop:'4px'}}>{getVal(detailRow,['Experience','experience'])||'-'}</p></div>
                     </div>
-                    <div style={{background:'#fffbeb',padding:'14px',borderRadius:'12px',border:'1px solid #fde68a'}}><p style={{fontSize:'10px',fontWeight:800,color:'#92400e'}}>INTEREST / WHY JOIN</p><p style={{fontSize:'13px',marginTop:'6px',lineHeight:'1.6',whiteSpace:'pre-wrap'}}>{getVal(detailRow,['Interest','interest'])||'-'}</p></div>
+                    <div style={{background:'#fffbeb',padding:'14px',borderRadius:'12px',border:'1px solid #fde68a'}}><p style={{fontSize:'10px',fontWeight:800,color:'#92400e'}}>INTEREST</p><p style={{fontSize:'13px',marginTop:'6px',lineHeight:'1.6',whiteSpace:'pre-wrap'}}>{getVal(detailRow,['Interest','interest'])||'-'}</p></div>
                   </>
                 )}
-
                 <div style={{background:'#f1f5f9',padding:'12px 14px',borderRadius:'12px',marginTop:'8px'}}><p style={{fontSize:'10px',fontWeight:800,color:'#64748b'}}>TIMESTAMP (24HRS - EAT)</p><p style={{fontSize:'12px',fontWeight:800,marginTop:'4px',fontFamily:'monospace'}}>{formatDate(getVal(detailRow,['Timestamp','timestamp']))}</p></div>
-
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px',marginTop:'10px'}}>
                   <button onClick={()=>{ handleEdit(detailRow); }} style={{background:'#ffcc00',border:'none',padding:'12px',borderRadius:'12px',fontWeight:900,fontSize:'12px',cursor:'pointer'}}>✏️ EDIT</button>
                   <button onClick={()=>handleDelete(detailRow)} style={{background:'#fee2e2',color:'#dc2626',border:'1px solid #fecaca',padding:'12px',borderRadius:'12px',fontWeight:900,fontSize:'12px',cursor:'pointer'}}>🗑 DELETE</button>
