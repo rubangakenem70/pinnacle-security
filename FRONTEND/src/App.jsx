@@ -34,21 +34,40 @@ const AdminDashboard = () => {
   const [toast, setToast] = useState("");
   const showToast = (m)=>{ setToast(m); setTimeout(()=>setToast(""),3000); }
   const login = () => pass === ADMIN_PASSWORD ? setAuth(true) : alert("Wrong Password!");
+
   const load = () => {
     setLoading(true);
-    fetch(GOOGLE_SHEET_WEBHOOK + "?cache=" + Date.now())
-      .then(r=>r.text()).then(text=>{
-        let d; try { d = JSON.parse(text); } catch { d=[]; }
-        const arr = Array.isArray(d)?d:(d.data||[]);
+    const cbName = "psl_cb_" + Date.now();
+    const old = document.getElementById("psl_jsonp");
+    if(old) old.remove();
+    window[cbName] = (d) => {
+      try {
+        let arr = Array.isArray(d) ? d : (d.data || []);
         const withId = arr.map((row,i)=>{
           const ts = (row.Timestamp || row.timestamp || "")+"";
           if(!ts || ts.trim()==="" || ts==="undefined") return null;
           return Object.assign({}, row, {Timestamp:ts, timestamp:ts, _uid: ts + "_" + i});
         }).filter(Boolean);
         setData(withId.sort((a,b)=> new Date(b.timestamp||0)-new Date(a.timestamp||0)));
-        setLoading(false);
-      }).catch(()=>{ setLoading(false); });
+      } catch(e) { console.log(e); }
+      setLoading(false);
+      delete window[cbName];
+      const sc = document.getElementById("psl_jsonp");
+      if(sc) sc.remove();
+    };
+    const s = document.createElement("script");
+    s.id = "psl_jsonp";
+    s.src = GOOGLE_SHEET_WEBHOOK + "?callback=" + cbName + "&cache=" + Date.now();
+    s.onerror = () => {
+      setLoading(false);
+      delete window[cbName];
+      const sc = document.getElementById("psl_jsonp");
+      if(sc) sc.remove();
+      showToast("Load failed - check Apps Script Anyone");
+    };
+    document.body.appendChild(s);
   };
+
   useEffect(()=>{ if(auth) load(); },[auth]);
   useEffect(()=>{ if(!auth||!live) return; const id=setInterval(load,30000); return ()=>clearInterval(id); },[auth,live]);
   useEffect(()=>{ setCurrentPage(1); },[filters,search,tab,rowsPerPage]);
@@ -61,15 +80,15 @@ const AdminDashboard = () => {
     setData(prev=>prev.filter(r=>getVal(r,['Timestamp','timestamp'])!==ts));
     setSelected(prev=>prev.filter(id=>id!==ts));
     if(detailRow && getVal(detailRow,['Timestamp','timestamp'])===ts) setDetailRow(null);
-    showToast("Trash");
-    await fetch(GOOGLE_SHEET_WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'delete',Timestamp:ts})});
+    showToast("Moved to Trash");
+    await fetch(GOOGLE_SHEET_WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'delete',timestamps:[ts]})});
   };
   const handleBulkDelete = async () => {
     if(selected.length===0) return;
     const newTrash=data.filter(r=>selected.includes(getVal(r,['Timestamp','timestamp']))).map(r=>Object.assign({}, r, {deletedAt:new Date().toISOString()})).concat(trash).slice(0,200);
     setTrash(newTrash); localStorage.setItem('psl_trash',JSON.stringify(newTrash));
     setData(prev=>prev.filter(r=>!selected.includes(getVal(r,['Timestamp','timestamp']))));
-    setSelected([]); setDetailRow(null); showToast("Moved");
+    setSelected([]); setDetailRow(null); showToast(selected.length+" Moved");
     await fetch(GOOGLE_SHEET_WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'bulkDelete',timestamps:selected})});
   };
   const clearDuplicates = () => {
@@ -123,13 +142,11 @@ const AdminDashboard = () => {
         </div>
         {showTrash && <div style={{background:theme.bgCard,padding:'12px',borderRadius:'12px',border:'2px dashed #facc15',marginBottom:'12px'}}><b>Trash {trash.length}</b> <button onClick={()=>{setTrash([]); localStorage.setItem('psl_trash','[]')}} style={{marginLeft:'10px',background:'#7f1d1d',color:'#fff',border:'none',padding:'4px 10px',borderRadius:'10px',fontSize:'11px'}}>EMPTY</button></div>}
         <div style={{background:theme.bgCard,borderRadius:'16px',overflow:'hidden',border:'1px solid '+theme.border}}>
-          <div style={{padding:'14px 18px',display:'flex',justifyContent:'space-between',background:'#0f172a',color:'#facc15',fontWeight:900,fontSize:'12px'}}><span>{tab==='contacts'?'CONTACTS':'APPLICANTS'} {list.length} rows Theme {dark?'DARK':'LIGHT'}</span><span>{loading?'Loading':''}</span></div>
-          <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:'12px',minWidth:'900px'}}><thead><tr style={{background:theme.bgMain}}><th style={cellHead}><input type="checkbox" checked={isAllSelected} onChange={()=>{ if(isAllSelected) setSelected(prev=>prev.filter(id=>allPageIds.indexOf(id)===-1)); else setSelected(prev=>{ const ns={}; prev.forEach(id=>ns[id]=true); allPageIds.forEach(id=>ns[id]=true); return Object.keys(ns); }); }}/></th><th style={cellHead}>DATE</th><th style={cellHead}>NAME</th><th style={cellHead}>PHONE</th><th style={cellHead}>EMAIL</th><th style={cellHead}>{tab==='contacts'?'SERVICE':'POSITION'}</th><th style={cellHead}>ACTIONS</th></tr></thead><tbody>{paginatedList.length===0 ? <tr><td colSpan={7} style={{padding:'30px',textAlign:'center',color:'#999'}}>{loading?'Loading...':'No data'}</td></tr> : paginatedList.map((d,i)=>{ const ts=getVal(d,['Timestamp','timestamp']); const isEditing=editRow===ts; const checked=selected.includes(ts); const bg = checked?'#422006':i%2===0?theme.bgCard:theme.bgMain; return (<tr key={i} onClick={()=>{ if(!isEditing) setDetailRow(d); }} style={{background:bg,cursor:'pointer',borderBottom:'1px solid '+theme.border}}><td style={Object.assign({}, cellHead, {background:bg})} onClick={e=>e.stopPropagation()}><input type="checkbox" checked={checked} onChange={()=>toggleSelect(ts)}/></td><td style={Object.assign({}, cellHead, {background:bg,fontSize:'11px',fontWeight:800})}>{formatDate(ts)}</td><td style={Object.assign({}, cellHead, {background:bg,fontWeight:700})}>{isEditing?<input value={form.FullName||''} onChange={e=>setForm(Object.assign({}, form, {FullName:e.target.value}))} style={{padding:'6px',width:'100px'}}/>:getVal(d,['FullName','fullName'])}</td><td style={Object.assign({}, cellHead, {background:bg})}>{getVal(d,['Phone','phone'])}</td><td style={Object.assign({}, cellHead, {background:bg})}>{getVal(d,['Email','email'])}</td><td style={Object.assign({}, cellHead, {background:bg})}>{getVal(d,['Service','service'])||getVal(d,['Position','position'])}</td><td style={Object.assign({}, cellHead, {background:bg})} onClick={e=>e.stopPropagation()}><div style={{display:'flex',gap:'4px'}}>{isEditing?<><button onClick={handleSave} style={{background:'#0f172a',color:'#facc15',border:'none',padding:'6px 10px',borderRadius:'8px',fontWeight:800}}>SAVE</button><button onClick={()=>setEditRow(null)} style={{background:'#eee',border:'none',padding:'6px 8px',borderRadius:'8px'}}>X</button></>:<><button onClick={()=>handleEdit(d)} style={{background:'#facc15',border:'none',padding:'6px 10px',borderRadius:'8px',fontWeight:800}}>EDIT</button><button onClick={()=>handleDelete(d)} style={{background:'#fee2e2',color:'#dc2626',border:'none',padding:'6px 8px',borderRadius:'8px',fontWeight:800}}>DEL</button></>}</div></td></tr>)})}</tbody></table></div>
+          <div style={{padding:'14px 18px',display:'flex',justifyContent:'space-between',background:'#0f172a',color:'#facc15',fontWeight:900,fontSize:'12px'}}><span>{tab==='contacts'?'CONTACTS':'APPLICANTS'} {list.length} rows Theme {dark?'DARK':'LIGHT'}</span><span>{loading?'Loading...':'Ready'}</span></div>
+          <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:'12px',minWidth:'900px'}}><thead><tr style={{background:theme.bgMain}}><th style={cellHead}><input type="checkbox" checked={isAllSelected} onChange={()=>{ if(isAllSelected) setSelected(prev=>prev.filter(id=>allPageIds.indexOf(id)===-1)); else setSelected(prev=>{ const ns={}; prev.forEach(id=>ns[id]=true); allPageIds.forEach(id=>ns[id]=true); return Object.keys(ns); }); }}/></th><th style={cellHead}>DATE</th><th style={cellHead}>NAME</th><th style={cellHead}>PHONE</th><th style={cellHead}>EMAIL</th><th style={cellHead}>{tab==='contacts'?'SERVICE':'POSITION'}</th><th style={cellHead}>ACTIONS</th></tr></thead><tbody>{paginatedList.length===0 ? <tr><td colSpan={7} style={{padding:'30px',textAlign:'center',color:'#999'}}>{loading?'Loading...':'No data - Ready for new submissions'}</td></tr> : paginatedList.map((d,i)=>{ const ts=getVal(d,['Timestamp','timestamp']); const isEditing=editRow===ts; const checked=selected.includes(ts); const bg = checked?'#422006':i%2===0?theme.bgCard:theme.bgMain; return (<tr key={i} onClick={()=>{ if(!isEditing) setDetailRow(d); }} style={{background:bg,cursor:'pointer',borderBottom:'1px solid '+theme.border}}><td style={Object.assign({}, cellHead, {background:bg})} onClick={e=>e.stopPropagation()}><input type="checkbox" checked={checked} onChange={()=>toggleSelect(ts)}/></td><td style={Object.assign({}, cellHead, {background:bg,fontSize:'11px',fontWeight:800})}>{formatDate(ts)}</td><td style={Object.assign({}, cellHead, {background:bg,fontWeight:700})}>{isEditing?<input value={form.FullName||''} onChange={e=>setForm(Object.assign({}, form, {FullName:e.target.value}))} style={{padding:'6px',width:'100px'}}/>:getVal(d,['FullName','fullName'])}</td><td style={Object.assign({}, cellHead, {background:bg})}>{getVal(d,['Phone','phone'])}</td><td style={Object.assign({}, cellHead, {background:bg})}>{getVal(d,['Email','email'])}</td><td style={Object.assign({}, cellHead, {background:bg})}>{getVal(d,['Service','service'])||getVal(d,['Position','position'])}</td><td style={Object.assign({}, cellHead, {background:bg})} onClick={e=>e.stopPropagation()}><div style={{display:'flex',gap:'4px'}}>{isEditing?<><button onClick={handleSave} style={{background:'#0f172a',color:'#facc15',border:'none',padding:'6px 10px',borderRadius:'8px',fontWeight:800}}>SAVE</button><button onClick={()=>setEditRow(null)} style={{background:'#eee',border:'none',padding:'6px 8px',borderRadius:'8px'}}>X</button></>:<><button onClick={()=>handleEdit(d)} style={{background:'#facc15',border:'none',padding:'6px 10px',borderRadius:'8px',fontWeight:800}}>EDIT</button><button onClick={()=>handleDelete(d)} style={{background:'#fee2e2',color:'#dc2626',border:'none',padding:'6px 8px',borderRadius:'8px',fontWeight:800}}>DEL</button></>}</div></td></tr>)})}</tbody></table></div>
           <div style={{padding:'12px 18px',display:'flex',justifyContent:'space-between',borderTop:'1px solid '+theme.border}}><button disabled={currentPage===1} onClick={()=>setCurrentPage(p=>Math.max(1,p-1))} style={{padding:'8px 14px',borderRadius:'10px',border:'1px solid '+theme.border,background:theme.bgCard,color:theme.text}}>Prev</button><span>Page {currentPage}/{totalPages}</span><button disabled={currentPage===totalPages} onClick={()=>setCurrentPage(p=>Math.min(totalPages,p+1))} style={{padding:'8px 14px',borderRadius:'10px',border:'1px solid '+theme.border,background:theme.bgCard,color:theme.text}}>Next</button></div>
         </div>
       </div>
-      {showAdd && (<div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.6)',zIndex:10000,display:'flex',justifyContent:'center',alignItems:'center',padding:'20px'}}><div style={{background:theme.bgCard,padding:'20px',borderRadius:'16px',width:'92%',maxWidth:'480px'}}><h3>Add New {tab}</h3><div style={{display:'grid',gap:'8px',marginTop:'12px'}}><input placeholder="FullName" value={form.FullName||''} onChange={e=>setForm(Object.assign({}, form, {FullName:e.target.value}))} style={{padding:'12px',borderRadius:'10px',border:'1px solid '+theme.border,background:theme.input,color:theme.text}}/><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}><input placeholder="Phone" value={form.Phone||''} onChange={e=>setForm(Object.assign({}, form, {Phone:e.target.value}))} style={{padding:'12px',borderRadius:'10px',border:'1px solid '+theme.border,background:theme.input,color:theme.text}}/><input placeholder="Email" value={form.Email||''} onChange={e=>setForm(Object.assign({}, form, {Email:e.target.value}))} style={{padding:'12px',borderRadius:'10px',border:'1px solid '+theme.border,background:theme.input,color:theme.text}}/></div></div><div style={{display:'flex',gap:'8px',marginTop:'14px'}}><button onClick={handleAddNew} style={{flex:1,background:'#facc15',padding:'12px',borderRadius:'12px',border:'none',fontWeight:900}}>SAVE</button><button onClick={()=>setShowAdd(false)} style={{flex:1,background:theme.bgMain,padding:'12px',borderRadius:'12px',border:'1px solid '+theme.border,color:theme.text}}>CANCEL</button></div></div></div>)}
-      {detailRow && (<div style={{position:'fixed',inset:0,zIndex:10001,display:'flex',justifyContent:'flex-end'}}><div onClick={()=>setDetailRow(null)} style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.45)'}}></div><div style={{position:'relative',width:'92%',maxWidth:'400px',background:theme.bgCard,height:'100vh',overflowY:'auto'}}><div style={{background:'#0f172a',padding:'20px',color:'#fff'}}><div style={{display:'flex',justifyContent:'space-between'}}><h2>{getVal(detailRow,['FullName','fullName'])}</h2><button onClick={()=>setDetailRow(null)} style={{background:'rgba(255,255,255,.15)',border:'none',color:'#fff',width:'32px',height:'32px',borderRadius:'8px',cursor:'pointer'}}>X</button></div><p style={{fontSize:'11px',marginTop:'8px',background:'rgba(255,255,255,.1)',padding:'6px 10px',borderRadius:'20px',display:'inline-block'}}>{formatDate(getVal(detailRow,['Timestamp','timestamp']))}</p></div><div style={{padding:'18px',display:'grid',gap:'12px'}}><button onClick={()=>{ handleEdit(detailRow); setDetailRow(null); }} style={{background:'#facc15',border:'none',padding:'12px',borderRadius:'12px',fontWeight:900,cursor:'pointer'}}>EDIT</button><button onClick={()=>setDetailRow(null)} style={{background:theme.bgMain,border:'1px solid '+theme.border,padding:'12px',borderRadius:'12px',fontWeight:900,color:theme.text,cursor:'pointer'}}>CLOSE</button></div></div></div>)}
     </div>
   )
 }
