@@ -157,20 +157,18 @@ const AdminDashboard = () => {
     <div style={{background:'#eef2f7',minHeight:'100vh',fontFamily:'Arial'}}>
       {toast && <div style={{position:'fixed',top:'20px',right:'20px',background:'#0a1931',color:'#ffcc00',padding:'12px 20px',borderRadius:'30px',fontWeight:900,fontSize:'13px',zIndex:99999,boxShadow:'0 8px 20px rgba(0,0,0,.2)'}}>{toast}</div>}
       
-      {/* HEADER WITH WEBSITE BUTTON */}
       <div style={{background:'#0a1931',padding:'14px 20px',display:'flex',justifyContent:'space-between',alignItems:'center',position:'sticky',top:0,zIndex:100,borderBottom:'4px solid #ffcc00',flexWrap:'wrap',gap:'10px'}}>
         <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
           <div style={{width:'42px',height:'42px',background:'#ffcc00',borderRadius:'12px',display:'grid',placeItems:'center',fontWeight:900,color:'#0a1931',fontSize:'18px'}}>P</div>
           <div><h1 style={{color:'#fff',fontWeight:900,fontSize:'15px'}}>PINNACLE SECURITY LTD</h1><p style={{color:'#ffcc00',fontSize:'10px',fontWeight:700,letterSpacing:'1px'}}>ADMIN CONTROL CENTER • {data.length} TOTAL</p></div>
         </div>
         <div style={{display:'flex',gap:'8px',alignItems:'center',flexWrap:'wrap'}}>
-          <a href="/" style={{background:'#ffcc00',color:'#0a1931',padding:'9px 16px',borderRadius:'24px',fontWeight:900,fontSize:'12px',textDecoration:'none',display:'inline-block'}}>🏠 WEBSITE</a>
+          <a href="/" style={{background:'#ffcc00',color:'#0a1931',padding:'9px 16px',borderRadius:'24px',fontWeight:900,fontSize:'12px',textDecoration:'none'}}>🏠 WEBSITE</a>
           <button onClick={()=>{setForm({}); setShowAdd(true)}} style={{background:'#fff',color:'#0a1931',border:'none',padding:'9px 16px',borderRadius:'24px',fontWeight:900,fontSize:'12px',cursor:'pointer'}}>＋ ADD NEW</button>
           <button onClick={load} style={{background:'rgba(255,255,255,.15)',color:'#fff',border:'1px solid rgba(255,255,255,.2)',padding:'9px 16px',borderRadius:'24px',fontWeight:800,fontSize:'12px',cursor:'pointer'}}>{loading?'⏳':'↻ REFRESH'}</button>
         </div>
       </div>
 
-      {/* SEARCH + FILTER + ACTION BAR */}
       <div style={{background:'#fff',margin:'16px 20px',padding:'14px 16px',borderRadius:'16px',display:'flex',gap:'10px',alignItems:'center',flexWrap:'wrap',boxShadow:'0 4px 12px rgba(0,0,0,.06)',border:'1px solid #e5e7eb'}}>
         <div style={{display:'flex',alignItems:'center',background:'#f3f4f6',borderRadius:'24px',padding:'0 14px',border:'1px solid #e5e7eb',flex:1,minWidth:'220px'}}>
           <span style={{fontSize:'14px'}}>🔍</span>
@@ -186,7 +184,6 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* FILTER PANEL */}
       {showFilters && (
         <div style={{background:'#fff',margin:'0 20px 16px',padding:'18px',borderRadius:'16px',boxShadow:'0 4px 12px rgba(0,0,0,.06)',border:'1px solid #e5e7eb'}}>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:'12px'}}>
@@ -208,49 +205,70 @@ const AdminDashboard = () => {
       )}
 
       <div style={{maxWidth:'1600px',margin:'auto',padding:'0 20px 20px'}}>
-        {/* STATS CARDS */}
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:'12px',marginBottom:'16px'}}>
-          <div onClick={()=>{setTab('contacts'); setSelected([]); setCurrentPage(1)}} style={{background:tab==='contacts'?'#0a1931':'#fff',color:tab==='contacts'?'#fff':'#0a1931',padding:'18px 20px',borderRadius:'16px',cursor:'pointer',border:tab==='contacts'?'2px solid #ffcc00':'1px solid #e5e7eb',display:'flex',justifyContent:'space-between',alignItems:'center'}}><div><p style={{fontSize:'11px',fontWeight:700,opacity:.8}}>📞 CONTACTS</p><h2 style={{fontSize:'30px',fontWeight:900,marginTop:'6px'}}>{contacts.length}</h2><p style={{fontSize:'11px',marginTop:'4px',opacity:.6}}>{filteredContacts.length} filtered</p></div><div style={{fontSize:'28px',opacity:.3}}>📞</div></div>
-          <div onClick={()=>{setTab('applicants'); setSelected([]); setCurrentPage(1)}} style={{background:tab==='applicants'?'#ffcc00':'#fff',color:'#0a1931',padding:'18px 20px',borderRadius:'16px',cursor:'pointer',border:tab==='applicants'?'2px solid #0a1931':'1px solid #e5e7eb',display:'flex',justifyContent:'space-between',alignItems:'center'}}><div><p style={{fontSize:'11px',fontWeight:800}}>🎖️ APPLICANTS</p><h2 style={{fontSize:'30px',fontWeight:900,marginTop:'6px'}}>{applicants.length}</h2><p style={{fontSize:'11px',marginTop:'4px',color:'#666'}}>{filteredApplicants.length} filtered</p></div><div style={{fontSize:'28px',opacity:.4}}>🎖️</div></div>
-          <div style={{background:'#fff',padding:'18px 20px',borderRadius:'16px',border:'1px solid #e5e7eb',display:'flex',justifyContent:'space-between',alignItems:'center'}}><div><p style={{fontSize:'11px',fontWeight:700,color:'#6b7280'}}>📊 CURRENT VIEW</p><h2 style={{fontSize:'30px',fontWeight:900,marginTop:'6px'}}>{list.length}</h2><p style={{fontSize:'11px',color:'#6b7280'}}>Page {currentPage}/{totalPages}</p></div><div style={{display:'flex',flexDirection:'column',gap:'6px'}}><button onClick={()=>exportCSV(list,`${tab}.csv`)} style={{background:'#0a1931',color:'#ffcc00',border:'none',padding:'8px 14px',borderRadius:'20px',fontSize:'11px',fontWeight:900,cursor:'pointer'}}>⬇ EXPORT CSV</button><button onClick={()=>{setForm({}); setShowAdd(true)}} style={{background:'#f3f4f6',border:'1px solid #e5e7eb',padding:'8px 14px',borderRadius:'20px',fontSize:'11px',fontWeight:800,cursor:'pointer'}}>+ ADD</button></div></div>
+          <div onClick={()=>{setTab('contacts'); setSelected([]); setCurrentPage(1)}} style={{background:tab==='contacts'?'#0a1931':'#fff',color:tab==='contacts'?'#fff':'#0a1931',padding:'18px 20px',borderRadius:'16px',cursor:'pointer',border:tab==='contacts'?'2px solid #ffcc00':'1px solid #e5e7eb'}}><p style={{fontSize:'11px',fontWeight:700}}>📞 CONTACTS</p><h2 style={{fontSize:'30px',fontWeight:900,marginTop:'6px'}}>{contacts.length}</h2></div>
+          <div onClick={()=>{setTab('applicants'); setSelected([]); setCurrentPage(1)}} style={{background:tab==='applicants'?'#ffcc00':'#fff',color:'#0a1931',padding:'18px 20px',borderRadius:'16px',cursor:'pointer',border:tab==='applicants'?'2px solid #0a1931':'1px solid #e5e7eb'}}><p style={{fontSize:'11px',fontWeight:800}}>🎖️ APPLICANTS</p><h2 style={{fontSize:'30px',fontWeight:900,marginTop:'6px'}}>{applicants.length}</h2></div>
+          <div style={{background:'#fff',padding:'18px 20px',borderRadius:'16px',border:'1px solid #e5e7eb'}}><p style={{fontSize:'11px',fontWeight:700,color:'#6b7280'}}>📊 CURRENT VIEW</p><h2 style={{fontSize:'30px',fontWeight:900,marginTop:'6px'}}>{list.length}</h2><button onClick={()=>exportCSV(list,`${tab}.csv`)} style={{marginTop:'8px',background:'#0a1931',color:'#ffcc00',border:'none',padding:'8px 14px',borderRadius:'20px',fontSize:'11px',fontWeight:900,cursor:'pointer'}}>⬇ EXPORT CSV</button></div>
         </div>
 
-        {/* TABLE WITH CLEAR BORDERS */}
-        <div style={{background:'#fff',borderRadius:'16px',overflow:'hidden',boxShadow:'0 8px 24px rgba(0,0,0,.08)',border:'1px solid #e5e7eb'}}>
+        <div style={{background:'#fff',borderRadius:'16px',overflow:'hidden',boxShadow:'0 8px 24px rgba(0,0,0,.08)',border:'2px solid #0a1931'}}>
           <div style={{padding:'14px 18px',display:'flex',justifyContent:'space-between',alignItems:'center',background:tab==='contacts'?'#0a1931':'#111827',color:tab==='contacts'?'#ffcc00':'#fff'}}>
-            <div style={{fontWeight:900,fontSize:'13px'}}>{tab==='contacts'?`📞 CONTACT REQUESTS — ${list.length} ROWS`:`🎖️ JOB APPLICANTS — ${list.length} ROWS`} • {search?`Search: "${search}"`:''}</div>
-            <div style={{fontSize:'11px',opacity:.8}}>Click row to view details →</div>
+            <div style={{fontWeight:900,fontSize:'13px'}}>{tab==='contacts'?`📞 CONTACTS — ${list.length}`:`🎖️ APPLICANTS — ${list.length}`} • Page {currentPage}/{totalPages}</div>
           </div>
           
           <div style={{overflowX:'auto'}}>
-            <table style={{width:'100%',borderCollapse:'collapse',fontSize:'12px',minWidth:'1100px'}}>
+            <table style={{width:'100%',borderCollapse:'collapse',fontSize:'12px',minWidth:'1450px'}}>
               <thead>
-                <tr style={{background:'#f8fafb'}}>
-                  <th style={{padding:'12px 14px',border:'1px solid #e5e7eb',textAlign:'left',fontSize:'11px'}}><input type="checkbox" checked={isAllSelected} onChange={()=>{ if(isAllSelected) setSelected(prev=>prev.filter(id=>!allPageIds.includes(id))); else setSelected(prev=>[...new Set([...prev, ...allPageIds])]); }}/></th>
-                  <th style={{padding:'12px 14px',border:'1px solid #e5e7eb',textAlign:'left',fontSize:'11px',fontWeight:800}}>DATE & TIME (EAT)</th>
-                  <th style={{padding:'12px 14px',border:'1px solid #e5e7eb',textAlign:'left',fontSize:'11px',fontWeight:800}}>FULL NAME</th>
-                  <th style={{padding:'12px 14px',border:'1px solid #e5e7eb',textAlign:'left',fontSize:'11px',fontWeight:800}}>PHONE</th>
-                  <th style={{padding:'12px 14px',border:'1px solid #e5e7eb',textAlign:'left',fontSize:'11px',fontWeight:800}}>EMAIL</th>
-                  <th style={{padding:'12px 14px',border:'1px solid #e5e7eb',textAlign:'left',fontSize:'11px',fontWeight:800}}>{tab==='contacts'?'SERVICE':'POSITION'}</th>
-                  <th style={{padding:'12px 14px',border:'1px solid #e5e7eb',textAlign:'left',fontSize:'11px',fontWeight:800}}>{tab==='contacts'?'MESSAGE':'DISTRICT / EXP'}</th>
-                  <th style={{padding:'12px 14px',border:'1px solid #e5e7eb',textAlign:'center',fontSize:'11px',fontWeight:800}}>ACTIONS</th>
+                <tr style={{background:'#0a1931',color:'#fff'}}>
+                  <th style={{padding:'12px 10px',border:'2px solid #1e3a5f',fontSize:'10px'}}><input type="checkbox" checked={isAllSelected} onChange={()=>{ if(isAllSelected) setSelected(prev=>prev.filter(id=>!allPageIds.includes(id))); else setSelected(prev=>[...new Set([...prev, ...allPageIds])]); }}/></th>
+                  <th style={{padding:'12px 10px',border:'2px solid #1e3a5f',fontSize:'10px',fontWeight:900,textAlign:'left'}}>DATE (EAT)</th>
+                  <th style={{padding:'12px 10px',border:'2px solid #1e3a5f',fontSize:'10px',fontWeight:900,textAlign:'left'}}>FULL NAME</th>
+                  <th style={{padding:'12px 10px',border:'2px solid #1e3a5f',fontSize:'10px',fontWeight:900,textAlign:'left'}}>PHONE</th>
+                  <th style={{padding:'12px 10px',border:'2px solid #1e3a5f',fontSize:'10px',fontWeight:900,textAlign:'left'}}>EMAIL</th>
+                  {tab==='contacts' ? (
+                    <>
+                      <th style={{padding:'12px 10px',border:'2px solid #1e3a5f',fontSize:'10px',fontWeight:900,textAlign:'left'}}>SERVICE</th>
+                      <th style={{padding:'12px 10px',border:'2px solid #1e3a5f',fontSize:'10px',fontWeight:900,textAlign:'left'}}>MESSAGE</th>
+                    </>
+                  ) : (
+                    <>
+                      <th style={{padding:'12px 10px',border:'2px solid #1e3a5f',fontSize:'10px',fontWeight:900,textAlign:'left'}}>POSITION</th>
+                      <th style={{padding:'12px 10px',border:'2px solid #ffcc00',fontSize:'10px',fontWeight:900,textAlign:'left',background:'#ffcc00',color:'#0a1931'}}>DISTRICT</th>
+                      <th style={{padding:'12px 10px',border:'2px solid #1e3a5f',fontSize:'10px',fontWeight:900,textAlign:'left'}}>EDUCATION</th>
+                      <th style={{padding:'12px 10px',border:'2px solid #ffcc00',fontSize:'10px',fontWeight:900,textAlign:'center',background:'#ffcc00',color:'#0a1931'}}>EXP</th>
+                      <th style={{padding:'12px 10px',border:'2px solid #1e3a5f',fontSize:'10px',fontWeight:900,textAlign:'left'}}>INTEREST</th>
+                    </>
+                  )}
+                  <th style={{padding:'12px 10px',border:'2px solid #1e3a5f',fontSize:'10px',fontWeight:900,textAlign:'center'}}>ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
                 {paginatedList.length===0 ? (
-                  <tr><td colSpan={8} style={{padding:'40px',textAlign:'center',border:'1px solid #e5e7eb',color:'#999'}}>No records found — try clear filters or search</td></tr>
+                  <tr><td colSpan={tab==='contacts'?7:10} style={{padding:'40px',textAlign:'center',border:'1px solid #e5e7eb'}}>No records</td></tr>
                 ) : paginatedList.map((d,i)=>{
                   const checked=selected.includes(d._uid);
                   return (
-                    <tr key={d._uid} style={{background:checked?'#fff9db':i%2===0?'#fff':'#f9fafb'}}>
-                      <td style={{padding:'10px 14px',border:'1px solid #e5e7eb'}}><input type="checkbox" checked={checked} onChange={()=>setSelected(prev=>prev.includes(d._uid)?prev.filter(id=>id!==d._uid):[...prev,d._uid])} /></td>
-                      <td style={{padding:'10px 14px',border:'1px solid #e5e7eb',fontSize:'11px',fontWeight:700,color:'#0a1931'}}>{getVal(d,['Timestamp','timestamp'])?.slice(0,19)}</td>
-                      <td style={{padding:'10px 14px',border:'1px solid #e5e7eb',fontWeight:800,cursor:'pointer',color:'#0a1931'}} onClick={()=>setDetailRow(d)}>{getVal(d,['FullName','fullName'])}</td>
-                      <td style={{padding:'10px 14px',border:'1px solid #e5e7eb'}}>{getVal(d,['Phone','phone'])}</td>
-                      <td style={{padding:'10px 14px',border:'1px solid #e5e7eb',maxWidth:'180px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{getVal(d,['Email','email'])}</td>
-                      <td style={{padding:'10px 14px',border:'1px solid #e5e7eb'}}>{tab==='contacts'?<span style={{background:'#eef2ff',color:'#3730a3',padding:'4px 10px',borderRadius:'20px',fontSize:'11px',fontWeight:700,border:'1px solid #e0e7ff'}}>{getVal(d,['Service','service'])}</span>:<span style={{background:'#fef3c7',padding:'4px 10px',borderRadius:'20px',fontSize:'11px',fontWeight:700,border:'1px solid #fde68a'}}>{getVal(d,['Position','position'])}</span>}</td>
-                      <td style={{padding:'10px 14px',border:'1px solid #e5e7eb',maxWidth:'200px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{tab==='contacts'?getVal(d,['Messages','message']):`${getVal(d,['District','district'])} / ${getVal(d,['Experience','experience'])}`}</td>
-                      <td style={{padding:'10px 14px',border:'1px solid #e5e7eb',textAlign:'center'}}><div style={{display:'flex',gap:'6px',justifyContent:'center'}}><button onClick={()=>setDetailRow(d)} style={{background:'#f3f4f6',border:'1px solid #e5e7eb',padding:'6px 10px',borderRadius:'8px',fontWeight:700,fontSize:'11px',cursor:'pointer'}}>👁 VIEW</button><button onClick={()=>handleEdit(d)} style={{background:'#ffcc00',border:'1px solid #eab308',padding:'6px 10px',borderRadius:'8px',fontWeight:800,fontSize:'11px',cursor:'pointer'}}>EDIT</button><button onClick={()=>handleDelete(d)} style={{background:'#fee2e2',color:'#dc2626',border:'1px solid #fecaca',padding:'6px 10px',borderRadius:'8px',fontWeight:800,fontSize:'11px',cursor:'pointer'}}>DEL</button></div></td>
+                    <tr key={d._uid} style={{background:checked?'#fff9db':i%2===0?'#fff':'#f8fafb'}}>
+                      <td style={{padding:'10px',border:'1px solid #cbd5e1'}}><input type="checkbox" checked={checked} onChange={()=>setSelected(prev=>prev.includes(d._uid)?prev.filter(id=>id!==d._uid):[...prev,d._uid])} /></td>
+                      <td style={{padding:'10px',border:'1px solid #cbd5e1',fontSize:'11px',fontWeight:700}}>{getVal(d,['Timestamp','timestamp'])?.slice(0,19)}</td>
+                      <td style={{padding:'10px',border:'1px solid #cbd5e1',fontWeight:800,cursor:'pointer'}} onClick={()=>setDetailRow(d)}>{getVal(d,['FullName','fullName'])}</td>
+                      <td style={{padding:'10px',border:'1px solid #cbd5e1'}}>{getVal(d,['Phone','phone'])}</td>
+                      <td style={{padding:'10px',border:'1px solid #cbd5e1'}}>{getVal(d,['Email','email'])}</td>
+                      {tab==='contacts' ? (
+                        <>
+                          <td style={{padding:'10px',border:'1px solid #cbd5e1'}}>{getVal(d,['Service','service'])}</td>
+                          <td style={{padding:'10px',border:'1px solid #cbd5e1',maxWidth:'200px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{getVal(d,['Messages','message'])}</td>
+                        </>
+                      ) : (
+                        <>
+                          <td style={{padding:'10px',border:'1px solid #cbd5e1'}}><span style={{background:'#fef3c7',padding:'4px 8px',borderRadius:'12px',fontWeight:700,fontSize:'11px',border:'1px solid #fde68a'}}>{getVal(d,['Position','position'])}</span></td>
+                          <td style={{padding:'10px',border:'2px solid #ffcc00',background:'#fffbeb',fontWeight:800}}>{getVal(d,['District','district'])||'-'}</td>
+                          <td style={{padding:'10px',border:'1px solid #cbd5e1'}}>{getVal(d,['Education','education'])||'-'}</td>
+                          <td style={{padding:'10px',border:'2px solid #ffcc00',background:'#fffbeb',fontWeight:800,textAlign:'center'}}>{getVal(d,['Experience','experience'])||'-'}</td>
+                          <td style={{padding:'10px',border:'1px solid #cbd5e1'}}>{getVal(d,['Interest','interest'])||'-'}</td>
+                        </>
+                      )}
+                      <td style={{padding:'10px',border:'1px solid #cbd5e1'}}><div style={{display:'flex',gap:'4px'}}><button onClick={()=>setDetailRow(d)} style={{padding:'5px 8px',borderRadius:'6px',border:'1px solid #e5e7eb',fontSize:'10px',fontWeight:700,cursor:'pointer'}}>VIEW</button><button onClick={()=>handleEdit(d)} style={{padding:'5px 8px',borderRadius:'6px',background:'#ffcc00',border:'1px solid #eab308',fontSize:'10px',fontWeight:800,cursor:'pointer'}}>EDIT</button><button onClick={()=>handleDelete(d)} style={{padding:'5px 8px',borderRadius:'6px',background:'#fee2e2',color:'#dc2626',border:'1px solid #fecaca',fontSize:'10px',fontWeight:800,cursor:'pointer'}}>DEL</button></div></td>
                     </tr>
                   )
                 })}
@@ -258,66 +276,45 @@ const AdminDashboard = () => {
             </table>
           </div>
 
-          {/* PAGINATION - IMPROVED */}
-          <div style={{padding:'14px 18px',display:'flex',justifyContent:'space-between',alignItems:'center',borderTop:'1px solid #e5e7eb',background:'#f9fafb',flexWrap:'wrap',gap:'10px'}}>
+          <div style={{padding:'14px 18px',display:'flex',justifyContent:'space-between',alignItems:'center',borderTop:'2px solid #0a1931',background:'#f9fafb',flexWrap:'wrap',gap:'10px'}}>
             <div style={{display:'flex',gap:'6px',alignItems:'center'}}>
-              <button disabled={currentPage===1} onClick={()=>setCurrentPage(p=>Math.max(1,p-1))} style={{background:currentPage===1?'#e5e7eb':'#fff',color:currentPage===1?'#aaa':'#0a1931',border:'1px solid #e5e7eb',padding:'8px 14px',borderRadius:'10px',fontWeight:800,cursor:currentPage===1?'not-allowed':'pointer'}}>◂ PREV</button>
-              <div style={{display:'flex',gap:'4px'}}>
-                {Array.from({length:Math.min(5,totalPages)},(_,i)=>{
-                  let pageNum;
-                  if(totalPages<=5) pageNum = i+1;
-                  else if(currentPage<=3) pageNum = i+1;
-                  else if(currentPage>=totalPages-2) pageNum = totalPages-4+i;
-                  else pageNum = currentPage-2+i;
-                  if(pageNum<1||pageNum>totalPages) return null;
-                  return <button key={pageNum} onClick={()=>setCurrentPage(pageNum)} style={{background:pageNum===currentPage?'#0a1931':'#fff',color:pageNum===currentPage?'#ffcc00':'#0a1931',border:'1px solid #e5e7eb',padding:'8px 12px',borderRadius:'10px',fontWeight:800,cursor:'pointer',minWidth:'36px'}}>{pageNum}</button>
-                })}
-              </div>
-              <button disabled={currentPage===totalPages} onClick={()=>setCurrentPage(p=>Math.min(totalPages,p+1))} style={{background:currentPage===totalPages?'#e5e7eb':'#0a1931',color:currentPage===totalPages?'#aaa':'#ffcc00',border:'1px solid #e5e7eb',padding:'8px 14px',borderRadius:'10px',fontWeight:800,cursor:currentPage===totalPages?'not-allowed':'pointer'}}>NEXT ▸</button>
+              <button disabled={currentPage===1} onClick={()=>setCurrentPage(p=>Math.max(1,p-1))} style={{background:currentPage===1?'#e5e7eb':'#fff',border:'1px solid #cbd5e1',padding:'8px 14px',borderRadius:'10px',fontWeight:800,cursor:'pointer'}}>◂ PREV</button>
+              <span style={{background:'#0a1931',color:'#ffcc00',padding:'8px 12px',borderRadius:'10px',fontWeight:800,minWidth:'36px',textAlign:'center'}}>{currentPage}</span>
+              <button disabled={currentPage===totalPages} onClick={()=>setCurrentPage(p=>Math.min(totalPages,p+1))} style={{background:currentPage===totalPages?'#e5e7eb':'#0a1931',color:currentPage===totalPages?'#aaa':'#ffcc00',border:'1px solid #cbd5e1',padding:'8px 14px',borderRadius:'10px',fontWeight:800,cursor:'pointer'}}>NEXT ▸</button>
             </div>
-            <div style={{display:'flex',gap:'12px',alignItems:'center',fontSize:'12px'}}>
-              <span style={{color:'#6b7280'}}>Go to:</span>
-              <input type="number" min={1} max={totalPages} value={currentPage} onChange={e=>setCurrentPage(Math.min(totalPages,Math.max(1,Number(e.target.value)||1)))} style={{width:'60px',padding:'6px 8px',borderRadius:'8px',border:'1px solid #e5e7eb',textAlign:'center',fontWeight:800}}/>
-              <span style={{color:'#6b7280',fontWeight:600}}>of {totalPages} pages • {list.length} rows total • {selected.length} selected</span>
-            </div>
+            <div style={{fontSize:'12px',color:'#6b7280',fontWeight:600}}>Page {currentPage} of {totalPages} • {list.length} rows • {selected.length} selected • Go to: <input type="number" min={1} max={totalPages} value={currentPage} onChange={e=>setCurrentPage(Math.min(totalPages,Math.max(1,Number(e.target.value)||1)))} style={{width:'50px',padding:'4px',borderRadius:'6px',border:'1px solid #cbd5e1',textAlign:'center'}}/></div>
           </div>
         </div>
       </div>
 
-      {/* DETAIL MODAL */}
       {detailRow && (
-        <div onClick={()=>setDetailRow(null)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,.55)',zIndex:10000,display:'flex',justifyContent:'center',alignItems:'center',padding:'20px',backdropFilter:'blur(4px)'}}>
-          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:'20px',width:'100%',maxWidth:'520px',maxHeight:'90vh',overflowY:'auto',boxShadow:'0 20px 60px rgba(0,0,0,.3)'}}>
-            <div style={{background:'#0a1931',padding:'18px 22px',color:'#fff',display:'flex',justifyContent:'space-between',alignItems:'center'}}><h3 style={{fontWeight:900}}>👤 {getVal(detailRow,['FullName','fullName'])}</h3><button onClick={()=>setDetailRow(null)} style={{background:'rgba(255,255,255,.15)',border:'none',color:'#fff',width:'32px',height:'32px',borderRadius:'10px',cursor:'pointer'}}>✕</button></div>
+        <div onClick={()=>setDetailRow(null)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,.55)',zIndex:10000,display:'flex',justifyContent:'center',alignItems:'center',padding:'20px'}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:'20px',width:'100%',maxWidth:'520px',maxHeight:'90vh',overflowY:'auto'}}>
+            <div style={{background:'#0a1931',padding:'18px 22px',color:'#fff',display:'flex',justifyContent:'space-between'}}><h3>👤 {getVal(detailRow,['FullName','fullName'])}</h3><button onClick={()=>setDetailRow(null)} style={{background:'rgba(255,255,255,.15)',border:'none',color:'#fff',width:'32px',height:'32px',borderRadius:'10px',cursor:'pointer'}}>✕</button></div>
             <div style={{padding:'20px',display:'grid',gap:'10px'}}>
               {Object.entries(detailRow).filter(([k])=>!k.startsWith('_')).map(([k,v])=><div key={k} style={{display:'flex',justifyContent:'space-between',padding:'10px 12px',border:'1px solid #f3f4f6',borderRadius:'10px',background:'#f9fafb'}}><span style={{fontWeight:800,fontSize:'11px',color:'#6b7280'}}>{k}</span><span style={{fontSize:'12px',fontWeight:600,maxWidth:'60%',textAlign:'right',wordBreak:'break-word'}}>{String(v)}</span></div>)}
-              <div style={{display:'flex',gap:'8px',marginTop:'12px'}}><button onClick={()=>{handleEdit(detailRow); setDetailRow(null)}} style={{flex:1,background:'#ffcc00',border:'none',padding:'12px',borderRadius:'12px',fontWeight:900,cursor:'pointer'}}>✏️ EDIT</button><button onClick={()=>handleDelete(detailRow)} style={{flex:1,background:'#fee2e2',color:'#dc2626',border:'1px solid #fecaca',padding:'12px',borderRadius:'12px',fontWeight:900,cursor:'pointer'}}>🗑 DELETE</button></div>
               <button onClick={()=>setDetailRow(null)} style={{background:'#0a1931',color:'#ffcc00',border:'none',padding:'12px',borderRadius:'12px',fontWeight:900,cursor:'pointer'}}>CLOSE</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* EDIT MODAL */}
       {editRow && (
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.55)',zIndex:10001,display:'flex',justifyContent:'center',alignItems:'center',padding:'20px'}}>
-          <div style={{background:'#fff',borderRadius:'20px',width:'100%',maxWidth:'520px',padding:'24px',maxHeight:'90vh',overflowY:'auto'}}>
+          <div style={{background:'#fff',borderRadius:'20px',width:'100%',maxWidth:'520px',padding:'24px'}}>
             <h3 style={{fontWeight:900,marginBottom:'16px'}}>✏️ Edit {form.FullName}</h3>
-            <div style={{display:'grid',gap:'10px'}}>{["FullName","Phone","Email","Service","Messages","Position","Education","District","Experience","Interest"].map(field=>(<div key={field}><label style={{fontSize:'11px',fontWeight:800,color:'#6b7280'}}>{field}</label><input value={form[field]||''} onChange={e=>setForm({...form,[field]:e.target.value})} placeholder={field} style={{width:'100%',padding:'10px 12px',borderRadius:'10px',border:'1px solid #e5e7eb',marginTop:'4px'}}/></div>))}</div>
-            <div style={{display:'flex',gap:'8px',marginTop:'16px'}}><button onClick={()=>setEditRow(null)} style={{flex:1,background:'#f3f4f6',border:'1px solid #e5e7eb',padding:'12px',borderRadius:'12px',fontWeight:800,cursor:'pointer'}}>CANCEL</button><button onClick={handleSave} style={{flex:1,background:'#0a1931',color:'#ffcc00',border:'none',padding:'12px',borderRadius:'12px',fontWeight:900,cursor:'pointer'}}>💾 SAVE</button></div>
+            <div style={{display:'grid',gap:'10px'}}>{["FullName","Phone","Email","Service","Messages","Position","Education","District","Experience","Interest"].map(f=><div key={f}><label style={{fontSize:'11px',fontWeight:800,color:'#6b7280'}}>{f}</label><input value={form[f]||''} onChange={e=>setForm({...form,[f]:e.target.value})} style={{width:'100%',padding:'10px 12px',borderRadius:'10px',border:'1px solid #e5e7eb',marginTop:'4px'}}/></div>)}</div>
+            <div style={{display:'flex',gap:'8px',marginTop:'16px'}}><button onClick={()=>setEditRow(null)} style={{flex:1,padding:'12px',borderRadius:'12px'}}>CANCEL</button><button onClick={handleSave} style={{flex:1,background:'#0a1931',color:'#ffcc00',padding:'12px',borderRadius:'12px',fontWeight:900}}>SAVE</button></div>
           </div>
         </div>
       )}
 
-      {/* ADD MODAL */}
       {showAdd && (
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.55)',zIndex:10001,display:'flex',justifyContent:'center',alignItems:'center',padding:'20px'}}>
           <div style={{background:'#fff',borderRadius:'20px',width:'100%',maxWidth:'520px',padding:'24px'}}>
             <h3 style={{fontWeight:900,marginBottom:'16px'}}>➕ Add New {tab.toUpperCase()}</h3>
-            <div style={{display:'grid',gap:'10px'}}>
-              {["FullName","Phone","Email","Service","Messages","Position","Education","District","Experience","Interest"].map(field=>(<div key={field}><label style={{fontSize:'11px',fontWeight:800,color:'#6b7280'}}>{field}</label><input value={form[field]||''} onChange={e=>setForm({...form,[field]:e.target.value})} placeholder={`Enter ${field}`} style={{width:'100%',padding:'10px 12px',borderRadius:'10px',border:'1px solid #e5e7eb',marginTop:'4px'}}/></div>))}
-            </div>
-            <div style={{display:'flex',gap:'8px',marginTop:'16px'}}><button onClick={()=>setShowAdd(false)} style={{flex:1,background:'#f3f4f6',border:'1px solid #e5e7eb',padding:'12px',borderRadius:'12px',fontWeight:800,cursor:'pointer'}}>CANCEL</button><button onClick={handleAddNew} style={{flex:1,background:'#ffcc00',border:'none',padding:'12px',borderRadius:'12px',fontWeight:900,cursor:'pointer'}}>＋ ADD TO SHEET</button></div>
+            <div style={{display:'grid',gap:'10px'}}>{["FullName","Phone","Email","Service","Messages","Position","Education","District","Experience","Interest"].map(f=><div key={f}><label style={{fontSize:'11px',fontWeight:800,color:'#6b7280'}}>{f}</label><input value={form[f]||''} onChange={e=>setForm({...form,[f]:e.target.value})} placeholder={f} style={{width:'100%',padding:'10px 12px',borderRadius:'10px',border:'1px solid #e5e7eb',marginTop:'4px'}}/></div>)}</div>
+            <div style={{display:'flex',gap:'8px',marginTop:'16px'}}><button onClick={()=>setShowAdd(false)} style={{flex:1,padding:'12px',borderRadius:'12px'}}>CANCEL</button><button onClick={handleAddNew} style={{flex:1,background:'#ffcc00',padding:'12px',borderRadius:'12px',fontWeight:900}}>ADD</button></div>
           </div>
         </div>
       )}
