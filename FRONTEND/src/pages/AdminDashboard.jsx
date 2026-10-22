@@ -79,7 +79,18 @@ const AdminDashboard = () => {
     return ()=>{ window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
   },[]);
 
-  // ✅ DELETE SINGLE - BOTH Admin + Sheet, then to Trash for Restore chance
+  // ✅ ADDED ONLY: CLICK STATUS TO TURN New -> Read (and back)
+  const handleToggleStatus = async (row) => {
+    const current = getVal(row,['Status','status']) || 'New';
+    const next = current === 'New' ? 'Read' : current === 'Read' ? 'New' : 'Read';
+    const ts = getVal(row,['Timestamp','timestamp']);
+    const saved = JSON.parse(localStorage.getItem(`psl_${ts}`) || '{}');
+    localStorage.setItem(`psl_${ts}`, JSON.stringify({...saved, Status: next}));
+    setData(prev => prev.map(r => r._uid===row._uid ? { ...r, Status: next, status: next } : r));
+    showToast(`👁️ ${getVal(row,['FullName','fullName'])}: ${current} → ${next}`);
+    await fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'edit', Timestamp: ts, timestamp: ts, Status: next }) });
+  };
+
   const handleDelete = async (row) => {
     if(!confirm(`Move ${getVal(row,['FullName','fullName'])} to Trash?`)) return;
     const newTrash = [{...row, deletedAt: new Date().toISOString()}, ...trash].slice(0,200);
@@ -88,7 +99,6 @@ const AdminDashboard = () => {
     await fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'delete', timestamps:[getVal(row,['Timestamp','timestamp'])] }) });
   };
 
-  // ✅ RESTORE SINGLE - BOTH Admin + Sheet (re-adds row to Sheet)
   const handleRestore = async (t) => {
     setData(p=>[t,...p]);
     setTrash(prev=>{const nt=prev.filter(x=>x._uid!==t._uid); localStorage.setItem('psl_trash', JSON.stringify(nt)); return nt;});
@@ -97,16 +107,13 @@ const AdminDashboard = () => {
     showToast("♻️ Restored to Admin & Sheet ✅");
   };
 
-  // ✅ PERMANENT DELETE SINGLE - Already deleted from Sheet, just clear Trash
   const handlePermanentDelete = async (t) => {
     if(!confirm(`Permanently delete ${getVal(t,['FullName','fullName'])} forever? Cannot undo!`)) return;
     setTrash(prev=>{const nt=prev.filter(x=>x._uid!==t._uid); localStorage.setItem('psl_trash', JSON.stringify(nt)); return nt;});
     showToast("❌ Permanently Deleted from Admin & Sheet");
-    // Safety: ensure Sheet also deleted
     await fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'delete', timestamps:[getVal(t,['Timestamp','timestamp'])] }) });
   };
 
-  // ✅ DELETE BULK - BOTH Admin + Sheet
   const handleBulkDelete = async () => {
     if(selected.length===0) return;
     if(!confirm(`Move ${selected.length} rows to Trash? They will be deleted from Sheet too.`)) return;
@@ -118,7 +125,6 @@ const AdminDashboard = () => {
     await fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'bulkDelete', timestamps }) });
   };
 
-  // ✅ ADDED: RESTORE ALL + DELETE FOREVER ALL - Trash Bulk
   const handleRestoreAll = async () => {
     if(trash.length===0) return;
     if(!confirm(`Restore ALL ${trash.length} from Trash to Admin & Sheet?`)) return;
@@ -213,10 +219,9 @@ const AdminDashboard = () => {
           <div style={{overflowX:'auto'}}>
             <table style={{width:'100%',borderCollapse:'collapse',fontSize:'12px',minWidth:'750px'}}>
               <thead><tr style={{background:theme.bgMain}}><th style={cellStyle}><input type="checkbox" checked={paginatedList.length>0 && paginatedList.every(r=>selected.includes(r._uid))} onChange={()=>{ const ids=paginatedList.map(r=>r._uid); setSelected(ids.every(id=>selected.includes(id))?prev=>prev.filter(id=>!ids.includes(id)):prev=>[...new Set([...prev,...ids])]) }}/></th><th style={cellStyle}>DATE</th><th style={cellStyle}>NAME</th><th style={cellStyle}>PHONE</th><th style={cellStyle}>{tab==='contacts'?'SERVICE':'POSITION'}</th><th style={cellStyle}>STATUS</th><th style={cellStyle}>ACTIONS</th></tr></thead>
-              <tbody>{paginatedList.length===0 && <tr><td colSpan={7} style={{padding:'30px',textAlign:'center'}}>{loading?'Loading...':'No data - Ready for new submissions ✅'}</td></tr>}{paginatedList.map((d,i)=>{ const checked=selected.includes(d._uid); const bg = checked?'#422006':i%2===0?theme.bgCard:theme.bgMain; const st = getVal(d,['Status','status'])||'New'; return (<tr key={d._uid} style={{background:bg}}><td style={{...cellStyle,background:bg}}><input type="checkbox" checked={checked} onChange={()=>setSelected(prev=>prev.includes(d._uid)?prev.filter(id=>id!==d._uid):[...prev,d._uid])}/></td><td style={{...cellStyle,background:bg}}>{getVal(d,['Timestamp','timestamp'])?.slice(0,19)}</td><td style={{...cellStyle,background:bg,fontWeight:800}}>{getVal(d,['FullName','fullName'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Phone','phone'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Service','service'])||getVal(d,['Position','position'])}</td><td style={{...cellStyle,background:bg}}><span style={{background: st==='Hired'?'#dcfce7':st==='Rejected'?'#fee2e2':'#fef9c3', color:'#0f172a', padding:'3px 8px', borderRadius:'20px', fontWeight:800, fontSize:'11px'}}>{st}</span></td><td style={{...cellStyle,background:bg}}><button onClick={()=>handleEdit(d)} style={{padding:'5px 10px',borderRadius:'8px',background:'#facc15',border:'none',fontWeight:800,cursor:'pointer'}}>EDIT</button><button onClick={()=>handleDelete(d)} style={{padding:'5px 10px',borderRadius:'8px',background:'#fee2e2',color:'#dc2626',border:'none',fontWeight:800,marginLeft:'4px',cursor:'pointer'}}>DEL</button></td></tr>)})}</tbody>
+              <tbody>{paginatedList.length===0 && <tr><td colSpan={7} style={{padding:'30px',textAlign:'center'}}>{loading?'Loading...':'No data - Ready for new submissions ✅'}</td></tr>}{paginatedList.map((d,i)=>{ const checked=selected.includes(d._uid); const bg = checked?'#422006':i%2===0?theme.bgCard:theme.bgMain; const st = getVal(d,['Status','status'])||'New'; return (<tr key={d._uid} style={{background:bg}}><td style={{...cellStyle,background:bg}}><input type="checkbox" checked={checked} onChange={()=>setSelected(prev=>prev.includes(d._uid)?prev.filter(id=>id!==d._uid):[...prev,d._uid])}/></td><td style={{...cellStyle,background:bg}}>{getVal(d,['Timestamp','timestamp'])?.slice(0,19)}</td><td style={{...cellStyle,background:bg,fontWeight:800}}>{getVal(d,['FullName','fullName'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Phone','phone'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Service','service'])||getVal(d,['Position','position'])}</td><td style={{...cellStyle,background:bg}}><span onClick={()=>handleToggleStatus(d)} title="Click to turn New ↔ Read" style={{background: st==='Hired'?'#dcfce7':st==='Rejected'?'#fee2e2':st==='Read'?'#dbeafe':st==='Contacted'?'#e0e7ff':'#fef9c3', color:'#0f172a', padding:'3px 8px', borderRadius:'20px', fontWeight:800, fontSize:'11px', cursor:'pointer', display:'inline-block'}}>{st==='New'?'🟡 New':st==='Read'?'👁️ Read':st} ↕</span></td><td style={{...cellStyle,background:bg}}><button onClick={()=>handleEdit(d)} style={{padding:'5px 10px',borderRadius:'8px',background:'#facc15',border:'none',fontWeight:800,cursor:'pointer'}}>EDIT</button><button onClick={()=>handleDelete(d)} style={{padding:'5px 10px',borderRadius:'8px',background:'#fee2e2',color:'#dc2626',border:'none',fontWeight:800,marginLeft:'4px',cursor:'pointer'}}>DEL</button></td></tr>)})}</tbody>
             </table>
           </div>
-          {/* ✅ ADDED: BEAUTIFUL PAGINATION FOOTER - was missing before */}
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'12px 16px',borderTop:`1px solid ${theme.border}`,flexWrap:'wrap',gap:'8px',background:theme.bgMain}}>
             <span style={{fontSize:'12px',fontWeight:700}}>Showing {list.length===0?0:(currentPage-1)*rowsPerPage+1}-{Math.min(currentPage*rowsPerPage, list.length)} of {list.length} • Page {currentPage} of {totalPages}</span>
             <div style={{display:'flex',gap:'6px',alignItems:'center'}}>
@@ -233,7 +238,7 @@ const AdminDashboard = () => {
           </div>
         </div>
       </div>
-      {editRow && <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.5)',zIndex:10001,display:'flex',justifyContent:'center',alignItems:'center'}}><div style={{background:'#fff',borderRadius:'16px',padding:'20px',width:'90%',maxWidth:'400px'}}><h3>Edit {form.FullName}</h3><div style={{display:'grid',gap:'8px',marginTop:'10px'}}>{["FullName","Phone","Email","Service","Position"].map(f=><input key={f} value={form[f]||''} onChange={e=>setForm({...form,[f]:e.target.value})} placeholder={f} style={{padding:'10px',borderRadius:'8px',border:'1px solid #ddd'}}/>)}<select value={form.Status} onChange={e=>setForm({...form, Status:e.target.value})} style={{padding:'10px',borderRadius:'8px',border:'1px solid #ddd'}}><option>New</option><option>Contacted</option><option>Hired</option><option>Rejected</option></select></div><div style={{display:'flex',gap:'8px',marginTop:'10px'}}><button onClick={()=>setEditRow(null)} style={{flex:1,padding:'10px',borderRadius:'10px',border:'1px solid #ddd'}}>Cancel</button><button onClick={handleSave} style={{flex:1,background:'#0f172a',color:'#facc15',padding:'10px',borderRadius:'10px',fontWeight:900}}>Save to Admin & Sheet</button></div></div></div>}
+      {editRow && <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.5)',zIndex:10001,display:'flex',justifyContent:'center',alignItems:'center'}}><div style={{background:'#fff',borderRadius:'16px',padding:'20px',width:'90%',maxWidth:'400px'}}><h3>Edit {form.FullName}</h3><div style={{display:'grid',gap:'8px',marginTop:'10px'}}>{["FullName","Phone","Email","Service","Position"].map(f=><input key={f} value={form[f]||''} onChange={e=>setForm({...form,[f]:e.target.value})} placeholder={f} style={{padding:'10px',borderRadius:'8px',border:'1px solid #ddd'}}/>)}<select value={form.Status} onChange={e=>setForm({...form, Status:e.target.value})} style={{padding:'10px',borderRadius:'8px',border:'1px solid #ddd'}}><option>New</option><option>Read</option><option>Contacted</option><option>Hired</option><option>Rejected</option></select></div><div style={{display:'flex',gap:'8px',marginTop:'10px'}}><button onClick={()=>setEditRow(null)} style={{flex:1,padding:'10px',borderRadius:'10px',border:'1px solid #ddd'}}>Cancel</button><button onClick={handleSave} style={{flex:1,background:'#0f172a',color:'#facc15',padding:'10px',borderRadius:'10px',fontWeight:900}}>Save to Admin & Sheet</button></div></div></div>}
     </div>
   )
 }
