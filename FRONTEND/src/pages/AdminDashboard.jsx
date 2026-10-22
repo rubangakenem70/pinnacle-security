@@ -51,6 +51,7 @@ const AdminDashboard = () => {
 
   const getVal = (obj, keys) => { for(let k of keys) if(obj[k]!==undefined && obj[k]!==null && obj[k]!=='') return obj[k]; return ''; }
 
+  // DELETE FROM BOTH SIDES - Admin + Google Sheet (Contacts + Applicants tabs)
   const handleDelete = async (row) => {
     if(!confirm(`Delete ${getVal(row,['FullName','fullName'])}?`)) return;
     const uid = row._uid;
@@ -58,18 +59,18 @@ const AdminDashboard = () => {
     setData(prev => prev.filter(r => r._uid !== uid));
     setSelected(prev=>prev.filter(id=>id!==uid));
     if(detailRow && detailRow._uid===uid) setDetailRow(null);
-    showToast("🗑 Deleted");
+    showToast("🗑 Deleted from Admin & Sheet");
     await fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'delete', timestamp: ts }) });
   };
 
   const handleBulkDelete = async () => {
     if(selected.length===0) return;
-    if(!confirm(`Delete ${selected.length} selected?`)) return;
+    if(!confirm(`Delete ${selected.length} selected from both sides?`)) return;
     const toDeleteRows = data.filter(r=>selected.includes(r._uid));
     const timestamps = [...new Set(toDeleteRows.map(r=>getVal(r,['Timestamp','timestamp'])))];
     setData(prev => prev.filter(r => !selected.includes(r._uid)));
     setSelected([]); setDetailRow(null);
-    showToast(`🗑 ${selected.length} deleted`);
+    showToast(`🗑 ${selected.length} deleted from both sides`);
     await fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'bulkDelete', timestamps }) });
   };
 
@@ -120,6 +121,8 @@ const AdminDashboard = () => {
 
   const applicants = data.filter(d => (d.type==='applicant') || getVal(d,['Position','position']));
   const contacts = data.filter(d => (d.type==='contact') || getVal(d,['Service','service']));
+  const total = data.length; // TOTAL = contacts + applicants
+
   const applyFilters = (list) => list.filter(d=>{
     const s = `${getVal(d,['FullName','fullName'])} ${getVal(d,['Phone','phone'])} ${getVal(d,['Email','email'])} ${getVal(d,['Service','service'])} ${getVal(d,['Position','position'])} ${getVal(d,['District','district'])}`.toLowerCase();
     if(search && !s.includes(search.toLowerCase())) return false;
@@ -160,7 +163,7 @@ const AdminDashboard = () => {
       <div style={{background:'#0a1931',padding:'14px 20px',display:'flex',justifyContent:'space-between',alignItems:'center',position:'sticky',top:0,zIndex:100,borderBottom:'4px solid #ffcc00',flexWrap:'wrap',gap:'10px'}}>
         <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
           <div style={{width:'42px',height:'42px',background:'#ffcc00',borderRadius:'12px',display:'grid',placeItems:'center',fontWeight:900,color:'#0a1931',fontSize:'18px'}}>P</div>
-          <div><h1 style={{color:'#fff',fontWeight:900,fontSize:'15px'}}>PINNACLE SECURITY LTD</h1><p style={{color:'#ffcc00',fontSize:'10px',fontWeight:700,letterSpacing:'1px'}}>ADMIN CONTROL CENTER • {data.length} TOTAL</p></div>
+          <div><h1 style={{color:'#fff',fontWeight:900,fontSize:'15px'}}>PINNACLE SECURITY LTD</h1><p style={{color:'#ffcc00',fontSize:'10px',fontWeight:700,letterSpacing:'1px'}}>ADMIN CONTROL CENTER • {total} TOTAL</p></div>
         </div>
         <div style={{display:'flex',gap:'8px',alignItems:'center',flexWrap:'wrap'}}>
           <a href="/" style={{background:'#ffcc00',color:'#0a1931',padding:'9px 16px',borderRadius:'24px',fontWeight:900,fontSize:'12px',textDecoration:'none'}}>🏠 WEBSITE</a>
@@ -208,7 +211,9 @@ const AdminDashboard = () => {
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:'12px',marginBottom:'16px'}}>
           <div onClick={()=>{setTab('contacts'); setSelected([]); setCurrentPage(1)}} style={{background:tab==='contacts'?'#0a1931':'#fff',color:tab==='contacts'?'#fff':'#0a1931',padding:'18px 20px',borderRadius:'16px',cursor:'pointer',border:tab==='contacts'?'2px solid #ffcc00':'1px solid #e5e7eb'}}><p style={{fontSize:'11px',fontWeight:700}}>📞 CONTACTS</p><h2 style={{fontSize:'30px',fontWeight:900,marginTop:'6px'}}>{contacts.length}</h2></div>
           <div onClick={()=>{setTab('applicants'); setSelected([]); setCurrentPage(1)}} style={{background:tab==='applicants'?'#ffcc00':'#fff',color:'#0a1931',padding:'18px 20px',borderRadius:'16px',cursor:'pointer',border:tab==='applicants'?'2px solid #0a1931':'1px solid #e5e7eb'}}><p style={{fontSize:'11px',fontWeight:800}}>🎖️ APPLICANTS</p><h2 style={{fontSize:'30px',fontWeight:900,marginTop:'6px'}}>{applicants.length}</h2></div>
-          <div style={{background:'#fff',padding:'18px 20px',borderRadius:'16px',border:'1px solid #e5e7eb'}}><p style={{fontSize:'11px',fontWeight:700,color:'#6b7280'}}>📊 CURRENT VIEW</p><h2 style={{fontSize:'30px',fontWeight:900,marginTop:'6px'}}>{list.length}</h2><button onClick={()=>exportCSV(list,`${tab}.csv`)} style={{marginTop:'8px',background:'#0a1931',color:'#ffcc00',border:'none',padding:'8px 14px',borderRadius:'20px',fontSize:'11px',fontWeight:900,cursor:'pointer'}}>⬇ EXPORT CSV</button></div>
+          {/* TOTAL CARD - BETWEEN APPLICANTS AND CURRENT VIEW */}
+          <div style={{background:'#fff',padding:'18px 20px',borderRadius:'16px',border:'2px dashed #0a1931'}}><p style={{fontSize:'11px',fontWeight:800,color:'#0a1931'}}>📊 TOTAL</p><h2 style={{fontSize:'30px',fontWeight:900,marginTop:'6px',color:'#0a1931'}}>{total}</h2><p style={{fontSize:'10px',color:'#6b7280',marginTop:'4px'}}>{contacts.length} contacts + {applicants.length} applicants</p></div>
+          <div style={{background:'#fff',padding:'18px 20px',borderRadius:'16px',border:'1px solid #e5e7eb'}}><p style={{fontSize:'11px',fontWeight:700,color:'#6b7280'}}>👁 CURRENT VIEW</p><h2 style={{fontSize:'30px',fontWeight:900,marginTop:'6px'}}>{list.length}</h2><button onClick={()=>exportCSV(list,`${tab}.csv`)} style={{marginTop:'8px',background:'#0a1931',color:'#ffcc00',border:'none',padding:'8px 14px',borderRadius:'20px',fontSize:'11px',fontWeight:900,cursor:'pointer'}}>⬇ EXPORT CSV</button></div>
         </div>
 
         <div style={{background:'#fff',borderRadius:'16px',overflow:'hidden',boxShadow:'0 8px 24px rgba(0,0,0,.08)',border:'2px solid #0a1931'}}>
@@ -282,7 +287,7 @@ const AdminDashboard = () => {
               <span style={{background:'#0a1931',color:'#ffcc00',padding:'8px 12px',borderRadius:'10px',fontWeight:800,minWidth:'36px',textAlign:'center'}}>{currentPage}</span>
               <button disabled={currentPage===totalPages} onClick={()=>setCurrentPage(p=>Math.min(totalPages,p+1))} style={{background:currentPage===totalPages?'#e5e7eb':'#0a1931',color:currentPage===totalPages?'#aaa':'#ffcc00',border:'1px solid #cbd5e1',padding:'8px 14px',borderRadius:'10px',fontWeight:800,cursor:'pointer'}}>NEXT ▸</button>
             </div>
-            <div style={{fontSize:'12px',color:'#6b7280',fontWeight:600}}>Page {currentPage} of {totalPages} • {list.length} rows • {selected.length} selected • Go to: <input type="number" min={1} max={totalPages} value={currentPage} onChange={e=>setCurrentPage(Math.min(totalPages,Math.max(1,Number(e.target.value)||1)))} style={{width:'50px',padding:'4px',borderRadius:'6px',border:'1px solid #cbd5e1',textAlign:'center'}}/></div>
+            <div style={{fontSize:'12px',color:'#6b7280',fontWeight:600}}>Page {currentPage} of {totalPages} • {list.length} rows • {selected.length} selected</div>
           </div>
         </div>
       </div>
