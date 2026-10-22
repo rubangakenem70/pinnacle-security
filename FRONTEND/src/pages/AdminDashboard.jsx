@@ -25,7 +25,6 @@ const AdminDashboard = () => {
   const [sidebarWidth, setSidebarWidth] = useState(270);
   const audioRef = useRef(null);
   const resizingRef = useRef(false);
-  // ✅ ADDED ONLY: FILTERS
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({ service:"", position:"", district:"", education:"", status:"", dateFrom:"", dateTo:"" });
 
@@ -175,7 +174,6 @@ const AdminDashboard = () => {
   const applicants = data.filter(d => (d.type==='applicant' || d.Type==='applicant' || getVal(d,['Position','position']))); 
   const contacts = data.filter(d => !applicants.includes(d)); 
   const total = data.length;
-  // ✅ FILTER LOGIC ONLY
   const unique = (arr, keys) => { const s=new Set(); arr.forEach(d=>{ const v=getVal(d,keys); if(v) s.add(v); }); return [...s].sort(); };
   const serviceOptions = unique(contacts, ['Service','service']);
   const positionOptions = unique(applicants, ['Position','position']);
@@ -201,11 +199,22 @@ const AdminDashboard = () => {
   const totalPages = Math.max(1, Math.ceil(list.length / rowsPerPage));
 
   const theme = dark ? {bgMain:'#0f172a', bgCard:'#1e293b', text:'#f1f5f9', border:'#334155', sidebar:'#1e293b', input:'#0f172a'} : {bgMain:'#f8fafc', bgCard:'#ffffff', text:'#0f172a', border:'#e2e8f0', sidebar:'#ffffff', input:'#f1f5f9'};
-  const cellStyle = {padding:'11px',border:`1px solid ${theme.border}`};
+  // ✅ CHANGED ONLY: ROW HEIGHT 14.5
+  const cellStyle = {padding:'14.5px 11px',border:`1px solid ${theme.border}`,lineHeight:'14.5px'};
   const menuItem = (active) => ({padding:'11px 14px',borderRadius:'12px',fontSize:'13px',fontWeight:active?900:700,cursor:'pointer',background:active?'#facc15':'transparent',color:active?'#0f172a':theme.text,border:`1px solid ${theme.border}`,textAlign:'left',width:'100%',display:'flex',justifyContent:'space-between'});
   const filterSelect = {padding:'8px 10px',borderRadius:'10px',border:`1px solid ${theme.border}`,background:theme.bgCard,color:theme.text,fontSize:'12px',fontWeight:700,width:'100%'};
   const isContactTab = tab==='contacts';
-  const colCount = isContactTab ? 9 : tab==='applicants' ? 12 : 12;
+  // ✅ CHANGED ONLY: NO STATUS COLUMN, so 1 less column
+  const colCount = isContactTab ? 8 : tab==='applicants' ? 11 : 11;
+  // ✅ ADDED ONLY: EMAIL LINK BUILDER - uses email they provided
+  const getMailLink = (d) => {
+    const email = getVal(d,['Email','email']);
+    const name = getVal(d,['FullName','fullName']);
+    const isApplicant = getVal(d,['Position','position']) || d.Type==='applicant' || d.type==='applicant';
+    const subject = isApplicant ? `Pinnacle Security Ltd - Your Application for ${getVal(d,['Position','position'])||'Security Officer'}` : `Pinnacle Security Ltd - Your ${getVal(d,['Service','service'])||'Security Service'} Enquiry`;
+    const body = isApplicant ? `Dear ${name},\n\nThank you for applying to Pinnacle Security Ltd for the position of ${getVal(d,['Position','position'])||''}.\n\nWe have received your application and we will contact you soon for interview / training at Muyenga HQ.\n\nIn Jesus Name,\nPinnacle Security Ltd\nPlot 442 & 443 Massionatees, Muyenga Hill\nControl 24/7: 0776971970\nHR: hr@pinnaclegroup.co.ug` : `Dear ${name},\n\nThank you for contacting Pinnacle Security Ltd for ${getVal(d,['Service','service'])||''}.\n\nWe have received your message: "${getVal(d,['Message','message'])}"\n\nWe will call you soon for a FREE Site Survey.\n\nIn Jesus Name,\nPinnacle Security Ltd\nPlot 442 & 443 Massionatees, Muyenga Hill\nControl 24/7: 0776971970`;
+    return `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
 
   return (
     <div style={{background:theme.bgMain,minHeight:'100vh',color:theme.text,display:'flex',fontFamily:'Inter, Arial', position:'relative'}}>
@@ -265,9 +274,9 @@ const AdminDashboard = () => {
                 <th style={cellStyle}><input type="checkbox" checked={paginatedList.length>0 && paginatedList.every(r=>selected.includes(r._uid))} onChange={()=>{ const ids=paginatedList.map(r=>r._uid); setSelected(ids.every(id=>selected.includes(id))?prev=>prev.filter(id=>!ids.includes(id)):prev=>[...new Set([...prev,...ids])]) }}/></th>
                 <th style={cellStyle}>DATE</th><th style={cellStyle}>NAME</th><th style={cellStyle}>PHONE</th><th style={cellStyle}>EMAIL</th>
                 {isContactTab ? <><th style={cellStyle}>SERVICE</th><th style={cellStyle}>MESSAGE</th></> : <><th style={cellStyle}>POSITION</th><th style={cellStyle}>EDUCATION</th><th style={cellStyle}>DISTRICT</th><th style={cellStyle}>EXPERIENCE</th><th style={cellStyle}>INTEREST</th></>}
-                <th style={cellStyle}>STATUS</th><th style={cellStyle}>ACTIONS</th>
+                <th style={cellStyle}>ACTIONS</th>
               </tr></thead>
-              <tbody>{paginatedList.length===0 && <tr><td colSpan={colCount} style={{padding:'30px',textAlign:'center'}}>{loading?'Loading...':'No data - Ready for new submissions ✅'}</td></tr>}{paginatedList.map((d,i)=>{ const checked=selected.includes(d._uid); const bg = checked?'#422006':i%2===0?theme.bgCard:theme.bgMain; const st = getVal(d,['Status','status'])||'New'; return (<tr key={d._uid} style={{background:bg}}><td style={{...cellStyle,background:bg}}><input type="checkbox" checked={checked} onChange={()=>setSelected(prev=>prev.includes(d._uid)?prev.filter(id=>id!==d._uid):[...prev,d._uid])}/></td><td style={{...cellStyle,background:bg}}>{getVal(d,['Timestamp','timestamp'])?.slice(0,19)}</td><td style={{...cellStyle,background:bg,fontWeight:800}}>{getVal(d,['FullName','fullName'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Phone','phone'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Email','email'])}</td>{isContactTab ? <><td style={{...cellStyle,background:bg}}>{getVal(d,['Service','service'])}</td><td style={{...cellStyle,background:bg,maxWidth:'180px'}}>{getVal(d,['Message','message','Messages'])}</td></> : <><td style={{...cellStyle,background:bg}}>{getVal(d,['Position','position'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Education','education'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['District','district'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Experience','experience'])}</td><td style={{...cellStyle,background:bg,maxWidth:'150px'}}>{getVal(d,['Interest','interest'])}</td></>}<td style={{...cellStyle,background:bg}}><span onClick={()=>handleToggleStatus(d)} title="Click to turn New ↔ Read" style={{background: st==='Hired'?'#dcfce7':st==='Rejected'?'#fee2e2':st==='Read'?'#dbeafe':st==='Contacted'?'#e0e7ff':'#fef9c3', color:'#0f172a', padding:'3px 8px', borderRadius:'20px', fontWeight:800, fontSize:'11px', cursor:'pointer', display:'inline-block', whiteSpace:'nowrap'}}>{st==='New'?'🟡 New':st==='Read'?'👁️ Read':st} ↕</span></td><td style={{...cellStyle,background:bg,whiteSpace:'nowrap'}}><button onClick={()=>handleEdit(d)} style={{padding:'5px 10px',borderRadius:'8px',background:'#facc15',border:'none',fontWeight:800,cursor:'pointer'}}>EDIT</button><button onClick={()=>handleDelete(d)} style={{padding:'5px 10px',borderRadius:'8px',background:'#fee2e2',color:'#dc2626',border:'none',fontWeight:800,marginLeft:'4px',cursor:'pointer'}}>DEL</button></td></tr>)})}</tbody>
+              <tbody>{paginatedList.length===0 && <tr><td colSpan={colCount} style={{padding:'30px',textAlign:'center'}}>{loading?'Loading...':'No data - Ready for new submissions ✅'}</td></tr>}{paginatedList.map((d,i)=>{ const checked=selected.includes(d._uid); const bg = checked?'#422006':i%2===0?theme.bgCard:theme.bgMain; const st = getVal(d,['Status','status'])||'New'; return (<tr key={d._uid} style={{background:bg}}><td style={{...cellStyle,background:bg}}><input type="checkbox" checked={checked} onChange={()=>setSelected(prev=>prev.includes(d._uid)?prev.filter(id=>id!==d._uid):[...prev,d._uid])}/></td><td style={{...cellStyle,background:bg}}>{getVal(d,['Timestamp','timestamp'])?.slice(0,19)}</td><td style={{...cellStyle,background:bg,fontWeight:800}}>{getVal(d,['FullName','fullName'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Phone','phone'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Email','email'])}</td>{isContactTab ? <><td style={{...cellStyle,background:bg}}>{getVal(d,['Service','service'])}</td><td style={{...cellStyle,background:bg,maxWidth:'180px'}}>{getVal(d,['Message','message','Messages'])}</td></> : <><td style={{...cellStyle,background:bg}}>{getVal(d,['Position','position'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Education','education'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['District','district'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Experience','experience'])}</td><td style={{...cellStyle,background:bg,maxWidth:'150px'}}>{getVal(d,['Interest','interest'])}</td></>}<td style={{...cellStyle,background:bg,whiteSpace:'nowrap'}}><button onClick={()=>handleEdit(d)} style={{padding:'5px 10px',borderRadius:'8px',background:'#facc15',border:'none',fontWeight:800,cursor:'pointer'}}>EDIT</button>{getVal(d,['Email','email']) ? <a href={getMailLink(d)} style={{padding:'5px 10px',borderRadius:'8px',background:'#dbeafe',color:'#0f172a',fontWeight:800,marginLeft:'4px',textDecoration:'none',display:'inline-block',fontSize:'12px'}}>📧 EMAIL</a> : <span style={{padding:'5px 10px',borderRadius:'8px',background:'#eee',color:'#999',fontWeight:800,marginLeft:'4px',fontSize:'12px',display:'inline-block'}}>No Email</span>}<button onClick={()=>handleDelete(d)} style={{padding:'5px 10px',borderRadius:'8px',background:'#fee2e2',color:'#dc2626',border:'none',fontWeight:800,marginLeft:'4px',cursor:'pointer'}}>DEL</button></td></tr>)})}</tbody>
             </table>
           </div>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'12px 16px',borderTop:`1px solid ${theme.border}`,flexWrap:'wrap',gap:'8px',background:theme.bgMain}}>
