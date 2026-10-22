@@ -67,7 +67,6 @@ const AdminDashboard = () => {
   useEffect(()=>{ setCurrentPage(1); },[search, tab, rowsPerPage]);
   const getVal = (obj, keys) => { for(let k of keys) if(obj[k]!==undefined && obj[k]!==null && obj[k]!=='') return obj[k]; return ''; }
 
-  // RESIZABLE SIDEBAR - drag yellow line left/right
   useEffect(()=>{
     const onMove = (e) => {
       if(!resizingRef.current) return;
@@ -80,36 +79,67 @@ const AdminDashboard = () => {
     return ()=>{ window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
   },[]);
 
-  // MOVE TO TRASH ONLY - does NOT delete from Sheet yet
+  // ✅ DELETE SINGLE - BOTH Admin + Sheet, then to Trash for Restore chance
   const handleDelete = async (row) => {
+    if(!confirm(`Move ${getVal(row,['FullName','fullName'])} to Trash?`)) return;
     const newTrash = [{...row, deletedAt: new Date().toISOString()}, ...trash].slice(0,200);
     setTrash(newTrash); localStorage.setItem('psl_trash', JSON.stringify(newTrash));
-    setData(prev => prev.filter(r => r._uid !== row._uid)); showToast("🗑 Moved to Trash - Restore or Delete Permanently");
+    setData(prev => prev.filter(r => r._uid !== row._uid)); showToast("🗑 Moved to Trash (Deleted from Sheet too)");
+    await fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'delete', timestamps:[getVal(row,['Timestamp','timestamp'])] }) });
   };
 
-  // RESTORE FROM TRASH - back to list, Sheet untouched
-  const handleRestore = (t) => {
+  // ✅ RESTORE SINGLE - BOTH Admin + Sheet (re-adds row to Sheet)
+  const handleRestore = async (t) => {
     setData(p=>[t,...p]);
     setTrash(prev=>{const nt=prev.filter(x=>x._uid!==t._uid); localStorage.setItem('psl_trash', JSON.stringify(nt)); return nt;});
-    showToast("♻️ Restored");
+    showToast("♻️ Restored to Admin & Sheet...");
+    await fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'restore', Timestamp: getVal(t,['Timestamp','timestamp']), FullName: getVal(t,['FullName','fullName']), Phone: getVal(t,['Phone','phone']), Email: getVal(t,['Email','email']), Service: getVal(t,['Service','service']), Message: getVal(t,['Message','message']), Position: getVal(t,['Position','position']), Education: getVal(t,['Education','education']), District: getVal(t,['District','district']), Experience: getVal(t,['Experience','experience']), Interest: getVal(t,['Interest','interest']), Type: getVal(t,['Type','type'])||"contact", Status: getVal(t,['Status','status'])||"New" }) });
+    showToast("♻️ Restored to Admin & Sheet ✅");
   };
 
-  // PERMANENT DELETE FROM TRASH - deletes from Sheet forever
+  // ✅ PERMANENT DELETE SINGLE - Already deleted from Sheet, just clear Trash
   const handlePermanentDelete = async (t) => {
-    if(!confirm(`Permanently delete ${getVal(t,['FullName','fullName'])} from Sheet forever?`)) return;
+    if(!confirm(`Permanently delete ${getVal(t,['FullName','fullName'])} forever? Cannot undo!`)) return;
     setTrash(prev=>{const nt=prev.filter(x=>x._uid!==t._uid); localStorage.setItem('psl_trash', JSON.stringify(nt)); return nt;});
-    showToast("❌ Permanently Deleted");
+    showToast("❌ Permanently Deleted from Admin & Sheet");
+    // Safety: ensure Sheet also deleted
     await fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'delete', timestamps:[getVal(t,['Timestamp','timestamp'])] }) });
   };
 
+  // ✅ DELETE BULK - BOTH Admin + Sheet
   const handleBulkDelete = async () => {
     if(selected.length===0) return;
+    if(!confirm(`Move ${selected.length} rows to Trash? They will be deleted from Sheet too.`)) return;
     const rows = data.filter(r=>selected.includes(r._uid));
     const timestamps = [...new Set(rows.map(r=>getVal(r,['Timestamp','timestamp'])))];
     const newTrash = [...rows.map(r=>({...r, deletedAt:new Date().toISOString()})), ...trash].slice(0,200);
     setTrash(newTrash); localStorage.setItem('psl_trash', JSON.stringify(newTrash));
-    setData(prev => prev.filter(r => !selected.includes(r._uid))); setSelected([]); showToast(`🗑 ${timestamps.length} moved to Trash`);
+    setData(prev => prev.filter(r => !selected.includes(r._uid))); setSelected([]); showToast(`🗑 ${timestamps.length} moved to Trash (Deleted from Sheet too)`);
+    await fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'bulkDelete', timestamps }) });
   };
+
+  // ✅ ADDED: RESTORE ALL + DELETE FOREVER ALL - Trash Bulk
+  const handleRestoreAll = async () => {
+    if(trash.length===0) return;
+    if(!confirm(`Restore ALL ${trash.length} from Trash to Admin & Sheet?`)) return;
+    const all = [...trash];
+    setData(p=>[...all, ...p]);
+    setTrash([]); localStorage.setItem('psl_trash', JSON.stringify([]));
+    showToast(`♻️ Restoring ${all.length}...`);
+    for(const t of all){
+      await fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'restore', Timestamp: getVal(t,['Timestamp','timestamp']), FullName: getVal(t,['FullName','fullName']), Phone: getVal(t,['Phone','phone']), Email: getVal(t,['Email','email']), Service: getVal(t,['Service','service']), Message: getVal(t,['Message','message']), Position: getVal(t,['Position','position']), Education: getVal(t,['Education','education']), District: getVal(t,['District','district']), Experience: getVal(t,['Experience','experience']), Interest: getVal(t,['Interest','interest']), Type: getVal(t,['Type','type'])||"contact", Status: getVal(t,['Status','status'])||"New" }) });
+    }
+    showToast(`♻️ All ${all.length} Restored ✅`);
+  };
+  const handleEmptyTrash = async () => {
+    if(trash.length===0) return;
+    if(!confirm(`Permanently delete ALL ${trash.length} in Trash forever? Cannot undo!`)) return;
+    const timestamps = [...new Set(trash.map(t=>getVal(t,['Timestamp','timestamp'])))];
+    setTrash([]); localStorage.setItem('psl_trash', JSON.stringify([]));
+    showToast("❌ Trash Emptied Forever");
+    await fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'bulkDelete', timestamps }) });
+  };
+
   const clearDuplicates = () => {
     const seen = new Set(); const dups = []; const keep = [];
     data.forEach(r=>{ const key = getVal(r,['Phone','phone'])+"_"+getVal(r,['FullName','fullName']); if(seen.has(key)) dups.push(r); else { seen.add(key); keep.push(r); } });
@@ -119,8 +149,6 @@ const AdminDashboard = () => {
     setData(keep); showToast(`🧹 ${dups.length} moved`);
   };
   const handleEdit = (row) => { setEditRow(row); setForm({ FullName:getVal(row,['FullName','fullName']), Phone:getVal(row,['Phone','phone']), Email:getVal(row,['Email','email']), Service:getVal(row,['Service','service']), Position:getVal(row,['Position','position']), District:getVal(row,['District','district']), Status:getVal(row,['Status','status'])||'New', timestamp:getVal(row,['Timestamp','timestamp']) }); };
-
-  // ✅ EDIT BOTH ADMIN + SHEET
   const handleSave = async () => {
     const ts = form.timestamp;
     const saved = JSON.parse(localStorage.getItem(`psl_${ts}`) || '{}');
@@ -132,7 +160,6 @@ const AdminDashboard = () => {
       showToast("✅ Updated in Admin & Sheet");
     } catch(e) { showToast("✅ Updated in Admin (Sheet retry on Refresh)"); }
   };
-
   const exportCSV = (rows, filename) => { if(!rows.length) return; const headers = tab==='contacts'?["Timestamp","FullName","Phone","Email","Service","Message","Status"]:["Timestamp","FullName","Phone","Email","Position","Education","District","Experience","Interest","Type","Status"]; const csv = [headers.join(",")].concat(rows.map(r=> headers.map(h=>`"${String(getVal(r,[h,h.toLowerCase()])||'').replace(/"/g,'""')}"`).join(","))).join("\n"); const blob = new Blob([csv],{type:"text/csv"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=filename; a.click(); };
 
   if(!auth){ return ( <div style={{minHeight:'100vh',background:dark?'#0f172a':'#f1f5f9',display:'flex',justifyContent:'center',alignItems:'center'}}><div style={{background:'#fff',padding:'40px 32px',borderRadius:'24px',width:'92%',maxWidth:'400px',textAlign:'center'}}><div style={{width:'64px',height:'64px',background:'#facc15',borderRadius:'16px',margin:'0 auto 14px',display:'grid',placeItems:'center',fontWeight:900,fontSize:'28px'}}>P</div><h2 style={{fontWeight:900}}>PINNACLE ADMIN</h2><input type="password" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()} placeholder="Password" style={{width:'100%',padding:'14px',borderRadius:'12px',marginTop:'20px',border:'1px solid #ddd'}}/><button onClick={login} style={{width:'100%',marginTop:'12px',background:'#facc15',padding:'14px',borderRadius:'12px',fontWeight:900,border:'none',cursor:'pointer'}}>UNLOCK</button></div></div> ) }
@@ -142,6 +169,7 @@ const AdminDashboard = () => {
   const total = data.length;
   const list = (tab==='contacts'?contacts:tab==='applicants'?applicants:data).filter(d=>{ const s = `${getVal(d,['FullName','fullName'])} ${getVal(d,['Phone','phone'])} ${getVal(d,['Service','service'])} ${getVal(d,['Position','position'])}`.toLowerCase(); return !search || s.includes(search.toLowerCase()); });
   const paginatedList = list.slice((currentPage-1)*rowsPerPage, currentPage*rowsPerPage);
+  const totalPages = Math.max(1, Math.ceil(list.length / rowsPerPage));
 
   const theme = dark ? {bgMain:'#0f172a', bgCard:'#1e293b', text:'#f1f5f9', border:'#334155', sidebar:'#1e293b', input:'#0f172a'} : {bgMain:'#f8fafc', bgCard:'#ffffff', text:'#0f172a', border:'#e2e8f0', sidebar:'#ffffff', input:'#f1f5f9'};
   const cellStyle = {padding:'11px',border:`1px solid ${theme.border}`};
@@ -169,12 +197,7 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* YELLOW DRAG HANDLE - drag left/right */}
-      <div
-        onMouseDown={(e)=>{ resizingRef.current=true; document.body.style.cursor='col-resize'; }}
-        title="Drag left / right to resize"
-        style={{width:'8px',cursor:'col-resize',background:'#facc15',flexShrink:0, position:'sticky', top:0, height:'100vh', zIndex:10}}
-      />
+      <div onMouseDown={(e)=>{ resizingRef.current=true; document.body.style.cursor='col-resize'; }} title="Drag left / right to resize" style={{width:'8px',cursor:'col-resize',background:'#facc15',flexShrink:0, position:'sticky', top:0, height:'100vh', zIndex:10}} />
 
       <div style={{flex:1,padding:'18px',overflowX:'hidden'}}>
         <div style={{background:theme.bgCard,padding:'12px 16px',borderRadius:'14px',display:'flex',gap:'8px',border:`1px solid ${theme.border}`,marginBottom:'12px'}}>
@@ -183,7 +206,7 @@ const AdminDashboard = () => {
           <select value={rowsPerPage} onChange={e=>setRowsPerPage(Number(e.target.value))} style={{padding:'8px 12px',borderRadius:'20px',border:`1px solid ${theme.border}`,background:theme.bgCard,color:theme.text}}><option value={5}>5</option><option value={10}>10</option><option value={20}>20</option><option value={30}>30</option><option value={40}>40</option><option value={50}>50</option><option value={60}>60</option><option value={70}>70</option><option value={80}>80</option><option value={90}>90</option><option value={100}>100</option></select>
         </div>
 
-        {showTrash && <div style={{background:theme.bgCard,padding:'12px',borderRadius:'12px',border:'2px dashed #facc15',marginBottom:'12px'}}><b>🗑 Trash {trash.length} - Restore or Permanently Delete</b><div style={{display:'flex',gap:'6px',flexWrap:'wrap',marginTop:'8px'}}>{trash.map(t=><div key={t._uid} style={{background:theme.bgMain,padding:'6px 10px',borderRadius:'8px',fontSize:'11px',display:'flex',gap:'6px',alignItems:'center'}}>{getVal(t,['FullName','fullName'])} <button onClick={()=>handleRestore(t)} style={{background:'#facc15',border:'none',padding:'4px 8px',borderRadius:'6px',fontWeight:800,cursor:'pointer'}}>♻️ Restore</button><button onClick={()=>handlePermanentDelete(t)} style={{background:'#dc2626',color:'#fff',border:'none',padding:'4px 8px',borderRadius:'6px',fontWeight:800,cursor:'pointer'}}>❌ Delete Forever</button></div>)}</div></div>}
+        {showTrash && <div style={{background:theme.bgCard,padding:'12px',borderRadius:'12px',border:'2px dashed #facc15',marginBottom:'12px'}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'8px'}}><b>🗑 Trash {trash.length} - Restore or Permanently Delete</b><div style={{display:'flex',gap:'6px'}}><button onClick={handleRestoreAll} style={{background:'#facc15',border:'none',padding:'7px 12px',borderRadius:'20px',fontWeight:900,cursor:'pointer',fontSize:'12px'}}>♻️ Restore All</button><button onClick={handleEmptyTrash} style={{background:'#dc2626',color:'#fff',border:'none',padding:'7px 12px',borderRadius:'20px',fontWeight:900,cursor:'pointer',fontSize:'12px'}}>❌ Empty Trash</button></div></div><div style={{display:'flex',gap:'6px',flexWrap:'wrap',marginTop:'8px'}}>{trash.map(t=><div key={t._uid} style={{background:theme.bgMain,padding:'6px 10px',borderRadius:'8px',fontSize:'11px',display:'flex',gap:'6px',alignItems:'center'}}>{getVal(t,['FullName','fullName'])} <button onClick={()=>handleRestore(t)} style={{background:'#facc15',border:'none',padding:'4px 8px',borderRadius:'6px',fontWeight:800,cursor:'pointer'}}>♻️ Restore</button><button onClick={()=>handlePermanentDelete(t)} style={{background:'#dc2626',color:'#fff',border:'none',padding:'4px 8px',borderRadius:'6px',fontWeight:800,cursor:'pointer'}}>❌ Delete Forever</button></div>)}</div></div>}
 
         <div style={{background:theme.bgCard,borderRadius:'14px',overflow:'hidden',border:`1px solid ${theme.border}`}}>
           <div style={{padding:'12px 16px',background:dark?'#0f172a':'#0f172a',color:'#facc15',fontWeight:900,fontSize:'12px'}}>{tab.toUpperCase()} — {list.length} rows — {loading?'Loading...':'Ready'}</div>
@@ -192,6 +215,21 @@ const AdminDashboard = () => {
               <thead><tr style={{background:theme.bgMain}}><th style={cellStyle}><input type="checkbox" checked={paginatedList.length>0 && paginatedList.every(r=>selected.includes(r._uid))} onChange={()=>{ const ids=paginatedList.map(r=>r._uid); setSelected(ids.every(id=>selected.includes(id))?prev=>prev.filter(id=>!ids.includes(id)):prev=>[...new Set([...prev,...ids])]) }}/></th><th style={cellStyle}>DATE</th><th style={cellStyle}>NAME</th><th style={cellStyle}>PHONE</th><th style={cellStyle}>{tab==='contacts'?'SERVICE':'POSITION'}</th><th style={cellStyle}>STATUS</th><th style={cellStyle}>ACTIONS</th></tr></thead>
               <tbody>{paginatedList.length===0 && <tr><td colSpan={7} style={{padding:'30px',textAlign:'center'}}>{loading?'Loading...':'No data - Ready for new submissions ✅'}</td></tr>}{paginatedList.map((d,i)=>{ const checked=selected.includes(d._uid); const bg = checked?'#422006':i%2===0?theme.bgCard:theme.bgMain; const st = getVal(d,['Status','status'])||'New'; return (<tr key={d._uid} style={{background:bg}}><td style={{...cellStyle,background:bg}}><input type="checkbox" checked={checked} onChange={()=>setSelected(prev=>prev.includes(d._uid)?prev.filter(id=>id!==d._uid):[...prev,d._uid])}/></td><td style={{...cellStyle,background:bg}}>{getVal(d,['Timestamp','timestamp'])?.slice(0,19)}</td><td style={{...cellStyle,background:bg,fontWeight:800}}>{getVal(d,['FullName','fullName'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Phone','phone'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Service','service'])||getVal(d,['Position','position'])}</td><td style={{...cellStyle,background:bg}}><span style={{background: st==='Hired'?'#dcfce7':st==='Rejected'?'#fee2e2':'#fef9c3', color:'#0f172a', padding:'3px 8px', borderRadius:'20px', fontWeight:800, fontSize:'11px'}}>{st}</span></td><td style={{...cellStyle,background:bg}}><button onClick={()=>handleEdit(d)} style={{padding:'5px 10px',borderRadius:'8px',background:'#facc15',border:'none',fontWeight:800,cursor:'pointer'}}>EDIT</button><button onClick={()=>handleDelete(d)} style={{padding:'5px 10px',borderRadius:'8px',background:'#fee2e2',color:'#dc2626',border:'none',fontWeight:800,marginLeft:'4px',cursor:'pointer'}}>DEL</button></td></tr>)})}</tbody>
             </table>
+          </div>
+          {/* ✅ ADDED: BEAUTIFUL PAGINATION FOOTER - was missing before */}
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'12px 16px',borderTop:`1px solid ${theme.border}`,flexWrap:'wrap',gap:'8px',background:theme.bgMain}}>
+            <span style={{fontSize:'12px',fontWeight:700}}>Showing {list.length===0?0:(currentPage-1)*rowsPerPage+1}-{Math.min(currentPage*rowsPerPage, list.length)} of {list.length} • Page {currentPage} of {totalPages}</span>
+            <div style={{display:'flex',gap:'6px',alignItems:'center'}}>
+              <button disabled={currentPage===1} onClick={()=>setCurrentPage(1)} style={{padding:'6px 10px',borderRadius:'8px',border:`1px solid ${theme.border}`,background:theme.bgCard,color:theme.text,cursor:currentPage===1?'not-allowed':'pointer',fontWeight:800}}>« First</button>
+              <button disabled={currentPage===1} onClick={()=>setCurrentPage(p=>Math.max(1,p-1))} style={{padding:'6px 10px',borderRadius:'8px',border:`1px solid ${theme.border}`,background:theme.bgCard,color:theme.text,cursor:currentPage===1?'not-allowed':'pointer',fontWeight:800}}>‹ Prev</button>
+              {Array.from({length: Math.min(5, totalPages)}, (_,k)=>{
+                let pg = currentPage<=3 ? k+1 : Math.min(totalPages-4, currentPage-2)+k;
+                if(pg<1||pg>totalPages) return null;
+                return <button key={pg} onClick={()=>setCurrentPage(pg)} style={{padding:'6px 11px',borderRadius:'8px',border:`1px solid ${theme.border}`,background:pg===currentPage?'#facc15':'transparent',color:pg===currentPage?'#0f172a':theme.text,fontWeight:900,cursor:'pointer'}}>{pg}</button>
+              })}
+              <button disabled={currentPage>=totalPages} onClick={()=>setCurrentPage(p=>Math.min(totalPages,p+1))} style={{padding:'6px 10px',borderRadius:'8px',border:`1px solid ${theme.border}`,background:theme.bgCard,color:theme.text,cursor:currentPage>=totalPages?'not-allowed':'pointer',fontWeight:800}}>Next ›</button>
+              <button disabled={currentPage>=totalPages} onClick={()=>setCurrentPage(totalPages)} style={{padding:'6px 10px',borderRadius:'8px',border:`1px solid ${theme.border}`,background:theme.bgCard,color:theme.text,cursor:currentPage>=totalPages?'not-allowed':'pointer',fontWeight:800}}>Last »</button>
+            </div>
           </div>
         </div>
       </div>
