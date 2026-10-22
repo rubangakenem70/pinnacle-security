@@ -2,6 +2,16 @@ import React, { useState, useEffect } from 'react'
 
 const ADMIN_PASSWORD = "Pinnacle2026!Secure123";
 const GOOGLE_SHEET_WEBHOOK = "https://script.google.com/macros/s/AKfycbz0Fx9gSfPwPXZdi8pivw9IdQ_fzj707fPk22GBECuGYhGzwePtEPZV47TyXk8TN8bggQ/exec";
+const KOBO_APTITUDE_TEST = "https://ee.kobotoolbox.org/x/ODCdeyaJ";
+const GOOGLE_APTITUDE_REGISTER = "https://forms.gle/W8JroZ8n8HGArq248";
+
+const getFullDateTime24 = () => {
+  return new Date().toLocaleString('en-GB', {
+    timeZone: 'Africa/Kampala',
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+  });
+};
 
 const AdminDashboard = () => {
   const [auth, setAuth] = useState(false);
@@ -22,13 +32,10 @@ const AdminDashboard = () => {
   const [showOptions, setShowOptions] = useState(false);
   const [tableOptions, setTableOptions] = useState({ gridlines: true, alternating: true, condensed: false, footer: false });
   const [tempOptions, setTempOptions] = useState(tableOptions);
-  
-  // NEW - BULK EDIT 5 AT ONCE
-  const [bulkEdits, setBulkEdits] = useState({}); // {timestamp: formData}
+  const [bulkEdits, setBulkEdits] = useState({});
   const [savingBulk, setSavingBulk] = useState(false);
 
   const openOptions = () => { setTempOptions(tableOptions); setShowOptions(true); }
-  const getFullDateTime24 = () => new Date().toLocaleString('en-GB', { timeZone: 'Africa/Kampala', day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
   const login = () => pass === ADMIN_PASSWORD ? setAuth(true) : alert("Wrong Password!");
   const load = () => { setLoading(true); fetch(GOOGLE_SHEET_WEBHOOK).then(r=>r.json()).then(d=>{ const arr = Array.isArray(d)?d:[]; const sorted = arr.sort((a,b)=> new Date(b.timestamp||b.Timestamp||0) - new Date(a.timestamp||a.Timestamp||0)); setData(sorted); setLoading(false); }).catch(()=>setLoading(false)); };
   useEffect(()=>{ if(auth) load(); },[auth]);
@@ -36,102 +43,55 @@ const AdminDashboard = () => {
   const getVal = (obj, keys) => { for(let k of keys) if(obj[k]!==undefined && obj[k]!==null && obj[k]!=='') return obj[k]; return ''; }
   const formatDate = (t) => { if(!t) return '-'; try { const d = new Date(t); if(isNaN(d.getTime())) return t; return d.toLocaleString('en-GB', { timeZone: 'Africa/Kampala', day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false }); } catch { return t; } }
 
-  const handleDelete = async (row) => {
-    const ts = getVal(row,['Timestamp','timestamp']);
-    setData(prev => prev.filter(r => getVal(r,['Timestamp','timestamp']) !== ts));
-    setSelected(prev=>prev.filter(id=>id!==ts));
-    if(detailRow && getVal(detailRow,['Timestamp','timestamp'])===ts) setDetailRow(null);
-    await fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'delete', timestamp: ts }) });
-  };
-  const handleBulkDelete = async () => {
-    if(selected.length===0) return;
-    const toDelete = [...selected];
-    setData(prev => prev.filter(r => !toDelete.includes(getVal(r,['Timestamp','timestamp']))));
-    setSelected([]); setDetailRow(null);
-    await fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'bulkDelete', timestamps: toDelete }) });
-  };
+  const handleDelete = async (row) => { const ts = getVal(row,['Timestamp','timestamp']); setData(prev => prev.filter(r => getVal(r,['Timestamp','timestamp']) !== ts)); setSelected(prev=>prev.filter(id=>id!==ts)); if(detailRow && getVal(detailRow,['Timestamp','timestamp'])===ts) setDetailRow(null); await fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'delete', timestamp: ts }) }); };
+  const handleBulkDelete = async () => { if(selected.length===0) return; const toDelete = [...selected]; setData(prev => prev.filter(r => !toDelete.includes(getVal(r,['Timestamp','timestamp'])))); setSelected([]); setDetailRow(null); await fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'bulkDelete', timestamps: toDelete }) }); };
   const toggleSelect = (ts) => setSelected(prev => prev.includes(ts) ? prev.filter(id=>id!==ts) : [...prev, ts]);
 
+  // FIXED - type singular
   const handleEdit = (row) => {
     const ts = getVal(row,['Timestamp','timestamp']);
-    const rowForm = { timestamp:ts, FullName:getVal(row,['FullName','fullName']), Phone:getVal(row,['Phone','phone']), Email:getVal(row,['Email','email']), Service:getVal(row,['Service','service']), Messages:getVal(row,['Messages','message']), Position:getVal(row,['Position','position']), Education:getVal(row,['Education','education']), District:getVal(row,['District','district']), Experience:getVal(row,['Experience','experience']), Interest:getVal(row,['Interest','interest']), type:tab };
+    const rowForm = { timestamp:ts, FullName:getVal(row,['FullName','fullName']), Phone:getVal(row,['Phone','phone']), Email:getVal(row,['Email','email']), Service:getVal(row,['Service','service']), Messages:getVal(row,['Messages','message']), Position:getVal(row,['Position','position']), Education:getVal(row,['Education','education']), District:getVal(row,['District','district']), Experience:getVal(row,['Experience','experience']), Interest:getVal(row,['Interest','interest']), type: tab==='contacts'?'contact':'applicant' };
     setEditRow(ts);
     setForm(rowForm);
-    // Add to bulk edits
     setBulkEdits(prev => ({...prev, [ts]: rowForm}));
   };
-
-  // UPDATE SINGLE FORM IN BULK EDITS
   const updateBulkForm = (ts, field, value) => {
-    setBulkEdits(prev => ({
-      ...prev,
-      [ts]: { ...prev[ts], [field]: value }
-    }));
+    setBulkEdits(prev => ({ ...prev, [ts]: { ...prev[ts], [field]: value } }));
     if(editRow === ts) setForm(prev => ({...prev, [field]: value}));
   };
-
+  // FIXED - type singular
   const handleSave = async () => {
-    const payload = { action:'update', ...form, timestamp:editRow, type:tab };
+    const payload = { action:'update', ...form, timestamp:editRow, type: tab==='contacts'?'contact':'applicant' };
     setData(prev => prev.map(r => getVal(r,['Timestamp','timestamp'])===editRow?{...r,...form,Timestamp:editRow,timestamp:editRow}:r));
     setEditRow(null);
     setBulkEdits(prev => { const n = {...prev}; delete n[editRow]; return n; });
     if(detailRow && getVal(detailRow,['Timestamp','timestamp'])===editRow) setDetailRow(prev=>({...prev,...form,Timestamp:editRow,timestamp:editRow}));
     await fetch(GOOGLE_SHEET_WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
   };
-
-  // NEW - SAVE ALL 5 AT ONCE
   const handleBulkSaveAll = async () => {
     if(Object.keys(bulkEdits).length === 0) return;
     setSavingBulk(true);
     const editsArray = Object.values(bulkEdits);
-    
-    // Update local data instantly
     setData(prev => prev.map(r => {
       const ts = getVal(r,['Timestamp','timestamp']);
-      if(bulkEdits[ts]){
-        return {...r, ...bulkEdits[ts], Timestamp: ts, timestamp: ts};
-      }
+      if(bulkEdits[ts]){ return {...r, ...bulkEdits[ts], Timestamp: ts, timestamp: ts}; }
       return r;
     }));
-    
-    // Send bulk update to sheet
-    await fetch(GOOGLE_SHEET_WEBHOOK,{
-      method:'POST',
-      mode:'no-cors',
-      headers:{'Content-Type':'text/plain'},
-      body:JSON.stringify({ action:'bulkUpdate', edits: editsArray })
-    });
-    
-    // Also send one-by-one as fallback to ensure all 5 reflect
+    await fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'bulkUpdate', edits: editsArray }) });
     for(let ed of editsArray){
-      await fetch(GOOGLE_SHEET_WEBHOOK,{
-        method:'POST',
-        mode:'no-cors',
-        headers:{'Content-Type':'text/plain'},
-        body:JSON.stringify({ action:'update', ...ed, timestamp: ed.timestamp })
-      });
+      await fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'update', ...ed, timestamp: ed.timestamp }) });
     }
-    
-    setBulkEdits({});
-    setEditRow(null);
-    setSavingBulk(false);
+    setBulkEdits({}); setEditRow(null); setSavingBulk(false);
     alert(`✅ ${editsArray.length} rows updated in Google Sheet!`);
   };
-
-  const handleAddNew = async () => {
-    const ts = getFullDateTime24();
-    const payload = { ...form, timestamp:ts, Timestamp:ts, type:tab==='contacts'?'contact':'applicant' };
-    setData(prev=>[payload,...prev]); setShowAdd(false); setForm({});
-    await fetch(GOOGLE_SHEET_WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
-  };
+  const handleAddNew = async () => { const ts = getFullDateTime24(); const payload = { ...form, timestamp:ts, Timestamp:ts, type:tab==='contacts'?'contact':'applicant' }; setData(prev=>[payload,...prev]); setShowAdd(false); setForm({}); await fetch(GOOGLE_SHEET_WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)}); };
   const unique = (keyArr) => [...new Set(data.map(d=>getVal(d,keyArr)).filter(v=>v))].sort();
   const serviceOptions = unique(['Service','service']); const positionOptions = unique(['Position','position']); const districtOptions = unique(['District','district']); const educationOptions = unique(['Education','education']); const experienceOptions = unique(['Experience','experience']); const interestOptions = unique(['Interest','interest']);
   const clearFilters = () => { setFilters({service:"",position:"",district:"",education:"",experience:"",interest:"",dateFrom:"",dateTo:""}); setCurrentPage(1); };
   const exportCSV = (rows, filename) => { if(!rows.length) return; const headers = tab==='contacts'?["Timestamp","FullName","Phone","Email","Service","Messages"]:["Timestamp","FullName","Phone","Email","Position","Education","District","Experience","Interest"]; const csv = [headers.join(",")].concat(rows.map(r=> headers.map(h=>`"${String(getVal(r,[h,h.toLowerCase()])||'').replace(/"/g,'""')}"`).join(","))).join("\n"); const blob = new Blob([csv],{type:"text/csv"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=filename; a.click(); };
 
-  if(!auth){
-    return (<div style={{minHeight:'100vh',background:'radial-gradient(circle at top,#1a2f5c,#0a1931)',display:'flex',justifyContent:'center',alignItems:'center',fontFamily:'Arial'}}><div style={{background:'#fff',padding:'36px',borderRadius:'24px',width:'92%',maxWidth:'400px',textAlign:'center'}}><div style={{width:'56px',height:'56px',background:'#0a1931',borderRadius:'14px',margin:'0 auto 14px',display:'grid',placeItems:'center',color:'#ffcc00',fontSize:'22px',fontWeight:900}}>P</div><h2 style={{fontWeight:900,color:'#0a1931'}}>PINNACLE ADMIN</h2><input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="Admin Password" style={{width:'100%',padding:'14px 16px',borderRadius:'12px',marginTop:'20px',border:'2px solid #0a1931'}}/><button onClick={login} style={{width:'100%',marginTop:'14px',background:'#ffcc00',padding:'14px',borderRadius:'12px',fontWeight:900,border:'none',cursor:'pointer'}}>UNLOCK DASHBOARD</button></div></div>)
-  }
+  if(!auth){ return ( <div style={{minHeight:'100vh',background:'radial-gradient(circle at top,#1a2f5c,#0a1931)',display:'flex',justifyContent:'center',alignItems:'center',fontFamily:'Arial'}}><div style={{background:'#fff',padding:'36px',borderRadius:'24px',width:'92%',maxWidth:'400px',textAlign:'center'}}><div style={{width:'56px',height:'56px',background:'#0a1931',borderRadius:'14px',margin:'0 auto 14px',display:'grid',placeItems:'center',color:'#ffcc00',fontSize:'22px',fontWeight:900}}>P</div><h2 style={{fontWeight:900,color:'#0a1931'}}>PINNACLE ADMIN</h2><input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="Admin Password" style={{width:'100%',padding:'14px 16px',borderRadius:'12px',marginTop:'20px',border:'2px solid #0a1931'}}/><button onClick={login} style={{width:'100%',marginTop:'14px',background:'#ffcc00',padding:'14px',borderRadius:'12px',fontWeight:900,border:'none',cursor:'pointer'}}>UNLOCK DASHBOARD</button></div></div> ) }
+
   const applicants = data.filter(d => (d.type==='applicant') || getVal(d,['Position','position'])); const contacts = data.filter(d => (d.type==='contact') || getVal(d,['Service','service']));
   const applyFilters = (list) => list.filter(d=>{ const s = `${getVal(d,['FullName','fullName'])} ${getVal(d,['Phone','phone'])} ${getVal(d,['Email','email'])} ${getVal(d,['Service','service'])} ${getVal(d,['Messages','message'])} ${getVal(d,['Position','position'])} ${getVal(d,['District','district'])} ${getVal(d,['Education','education'])}`.toLowerCase(); if(search && !s.includes(search.toLowerCase())) return false; if(filters.service && getVal(d,['Service','service']).toLowerCase() !== filters.service.toLowerCase()) return false; if(filters.position && getVal(d,['Position','position']).toLowerCase() !== filters.position.toLowerCase()) return false; if(filters.district && getVal(d,['District','district']).toLowerCase() !== filters.district.toLowerCase()) return false; if(filters.education && getVal(d,['Education','education']).toLowerCase() !== filters.education.toLowerCase()) return false; if(filters.experience && getVal(d,['Experience','experience']).toLowerCase() !== filters.experience.toLowerCase()) return false; if(filters.interest && getVal(d,['Interest','interest']).toLowerCase() !== filters.interest.toLowerCase()) return false; const ts = new Date(getVal(d,['Timestamp','timestamp'])); if(filters.dateFrom && ts < new Date(filters.dateFrom)) return false; if(filters.dateTo && ts > new Date(filters.dateTo + 'T23:59:59')) return false; return true; });
   const filteredContacts = applyFilters(contacts); const filteredApplicants = applyFilters(applicants); const list = tab==='contacts'?filteredContacts:filteredApplicants; const totalPages = Math.ceil(list.length / rowsPerPage) || 1; const paginatedList = list.slice((currentPage-1)*rowsPerPage, currentPage*rowsPerPage); const allPageIds = paginatedList.map(r=>getVal(r,['Timestamp','timestamp'])); const isAllSelected = allPageIds.length>0 && allPageIds.every(id=>selected.includes(id)); const activeFilterCount = Object.values(filters).filter(v=>v).length;
@@ -153,7 +113,6 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* BULK SAVE BAR - Shows when you edit 5 rows */}
       {bulkCount > 0 && (
         <div style={{background:'#0a1931',color:'#fff',padding:'12px 24px',display:'flex',justifyContent:'space-between',alignItems:'center',position:'sticky',top:'72px',zIndex:99,boxShadow:'0 4px 12px rgba(0,0,0,0.2)'}}>
           <div style={{fontWeight:900,fontSize:'13px'}}>📝 {bulkCount} rows in edit mode — not yet saved to Sheet</div>
@@ -213,6 +172,7 @@ const AdminDashboard = () => {
               {tableOptions.footer && (<tfoot><tr style={{background:'#f1f5f9', fontWeight:900, fontSize:'11px'}}><td colSpan={12} style={{padding:'12px 16px', borderTop:'2px solid #0a1931', textAlign:'center'}}>Total: {list.length} — Editing: {bulkCount} — Page {currentPage}/{totalPages}</td></tr></tfoot>)}
             </table>
           </div>
+          <div style={{padding:'16px 20px',display:'flex',justifyContent:'space-between',alignItems:'center',borderTop:'1px solid #eee',flexWrap:'wrap',gap:'12px'}}><button disabled={currentPage===1} onClick={()=>setCurrentPage(p=>Math.max(1,p-1))} style={{background:currentPage===1?'#f3f4f6':'#fff',color:currentPage===1?'#aaa':'#0a1931',border:'1px solid #ddd',padding:'8px 16px',borderRadius:'10px',fontWeight:800,fontSize:'12px',cursor:'pointer'}}>◂ PREV</button><div style={{display:'flex',alignItems:'center',gap:'10px',fontSize:'13px'}}><span>Page</span><input type="number" min={1} max={totalPages} value={currentPage} onChange={e=>setCurrentPage(Math.min(totalPages,Math.max(1,Number(e.target.value)||1)))} style={{width:'60px',padding:'8px',borderRadius:'10px',border:'1px solid #ddd',textAlign:'center',fontWeight:800}}/><span>of {totalPages}</span></div><div style={{display:'flex',alignItems:'center',gap:'10px'}}><select value={rowsPerPage} onChange={e=>setRowsPerPage(Number(e.target.value))} style={{padding:'8px 12px',borderRadius:'10px',border:'1px solid #ddd',fontWeight:700,fontSize:'13px'}}><option value={10}>10 rows</option><option value={20}>20 rows</option><option value={30}>30 rows</option><option value={50}>50 rows</option><option value={100}>100 rows</option></select><button disabled={currentPage===totalPages} onClick={()=>setCurrentPage(p=>Math.min(totalPages,p+1))} style={{background:currentPage===totalPages?'#f3f4f6':'#0a1931',color:currentPage===totalPages?'#aaa':'#ffcc00',border:'1px solid #ddd',padding:'8px 16px',borderRadius:'10px',fontWeight:800,fontSize:'12px',cursor:'pointer'}}>NEXT ▸</button></div></div>
         </div>
       </div>
 
@@ -244,4 +204,5 @@ const AdminDashboard = () => {
     </div>
   )
 }
-export default AdminDashboard
+// ... rest of your MainSite code stays SAME as before — copy from your file
+// I omitted Home, About, Services etc to keep this message short — keep them as you had
