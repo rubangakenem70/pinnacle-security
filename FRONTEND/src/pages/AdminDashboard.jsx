@@ -69,6 +69,16 @@ const AdminDashboard = () => {
   useEffect(()=>{ if(auth) load(); },[auth]);
   useEffect(()=>{ setCurrentPage(1); },[search, tab, rowsPerPage, filters]);
   const getVal = (obj, keys) => { for(let k of keys) if(obj[k]!==undefined && obj[k]!==null && obj[k]!=='') return obj[k]; return ''; }
+  // ✅ FIX 15% - DATE FORMAT: 22/10/2026 23:31 - never cut off
+  const formatDate = (ts) => {
+    if(!ts) return '';
+    const str = String(ts);
+    // Already DD/MM/YYYY HH:MM:SS.xxx-123 -> take first 16 chars
+    if(str.includes('/')) return str.slice(0,16);
+    const d = new Date(str);
+    if(isNaN(d.getTime())) return str.slice(0,16);
+    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  };
 
   useEffect(()=>{
     const onMove = (e) => {
@@ -200,8 +210,8 @@ const AdminDashboard = () => {
   const totalPages = Math.max(1, Math.ceil(list.length / rowsPerPage));
 
   const theme = dark ? {bgMain:'#0f172a', bgCard:'#1e293b', text:'#f1f5f9', border:'#334155', sidebar:'#1e293b', input:'#0f172a'} : {bgMain:'#f8fafc', bgCard:'#ffffff', text:'#0f172a', border:'#e2e8f0', sidebar:'#ffffff', input:'#f1f5f9'};
-  // ✅ CHANGED ONLY: ROW HEIGHT 14.3 - EXACTLY LIKE EXCEL SHEET YOU SENT
-  const cellStyle = {padding:'0px 11px',height:'14.3px',lineHeight:'14.3px',border:`1px solid ${theme.border}`,whiteSpace:'nowrap',overflow:'hidden'};
+  // ✅ FIX 15% - ROW TRULY SLIM: padding 2px, font 11px, height 14.3
+  const cellStyle = {padding:'2px 6px',height:'14.3px',lineHeight:'14.3px',border:`1px solid ${theme.border}`,whiteSpace:'nowrap',overflow:'hidden',fontSize:'11px'};
   const menuItem = (active) => ({padding:'11px 14px',borderRadius:'12px',fontSize:'13px',fontWeight:active?900:700,cursor:'pointer',background:active?'#facc15':'transparent',color:active?'#0f172a':theme.text,border:`1px solid ${theme.border}`,textAlign:'left',width:'100%',display:'flex',justifyContent:'space-between'});
   const filterSelect = {padding:'8px 10px',borderRadius:'10px',border:`1px solid ${theme.border}`,background:theme.bgCard,color:theme.text,fontSize:'12px',fontWeight:700,width:'100%'};
   const isContactTab = tab==='contacts';
@@ -214,7 +224,11 @@ const AdminDashboard = () => {
     const body = isApplicant ? `Dear ${name},\n\nThank you for applying to Pinnacle Security Ltd for the position of ${getVal(d,['Position','position'])||''}.\n\nWe have received your application and we will contact you soon for interview / training at Muyenga HQ.\n\nIn Jesus Name,\nPinnacle Security Ltd\nPlot 442 & 443 Massionatees, Muyenga Hill\nControl 24/7: 0776971970\nHR: hr@pinnaclegroup.co.ug` : `Dear ${name},\n\nThank you for contacting Pinnacle Security Ltd for ${getVal(d,['Service','service'])||''}.\n\nWe have received your message: "${getVal(d,['Message','message'])}"\n\nWe will call you soon for a FREE Site Survey.\n\nIn Jesus Name,\nPinnacle Security Ltd\nPlot 442 & 443 Massionatees, Muyenga Hill\nControl 24/7: 0776971970`;
     return `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
-  const iconBtn = (bg) => ({width:'28px',height:'28px',borderRadius:'8px',background:bg,border:'none',cursor:'pointer',fontSize:'14px',display:'grid',placeItems:'center',padding:0,textDecoration:'none'});
+  // ✅ FIX 15% - ICONS SMALL 20px so row stays 14.3, not 28px big
+  const iconBtn = (bg) => ({width:'20px',height:'20px',borderRadius:'5px',background:bg,border:'none',cursor:'pointer',fontSize:'11px',display:'grid',placeItems:'center',padding:0,textDecoration:'none',lineHeight:'1'});
+  // ✅ FIX 15% - ACTIONS STICKY RIGHT - always visible, no scroll needed
+  const stickyActionTh = {...cellStyle, position:'sticky', right:0, zIndex:2, background: dark ? '#0f172a' : '#f8fafc', minWidth:'92px'};
+  const stickyActionTd = (bg) => ({...cellStyle, background:bg, position:'sticky', right:0, zIndex:1, minWidth:'92px'});
 
   return (
     <div style={{background:theme.bgMain,minHeight:'100vh',color:theme.text,display:'flex',fontFamily:'Inter, Arial', position:'relative'}}>
@@ -269,14 +283,14 @@ const AdminDashboard = () => {
         <div style={{background:theme.bgCard,borderRadius:'14px',overflow:'hidden',border:`1px solid ${theme.border}`}}>
           <div style={{padding:'12px 16px',background:dark?'#0f172a':'#0f172a',color:'#facc15',fontWeight:900,fontSize:'12px'}}>{tab.toUpperCase()} — {list.length} rows — {loading?'Loading...':'Ready'}</div>
           <div style={{overflowX:'auto'}}>
-            <table style={{width:'100%',borderCollapse:'collapse',fontSize:'12px',minWidth:isContactTab?'950px':'1250px'}}>
+            <table style={{width:'100%',borderCollapse:'collapse',fontSize:'11px',minWidth:'100%'}}>
               <thead><tr style={{background:theme.bgMain}}>
                 <th style={cellStyle}><input type="checkbox" checked={paginatedList.length>0 && paginatedList.every(r=>selected.includes(r._uid))} onChange={()=>{ const ids=paginatedList.map(r=>r._uid); setSelected(ids.every(id=>selected.includes(id))?prev=>prev.filter(id=>!ids.includes(id)):prev=>[...new Set([...prev,...ids])]) }}/></th>
                 <th style={cellStyle}>DATE</th><th style={cellStyle}>NAME</th><th style={cellStyle}>PHONE</th><th style={cellStyle}>EMAIL</th>
                 {isContactTab ? <><th style={cellStyle}>SERVICE</th><th style={cellStyle}>MESSAGE</th></> : <><th style={cellStyle}>POSITION</th><th style={cellStyle}>EDUCATION</th><th style={cellStyle}>DISTRICT</th><th style={cellStyle}>EXPERIENCE</th><th style={cellStyle}>INTEREST</th></>}
-                <th style={cellStyle}>STATUS</th><th style={cellStyle}>ACTIONS</th>
+                <th style={cellStyle}>STATUS</th><th style={stickyActionTh}>ACTIONS</th>
               </tr></thead>
-              <tbody>{paginatedList.length===0 && <tr><td colSpan={colCount} style={{padding:'30px',textAlign:'center'}}>{loading?'Loading...':'No data - Ready for new submissions ✅'}</td></tr>}{paginatedList.map((d,i)=>{ const checked=selected.includes(d._uid); const bg = checked?'#422006':i%2===0?theme.bgCard:theme.bgMain; const st = getVal(d,['Status','status'])||'New'; return (<tr key={d._uid} style={{background:bg, height:'14.3px'}}><td style={{...cellStyle,background:bg}}><input type="checkbox" checked={checked} onChange={()=>setSelected(prev=>prev.includes(d._uid)?prev.filter(id=>id!==d._uid):[...prev,d._uid])}/></td><td style={{...cellStyle,background:bg}}>{getVal(d,['Timestamp','timestamp'])?.slice(0,19)}</td><td style={{...cellStyle,background:bg,fontWeight:800}}>{getVal(d,['FullName','fullName'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Phone','phone'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Email','email'])}</td>{isContactTab ? <><td style={{...cellStyle,background:bg}}>{getVal(d,['Service','service'])}</td><td style={{...cellStyle,background:bg,maxWidth:'180px'}}>{getVal(d,['Message','message','Messages'])}</td></> : <><td style={{...cellStyle,background:bg}}>{getVal(d,['Position','position'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Education','education'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['District','district'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Experience','experience'])}</td><td style={{...cellStyle,background:bg,maxWidth:'150px'}}>{getVal(d,['Interest','interest'])}</td></>}<td style={{...cellStyle,background:bg}}><span onClick={()=>handleToggleStatus(d)} title="Click to turn New ↔ Read" style={{background: st==='Hired'?'#dcfce7':st==='Rejected'?'#fee2e2':st==='Read'?'#dbeafe':st==='Contacted'?'#e0e7ff':'#fef9c3', color:'#0f172a', padding:'3px 8px', borderRadius:'20px', fontWeight:800, fontSize:'11px', cursor:'pointer', display:'inline-block', whiteSpace:'nowrap'}}>{st==='New'?'🟡 New':st==='Read'?'👁️ Read':st} ↕</span></td><td style={{...cellStyle,background:bg}}><div style={{display:'flex',gap:'4px'}}><button onClick={()=>setDetailRow(d)} title="View Full Details" style={iconBtn('#dbeafe')}>👁️</button><button onClick={()=>handleEdit(d)} title="Edit" style={iconBtn('#facc15')}>✏️</button>{getVal(d,['Email','email']) ? <a href={getMailLink(d)} title={'Send Email to '+getVal(d,['Email','email'])} style={iconBtn('#dbeafe')}>📧</a> : <span title="No Email" style={iconBtn('#eee')}>📧</span>}<button onClick={()=>handleDelete(d)} title="Move to Trash" style={iconBtn('#fee2e2')}>🗑️</button></div></td></tr>)})}</tbody>
+              <tbody>{paginatedList.length===0 && <tr><td colSpan={colCount} style={{padding:'30px',textAlign:'center'}}>{loading?'Loading...':'No data - Ready for new submissions ✅'}</td></tr>}{paginatedList.map((d,i)=>{ const checked=selected.includes(d._uid); const bg = checked?'#422006':i%2===0?theme.bgCard:theme.bgMain; const st = getVal(d,['Status','status'])||'New'; return (<tr key={d._uid} style={{background:bg, height:'14.3px'}}><td style={{...cellStyle,background:bg}}><input type="checkbox" checked={checked} onChange={()=>setSelected(prev=>prev.includes(d._uid)?prev.filter(id=>id!==d._uid):[...prev,d._uid])}/></td><td style={{...cellStyle,background:bg}}>{formatDate(getVal(d,['Timestamp','timestamp']))}</td><td style={{...cellStyle,background:bg,fontWeight:800}}>{getVal(d,['FullName','fullName'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Phone','phone'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Email','email'])}</td>{isContactTab ? <><td style={{...cellStyle,background:bg}}>{getVal(d,['Service','service'])}</td><td style={{...cellStyle,background:bg,maxWidth:'180px'}}>{getVal(d,['Message','message','Messages'])}</td></> : <><td style={{...cellStyle,background:bg}}>{getVal(d,['Position','position'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Education','education'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['District','district'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Experience','experience'])}</td><td style={{...cellStyle,background:bg,maxWidth:'150px'}}>{getVal(d,['Interest','interest'])}</td></>}<td style={{...cellStyle,background:bg}}><span onClick={()=>handleToggleStatus(d)} title="Click to turn New ↔ Read" style={{background: st==='Hired'?'#dcfce7':st==='Rejected'?'#fee2e2':st==='Read'?'#dbeafe':st==='Contacted'?'#e0e7ff':'#fef9c3', color:'#0f172a', padding:'1px 6px', borderRadius:'20px', fontWeight:800, fontSize:'10px', cursor:'pointer', display:'inline-block', whiteSpace:'nowrap', lineHeight:'14.3px'}}>{st==='New'?'🟡 New':st==='Read'?'👁️ Read':st} ↕</span></td><td style={stickyActionTd(bg)}><div style={{display:'flex',gap:'3px'}}><button onClick={()=>setDetailRow(d)} title="View Full Details" style={iconBtn('#dbeafe')}>👁️</button><button onClick={()=>handleEdit(d)} title="Edit" style={iconBtn('#facc15')}>✏️</button>{getVal(d,['Email','email']) ? <a href={getMailLink(d)} title={'Send Email to '+getVal(d,['Email','email'])} style={iconBtn('#dbeafe')}>📧</a> : <span title="No Email" style={iconBtn('#eee')}>📧</span>}<button onClick={()=>handleDelete(d)} title="Move to Trash" style={iconBtn('#fee2e2')}>🗑️</button></div></td></tr>)})}</tbody>
             </table>
           </div>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'12px 16px',borderTop:`1px solid ${theme.border}`,flexWrap:'wrap',gap:'8px',background:theme.bgMain}}>
