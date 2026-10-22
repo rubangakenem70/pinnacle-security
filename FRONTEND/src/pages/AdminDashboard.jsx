@@ -30,7 +30,6 @@ const AdminDashboard = () => {
   const [detailRow, setDetailRow] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
   const [addForm, setAddForm] = useState({ Type:"contact", FullName:"", Phone:"", Email:"", Service:"", Message:"", Position:"", Education:"", District:"", Experience:"", Interest:"" });
-  // ✅ ADDED ONLY: AUTO REPLY
   const [showAuto, setShowAuto] = useState(false);
   const [autoSettings, setAutoSettings] = useState(()=>JSON.parse(localStorage.getItem('psl_auto_settings')||JSON.stringify({ emailOn:true, whatsappOn:true, contactEmail:"Hello {name}, thank you for contacting Pinnacle Security Ltd for {service}. We received your message: \"{message}\". We will call you soon for a FREE Site Survey. Control 24/7: 0776971970. In Jesus Name, Pinnacle Security Ltd, Muyenga Hill.", applicantEmail:"Hello {name}, thank you for applying to Pinnacle Security Ltd for {position}. We received your application. We will contact you soon for interview / training at Muyenga HQ. Control 24/7: 0776971970. HR: hr@pinnaclegroup.co.ug. In Jesus Name.", contactWhats:"Hello {name}, this is Pinnacle Security Ltd, Muyenga. Thank you for contacting us for {service}. We received your message. We will call you soon for a FREE Site Survey. Control 24/7: 0776971970. In Jesus Name.", applicantWhats:"Hello {name}, this is Pinnacle Security Ltd, Muyenga. Thank you for applying for {position}. We received your application. When can you come for interview / training at Muyenga HQ? Control 24/7: 0776971970. In Jesus Name." })));
   const [autoReplied, setAutoReplied] = useState(()=>JSON.parse(localStorage.getItem('psl_auto_replied')||'[]'));
@@ -46,7 +45,10 @@ const AdminDashboard = () => {
     const cbName = "psl_cb_" + Date.now();
     const old = document.getElementById("psl_jsonp");
     if(old) old.remove();
+    // ✅ FIXED: Timeout 10s - if Apps Script hangs, show clear error
+    const timeoutId = setTimeout(()=>{ setLoading(false); showToast("❌ Load timeout - Deploy NEW VERSION in Apps Script"); }, 10000);
     window[cbName] = (d) => {
+      clearTimeout(timeoutId);
       try {
         const arr = Array.isArray(d) ? d : (d.data || []);
         const withId = arr.map((row,i)=>{ 
@@ -57,14 +59,13 @@ const AdminDashboard = () => {
         }).filter(Boolean);
         const sorted = withId.sort((a,b)=> new Date(b.timestamp||0) - new Date(a.timestamp||0));
         setData(sorted);
-        // ✅ AUTO REPLY: detect NEW rows that just arrived
         const replied = JSON.parse(localStorage.getItem('psl_auto_replied')||'[]');
         const settings = JSON.parse(localStorage.getItem('psl_auto_settings')||'{"emailOn":true,"whatsappOn":true}');
         sorted.forEach(row=>{
           const ts = row.Timestamp;
           if(prevTimestampsRef.current.has(ts)) return;
           if(replied.includes(ts)) return;
-          const isNewRow = prevTimestampsRef.current.size>0; // don't auto-reply old rows on first load
+          const isNewRow = prevTimestampsRef.current.size>0;
           if(isNewRow && settings.emailOn && getVal(row,['Email','email'])){
             const isApp = getVal(row,['Position','position']) || row.Type==='applicant' || row.type==='applicant';
             const subject = isApp ? `Pinnacle Security Ltd - Your Application for ${getVal(row,['Position','position'])||'Security Officer'} - Received ✅` : `Pinnacle Security Ltd - Your ${getVal(row,['Service','service'])||'Security Service'} Enquiry - Received ✅`;
@@ -86,11 +87,12 @@ const AdminDashboard = () => {
     s.id = "psl_jsonp";
     s.src = GOOGLE_SHEET_WEBHOOK + "?callback=" + cbName + "&cache=" + Date.now();
     s.onerror = () => {
+      clearTimeout(timeoutId);
       setLoading(false);
       delete window[cbName];
       const sc = document.getElementById("psl_jsonp");
       if(sc) sc.remove();
-      showToast("❌ Load failed - check Apps Script");
+      showToast("❌ Load failed - Deploy NEW VERSION, Access = Anyone");
     };
     document.body.appendChild(s);
   };
@@ -113,7 +115,6 @@ const AdminDashboard = () => {
     if(p.length===9) return '256' + p;
     return p;
   };
-  // ✅ AUTO REPLY WHATSAPP uses YOUR template from settings, not hard-coded
   const getWhatsAppLink = (d) => {
     const phone = getPhoneIntl(getVal(d,['Phone','phone']));
     const isApplicant = getVal(d,['Position','position']) || d.Type==='applicant' || d.type==='applicant';
@@ -269,7 +270,6 @@ const AdminDashboard = () => {
     showToast(`✅ ${newRow.FullName} Added to Admin & Sheet...`);
     await fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'restore', Timestamp: ts, timestamp: ts, FullName: addForm.FullName, Phone: addForm.Phone, Email: addForm.Email, Service: addForm.Service, Message: addForm.Message, Position: addForm.Position, Education: addForm.Education, District: addForm.District, Experience: addForm.Experience, Interest: addForm.Interest, Type: addForm.Type, Status:'New' }) });
     showToast(`✅ ${newRow.FullName} Added ✅`);
-    // ✅ AUTO REPLY for manually added too
     if(autoSettings.emailOn && newRow.Email) handleAutoEmail(newRow);
   };
   const exportCSV = (rows, filename) => { if(!rows.length) return; const headers = tab==='contacts'?["Timestamp","FullName","Phone","Email","Service","Message","Status"]:["Timestamp","FullName","Phone","Email","Position","Education","District","Experience","Interest","Type","Status"]; const csv = [headers.join(",")].concat(rows.map(r=> headers.map(h=>`"${String(getVal(r,[h,h.toLowerCase()])||'').replace(/"/g,'""')}"`).join(","))).join("\n"); const blob = new Blob([csv],{type:"text/csv"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=filename; a.click(); };
@@ -324,7 +324,7 @@ const AdminDashboard = () => {
 
   return (
     <div style={{background:theme.bgMain,minHeight:'100vh',color:theme.text,display:'flex',fontFamily:'Arial, sans-serif', position:'relative'}}>
-      {toast && <div style={{position:'fixed',top:'20px',right:'20px',background:theme.bgCard,color:'#facc15',padding:'12px 18px',borderRadius:'20px',fontWeight:800,zIndex:9999,border:'1px solid #facc15',fontFamily:'Arial, sans-serif'}}>{toast}</div>}
+      {toast && <div style={{position:'fixed',top:'80px',right:'20px',background:theme.bgCard,color:'#facc15',padding:'12px 18px',borderRadius:'20px',fontWeight:800,zIndex:9999,border:'1px solid #facc15',fontFamily:'Arial, sans-serif'}}>{toast}</div>}
       
       <div style={{width:sidebarWidth,minWidth:sidebarWidth,background:theme.sidebar,padding:'18px 14px',display:'flex',flexDirection:'column',gap:'8px',position:'sticky',top:0,height:'100vh',overflowY:'auto'}}>
         <div style={{display:'flex',alignItems:'center',gap:'10px',paddingBottom:'14px',borderBottom:`1px solid ${theme.border}`}}>
@@ -335,7 +335,7 @@ const AdminDashboard = () => {
         <button onClick={()=>{setTab('contacts')}} style={menuItem(tab==='contacts')}> <span>📞 Contact</span> <span>{contacts.length}</span> </button>
         <button onClick={()=>{setTab('applicants')}} style={menuItem(tab==='applicants')}> <span>🎖️ Applicant</span> <span>{applicants.length}</span> </button>
         <button onClick={()=>{setTab('total')}} style={menuItem(tab==='total')}> <span>📊 Total</span> <span>{total}</span> </button>
-        <button onClick={()=>setShowAuto(true)} style={{...menuItem(false), background: autoSettings.emailOn||autoSettings.whatsappOn ? '#dcfce7' : theme.bgMain, border:'1px solid #25D366'}}> <span>🤖 Auto Reply {autoSettings.emailOn?'📧':''} {autoSettings.whatsappOn?'💬':''}</span> <span>{autoSettings.emailOn||autoSettings.whatsappOn?'🟢 ON':'🔴 OFF'}</span> </button>
+        <button onClick={()=>setShowAuto(true)} style={{...menuItem(false), background:'#25D366', color:'#ffffff', border:'1px solid #25D366'}}> <span>🤖 Auto Reply {autoSettings.emailOn?'📧':''} {autoSettings.whatsappOn?'💬':''}</span> <span style={{color:'#ffffff'}}>{autoSettings.emailOn||autoSettings.whatsappOn?'🟢 ON':'🔴 OFF'}</span> </button>
         <button onClick={()=>setShowTrash(!showTrash)} style={menuItem(showTrash)}> <span>🗑 Trash {trash.length}</span> </button>
         <a href="/" style={{...menuItem(false), textDecoration:'none'}}> <span>🏠 Home</span> </a>
         <button onClick={load} style={menuItem(false)}> <span>{loading?'⏳ Refresh':'↻ Refresh'}</span> </button>
@@ -364,7 +364,7 @@ const AdminDashboard = () => {
             {isContactTab ? <>
               <div><label style={{fontSize:'11px',fontWeight:800}}>Service</label><select value={filters.service} onChange={e=>setFilters({...filters,service:e.target.value})} style={filterSelect}><option value="">All Services</option>{serviceOptions.map(o=><option key={o} value={o}>{o}</option>)}</select></div>
             </> : <>
-              <div><label style={{fontSize:'11px',fontWeight:800}}>Position</label><select value={filters.position} onChange={e=>setFilters({...filters,position:e.target.value})} style={filterSelect}><option value="">All Positions</option>{positionOptions.map(o=><option key={o} value={o}>{o}</option>)}</select></div>
+              <div><label style={{fontSize:'11px',fontWeight:800}}>Position</label><select value={filters.position} onChange={e=>setFilters({...filters,position:e.target.value})} style={filterSelect}><option value="">All Positions</option>{positionOptions.map(o=<option key={o} value={o}>{o}</option>)}</select></div>
               <div><label style={{fontSize:'11px',fontWeight:800}}>District</label><select value={filters.district} onChange={e=>setFilters({...filters,district:e.target.value})} style={filterSelect}><option value="">All Districts</option>{districtOptions.map(o=><option key={o} value={o}>{o}</option>)}</select></div>
               <div><label style={{fontSize:'11px',fontWeight:800}}>Education</label><select value={filters.education} onChange={e=>setFilters({...filters,education:e.target.value})} style={filterSelect}><option value="">All Education</option>{educationOptions.map(o=><option key={o} value={o}>{o}</option>)}</select></div>
             </>}
