@@ -13,7 +13,7 @@ const AdminDashboard = () => {
   const [pass, setPass] = useState("");
   const [data, setData] = useState([]);
   const [search, setSearch] = useState("");
-  const [tab, setTab] = useState("applicants");
+  const [tab, setTab] = useState("contacts");
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({ service:"", position:"", district:"", education:"", experience:"", interest:"", dateFrom:"", dateTo:"" });
   const [showFilters, setShowFilters] = useState(false);
@@ -33,7 +33,15 @@ const AdminDashboard = () => {
     setLoading(true);
     fetch(GOOGLE_SHEET_WEBHOOK).then(r=>r.json()).then(d=>{
       const arr = Array.isArray(d)?d:[];
-      const withId = arr.map((row,i)=>({ ...row, _uid: `${row.Timestamp||row.timestamp||i}_${i}_${row.Phone||row.phone||''}`, _index: i }));
+      // FIX: DEDUP BY TIMESTAMP - SHOW 1 DETAIL FOR 1 SUBMIT
+      const map = new Map();
+      arr.forEach(row=>{
+        const ts = (row.Timestamp || row.timestamp || '').trim();
+        if(!ts) return;
+        if(!map.has(ts)) map.set(ts, row);
+      });
+      const uniqueArr = Array.from(map.values());
+      const withId = uniqueArr.map((row,i)=>({ ...row, _uid: `${row.Timestamp||row.timestamp}_${i}`, _index: i }));
       const sorted = withId.sort((a,b)=> new Date(b.timestamp||b.Timestamp||0) - new Date(a.timestamp||a.Timestamp||0));
       setData(sorted); setLoading(false);
     }).catch(()=>setLoading(false));
@@ -97,8 +105,6 @@ const AdminDashboard = () => {
   const positionOptions = unique(['Position','position']); 
   const districtOptions = unique(['District','district']); 
   const educationOptions = unique(['Education','education']); 
-  const experienceOptions = unique(['Experience','experience']); 
-  const interestOptions = unique(['Interest','interest']);
 
   if(!auth){
     return ( <div style={{minHeight:'100vh',background:'radial-gradient(circle at 20% 30%,#1a3a6a,#0a1931 70%)',display:'flex',justifyContent:'center',alignItems:'center',fontFamily:'Arial'}}>
@@ -114,17 +120,11 @@ const AdminDashboard = () => {
   const applicants = data.filter(d => (d.type==='applicant') || getVal(d,['Position','position']));
   const contacts = data.filter(d => (d.type==='contact') || getVal(d,['Service','service']));
   const applyFilters = (list) => list.filter(d=>{
-    const s = `${getVal(d,['FullName','fullName'])} ${getVal(d,['Phone','phone'])} ${getVal(d,['Email','email'])} ${getVal(d,['Service','service'])} ${getVal(d,['Position','position'])} ${getVal(d,['District','district'])}`.toLowerCase();
+    const s = `${getVal(d,['FullName','fullName'])} ${getVal(d,['Phone','phone'])} ${getVal(d,['Email','email'])} ${getVal(d,['Service','service'])} ${getVal(d,['Position','position'])}`.toLowerCase();
     if(search && !s.includes(search.toLowerCase())) return false;
     if(filters.service && getVal(d,['Service','service']).toLowerCase() !== filters.service.toLowerCase()) return false;
     if(filters.position && getVal(d,['Position','position']).toLowerCase() !== filters.position.toLowerCase()) return false;
     if(filters.district && getVal(d,['District','district']).toLowerCase() !== filters.district.toLowerCase()) return false;
-    if(filters.education && getVal(d,['Education','education']).toLowerCase() !== filters.education.toLowerCase()) return false;
-    if(filters.experience && getVal(d,['Experience','experience']).toLowerCase() !== filters.experience.toLowerCase()) return false;
-    if(filters.interest && getVal(d,['Interest','interest']).toLowerCase() !== filters.interest.toLowerCase()) return false;
-    const ts = new Date(getVal(d,['Timestamp','timestamp']));
-    if(filters.dateFrom && ts < new Date(filters.dateFrom)) return false;
-    if(filters.dateTo && ts > new Date(filters.dateTo + 'T23:59:59')) return false;
     return true;
   });
 
@@ -176,7 +176,7 @@ const AdminDashboard = () => {
           <div style={{padding:'16px 22px',display:'flex',justifyContent:'space-between',borderTop:'1px solid #eee'}}><button disabled={currentPage===1} onClick={()=>setCurrentPage(p=>Math.max(1,p-1))} style={{padding:'8px 14px',borderRadius:'10px'}}>◂ PREV</button><span>Page {currentPage} of {totalPages}</span><button disabled={currentPage===totalPages} onClick={()=>setCurrentPage(p=>Math.min(totalPages,p+1))} style={{padding:'8px 14px',borderRadius:'10px'}}>NEXT ▸</button></div>
         </div>
       </div>
-      {detailRow && (<div onClick={()=>setDetailRow(null)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,.5)',zIndex:10000,display:'flex',justifyContent:'center',alignItems:'center'}}><div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:'20px',padding:'24px',width:'90%',maxWidth:'480px'}}><h3>👤 {getVal(detailRow,['FullName','fullName'])}</h3><button onClick={()=>setDetailRow(null)} style={{marginTop:'16px',width:'100%',padding:'12px',borderRadius:'12px',background:'#0a1931',color:'#ffcc00',fontWeight:900}}>CLOSE</button></div></div>)}
+      {detailRow && (<div onClick={()=>setDetailRow(null)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,.5)',zIndex:10000,display:'flex',justifyContent:'center',alignItems:'center'}}><div onClick={e=>e.stopPropagation()} style={{background:'#fff',borderRadius:'20px',padding:'24px',width:'90%',maxWidth:'480px'}}><h3>👤 {getVal(detailRow,['FullName','fullName'])}</h3><div style={{marginTop:'12px',fontSize:'12px'}}>{Object.entries(detailRow).filter(([k])=>!k.startsWith('_')).slice(0,8).map(([k,v])=><div key={k} style={{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'1px solid #f3f4f6'}}><b>{k}</b><span>{String(v).slice(0,40)}</span></div>)}</div><button onClick={()=>setDetailRow(null)} style={{marginTop:'16px',width:'100%',padding:'12px',borderRadius:'12px',background:'#0a1931',color:'#ffcc00',fontWeight:900}}>CLOSE</button></div></div>)}
       {editRow && (<div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.5)',zIndex:10001,display:'flex',justifyContent:'center',alignItems:'center'}}><div style={{background:'#fff',borderRadius:'20px',padding:'24px',width:'90%',maxWidth:'520px'}}><h3>✏️ Edit {form.FullName}</h3><div style={{display:'grid',gap:'10px',marginTop:'12px'}}>{["FullName","Phone","Email","Service","Position","District"].map(f=><input key={f} value={form[f]||''} onChange={e=>setForm({...form,[f]:e.target.value})} placeholder={f} style={{padding:'10px',borderRadius:'10px',border:'1px solid #e5e7eb'}}/>)}</div><div style={{display:'flex',gap:'8px',marginTop:'16px'}}><button onClick={()=>setEditRow(null)} style={{flex:1,padding:'12px',borderRadius:'12px'}}>CANCEL</button><button onClick={handleSave} style={{flex:1,background:'#0a1931',color:'#ffcc00',padding:'12px',borderRadius:'12px',fontWeight:900}}>SAVE</button></div></div></div>)}
     </div>
   )
