@@ -25,6 +25,9 @@ const AdminDashboard = () => {
   const [sidebarWidth, setSidebarWidth] = useState(270);
   const audioRef = useRef(null);
   const resizingRef = useRef(false);
+  // ✅ ADDED ONLY: FILTERS
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({ service:"", position:"", district:"", education:"", status:"", dateFrom:"", dateTo:"" });
 
   const showToast = (msg) => { setToast(msg); setTimeout(()=>setToast(""), 3500); }
   const login = () => pass === ADMIN_PASSWORD ? setAuth(true) : alert("Wrong Password!");
@@ -64,7 +67,7 @@ const AdminDashboard = () => {
   };
   
   useEffect(()=>{ if(auth) load(); },[auth]);
-  useEffect(()=>{ setCurrentPage(1); },[search, tab, rowsPerPage]);
+  useEffect(()=>{ setCurrentPage(1); },[search, tab, rowsPerPage, filters]);
   const getVal = (obj, keys) => { for(let k of keys) if(obj[k]!==undefined && obj[k]!==null && obj[k]!=='') return obj[k]; return ''; }
 
   useEffect(()=>{
@@ -79,7 +82,6 @@ const AdminDashboard = () => {
     return ()=>{ window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
   },[]);
 
-  // ✅ ADDED ONLY: CLICK STATUS TO TURN New -> Read (and back)
   const handleToggleStatus = async (row) => {
     const current = getVal(row,['Status','status']) || 'New';
     const next = current === 'New' ? 'Read' : current === 'Read' ? 'New' : 'Read';
@@ -173,13 +175,37 @@ const AdminDashboard = () => {
   const applicants = data.filter(d => (d.type==='applicant' || d.Type==='applicant' || getVal(d,['Position','position']))); 
   const contacts = data.filter(d => !applicants.includes(d)); 
   const total = data.length;
-  const list = (tab==='contacts'?contacts:tab==='applicants'?applicants:data).filter(d=>{ const s = `${getVal(d,['FullName','fullName'])} ${getVal(d,['Phone','phone'])} ${getVal(d,['Service','service'])} ${getVal(d,['Position','position'])}`.toLowerCase(); return !search || s.includes(search.toLowerCase()); });
+  // ✅ FILTER LOGIC ONLY
+  const unique = (arr, keys) => { const s=new Set(); arr.forEach(d=>{ const v=getVal(d,keys); if(v) s.add(v); }); return [...s].sort(); };
+  const serviceOptions = unique(contacts, ['Service','service']);
+  const positionOptions = unique(applicants, ['Position','position']);
+  const districtOptions = unique(applicants, ['District','district']);
+  const educationOptions = unique(applicants, ['Education','education']);
+  const statusOptions = unique(data, ['Status','status']);
+  const activeFilterCount = Object.values(filters).filter(v=>v).length;
+  const clearFilters = () => setFilters({ service:"", position:"", district:"", education:"", status:"", dateFrom:"", dateTo:"" });
+  const baseList = (tab==='contacts'?contacts:tab==='applicants'?applicants:data);
+  const list = baseList.filter(d=>{
+    const s = `${getVal(d,['FullName','fullName'])} ${getVal(d,['Phone','phone'])} ${getVal(d,['Email','email'])} ${getVal(d,['Service','service'])} ${getVal(d,['Position','position'])} ${getVal(d,['District','district'])} ${getVal(d,['Education','education'])} ${getVal(d,['Interest','interest'])} ${getVal(d,['Message','message'])}`.toLowerCase();
+    if(search && !s.includes(search.toLowerCase())) return false;
+    if(filters.service && getVal(d,['Service','service'])!==filters.service) return false;
+    if(filters.position && getVal(d,['Position','position'])!==filters.position) return false;
+    if(filters.district && getVal(d,['District','district'])!==filters.district) return false;
+    if(filters.education && getVal(d,['Education','education'])!==filters.education) return false;
+    if(filters.status && getVal(d,['Status','status'])!==filters.status) return false;
+    if(filters.dateFrom){ const ts=new Date(getVal(d,['Timestamp','timestamp'])); if(ts < new Date(filters.dateFrom)) return false; }
+    if(filters.dateTo){ const ts=new Date(getVal(d,['Timestamp','timestamp'])); if(ts > new Date(filters.dateTo+'T23:59:59')) return false; }
+    return true;
+  });
   const paginatedList = list.slice((currentPage-1)*rowsPerPage, currentPage*rowsPerPage);
   const totalPages = Math.max(1, Math.ceil(list.length / rowsPerPage));
 
   const theme = dark ? {bgMain:'#0f172a', bgCard:'#1e293b', text:'#f1f5f9', border:'#334155', sidebar:'#1e293b', input:'#0f172a'} : {bgMain:'#f8fafc', bgCard:'#ffffff', text:'#0f172a', border:'#e2e8f0', sidebar:'#ffffff', input:'#f1f5f9'};
   const cellStyle = {padding:'11px',border:`1px solid ${theme.border}`};
   const menuItem = (active) => ({padding:'11px 14px',borderRadius:'12px',fontSize:'13px',fontWeight:active?900:700,cursor:'pointer',background:active?'#facc15':'transparent',color:active?'#0f172a':theme.text,border:`1px solid ${theme.border}`,textAlign:'left',width:'100%',display:'flex',justifyContent:'space-between'});
+  const filterSelect = {padding:'8px 10px',borderRadius:'10px',border:`1px solid ${theme.border}`,background:theme.bgCard,color:theme.text,fontSize:'12px',fontWeight:700,width:'100%'};
+  const isContactTab = tab==='contacts';
+  const colCount = isContactTab ? 9 : tab==='applicants' ? 12 : 12;
 
   return (
     <div style={{background:theme.bgMain,minHeight:'100vh',color:theme.text,display:'flex',fontFamily:'Inter, Arial', position:'relative'}}>
@@ -206,20 +232,42 @@ const AdminDashboard = () => {
       <div onMouseDown={(e)=>{ resizingRef.current=true; document.body.style.cursor='col-resize'; }} title="Drag left / right to resize" style={{width:'8px',cursor:'col-resize',background:'#facc15',flexShrink:0, position:'sticky', top:0, height:'100vh', zIndex:10}} />
 
       <div style={{flex:1,padding:'18px',overflowX:'hidden'}}>
-        <div style={{background:theme.bgCard,padding:'12px 16px',borderRadius:'14px',display:'flex',gap:'8px',border:`1px solid ${theme.border}`,marginBottom:'12px'}}>
-          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search name, phone..." style={{flex:1,background:theme.input,border:`1px solid ${theme.border}`,padding:'10px 14px',borderRadius:'20px',color:theme.text}}/>
+        <div style={{background:theme.bgCard,padding:'12px 16px',borderRadius:'14px',display:'flex',gap:'8px',border:`1px solid ${theme.border}`,marginBottom:'12px',flexWrap:'wrap'}}>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search name, phone..." style={{flex:1,minWidth:'180px',background:theme.input,border:`1px solid ${theme.border}`,padding:'10px 14px',borderRadius:'20px',color:theme.text}}/>
+          <button onClick={()=>setShowFilters(!showFilters)} style={{background:activeFilterCount?'#facc15':'#fff',color:'#0f172a',border:`1px solid ${theme.border}`,padding:'10px 14px',borderRadius:'20px',fontWeight:900,cursor:'pointer',fontSize:'12px'}}>{showFilters?'✕ Filters':'🔍 Filters'+(activeFilterCount?' ('+activeFilterCount+')':'')}</button>
           {selected.length>0 && <button onClick={handleBulkDelete} style={{background:'#dc2626',color:'#fff',border:'none',padding:'10px 14px',borderRadius:'20px',fontWeight:800,cursor:'pointer'}}>🗑 {selected.length}</button>}
           <select value={rowsPerPage} onChange={e=>setRowsPerPage(Number(e.target.value))} style={{padding:'8px 12px',borderRadius:'20px',border:`1px solid ${theme.border}`,background:theme.bgCard,color:theme.text}}><option value={5}>5</option><option value={10}>10</option><option value={20}>20</option><option value={30}>30</option><option value={40}>40</option><option value={50}>50</option><option value={60}>60</option><option value={70}>70</option><option value={80}>80</option><option value={90}>90</option><option value={100}>100</option></select>
         </div>
+
+        {showFilters && <div style={{background:theme.bgCard,padding:'14px',borderRadius:'14px',border:`1px solid #facc15`,marginBottom:'12px'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'10px'}}><b style={{fontSize:'13px'}}>🔍 Filters — {list.length} found</b><button onClick={clearFilters} style={{background:theme.bgMain,border:`1px solid ${theme.border}`,color:theme.text,padding:'6px 12px',borderRadius:'20px',fontWeight:800,cursor:'pointer',fontSize:'12px'}}>Clear All</button></div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:'8px'}}>
+            {isContactTab ? <>
+              <div><label style={{fontSize:'11px',fontWeight:800}}>Service</label><select value={filters.service} onChange={e=>setFilters({...filters,service:e.target.value})} style={filterSelect}><option value="">All Services</option>{serviceOptions.map(o=><option key={o} value={o}>{o}</option>)}</select></div>
+            </> : <>
+              <div><label style={{fontSize:'11px',fontWeight:800}}>Position</label><select value={filters.position} onChange={e=>setFilters({...filters,position:e.target.value})} style={filterSelect}><option value="">All Positions</option>{positionOptions.map(o=><option key={o} value={o}>{o}</option>)}</select></div>
+              <div><label style={{fontSize:'11px',fontWeight:800}}>District</label><select value={filters.district} onChange={e=>setFilters({...filters,district:e.target.value})} style={filterSelect}><option value="">All Districts</option>{districtOptions.map(o=><option key={o} value={o}>{o}</option>)}</select></div>
+              <div><label style={{fontSize:'11px',fontWeight:800}}>Education</label><select value={filters.education} onChange={e=>setFilters({...filters,education:e.target.value})} style={filterSelect}><option value="">All Education</option>{educationOptions.map(o=><option key={o} value={o}>{o}</option>)}</select></div>
+            </>}
+            <div><label style={{fontSize:'11px',fontWeight:800}}>Status</label><select value={filters.status} onChange={e=>setFilters({...filters,status:e.target.value})} style={filterSelect}><option value="">All Status</option>{statusOptions.map(o=><option key={o} value={o}>{o}</option>)}<option value="New">New</option><option value="Read">Read</option><option value="Contacted">Contacted</option><option value="Hired">Hired</option><option value="Rejected">Rejected</option></select></div>
+            <div><label style={{fontSize:'11px',fontWeight:800}}>From Date</label><input type="date" value={filters.dateFrom} onChange={e=>setFilters({...filters,dateFrom:e.target.value})} style={filterSelect}/></div>
+            <div><label style={{fontSize:'11px',fontWeight:800}}>To Date</label><input type="date" value={filters.dateTo} onChange={e=>setFilters({...filters,dateTo:e.target.value})} style={filterSelect}/></div>
+          </div>
+        </div>}
 
         {showTrash && <div style={{background:theme.bgCard,padding:'12px',borderRadius:'12px',border:'2px dashed #facc15',marginBottom:'12px'}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'8px'}}><b>🗑 Trash {trash.length} - Restore or Permanently Delete</b><div style={{display:'flex',gap:'6px'}}><button onClick={handleRestoreAll} style={{background:'#facc15',border:'none',padding:'7px 12px',borderRadius:'20px',fontWeight:900,cursor:'pointer',fontSize:'12px'}}>♻️ Restore All</button><button onClick={handleEmptyTrash} style={{background:'#dc2626',color:'#fff',border:'none',padding:'7px 12px',borderRadius:'20px',fontWeight:900,cursor:'pointer',fontSize:'12px'}}>❌ Empty Trash</button></div></div><div style={{display:'flex',gap:'6px',flexWrap:'wrap',marginTop:'8px'}}>{trash.map(t=><div key={t._uid} style={{background:theme.bgMain,padding:'6px 10px',borderRadius:'8px',fontSize:'11px',display:'flex',gap:'6px',alignItems:'center'}}>{getVal(t,['FullName','fullName'])} <button onClick={()=>handleRestore(t)} style={{background:'#facc15',border:'none',padding:'4px 8px',borderRadius:'6px',fontWeight:800,cursor:'pointer'}}>♻️ Restore</button><button onClick={()=>handlePermanentDelete(t)} style={{background:'#dc2626',color:'#fff',border:'none',padding:'4px 8px',borderRadius:'6px',fontWeight:800,cursor:'pointer'}}>❌ Delete Forever</button></div>)}</div></div>}
 
         <div style={{background:theme.bgCard,borderRadius:'14px',overflow:'hidden',border:`1px solid ${theme.border}`}}>
           <div style={{padding:'12px 16px',background:dark?'#0f172a':'#0f172a',color:'#facc15',fontWeight:900,fontSize:'12px'}}>{tab.toUpperCase()} — {list.length} rows — {loading?'Loading...':'Ready'}</div>
           <div style={{overflowX:'auto'}}>
-            <table style={{width:'100%',borderCollapse:'collapse',fontSize:'12px',minWidth:'750px'}}>
-              <thead><tr style={{background:theme.bgMain}}><th style={cellStyle}><input type="checkbox" checked={paginatedList.length>0 && paginatedList.every(r=>selected.includes(r._uid))} onChange={()=>{ const ids=paginatedList.map(r=>r._uid); setSelected(ids.every(id=>selected.includes(id))?prev=>prev.filter(id=>!ids.includes(id)):prev=>[...new Set([...prev,...ids])]) }}/></th><th style={cellStyle}>DATE</th><th style={cellStyle}>NAME</th><th style={cellStyle}>PHONE</th><th style={cellStyle}>{tab==='contacts'?'SERVICE':'POSITION'}</th><th style={cellStyle}>STATUS</th><th style={cellStyle}>ACTIONS</th></tr></thead>
-              <tbody>{paginatedList.length===0 && <tr><td colSpan={7} style={{padding:'30px',textAlign:'center'}}>{loading?'Loading...':'No data - Ready for new submissions ✅'}</td></tr>}{paginatedList.map((d,i)=>{ const checked=selected.includes(d._uid); const bg = checked?'#422006':i%2===0?theme.bgCard:theme.bgMain; const st = getVal(d,['Status','status'])||'New'; return (<tr key={d._uid} style={{background:bg}}><td style={{...cellStyle,background:bg}}><input type="checkbox" checked={checked} onChange={()=>setSelected(prev=>prev.includes(d._uid)?prev.filter(id=>id!==d._uid):[...prev,d._uid])}/></td><td style={{...cellStyle,background:bg}}>{getVal(d,['Timestamp','timestamp'])?.slice(0,19)}</td><td style={{...cellStyle,background:bg,fontWeight:800}}>{getVal(d,['FullName','fullName'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Phone','phone'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Service','service'])||getVal(d,['Position','position'])}</td><td style={{...cellStyle,background:bg}}><span onClick={()=>handleToggleStatus(d)} title="Click to turn New ↔ Read" style={{background: st==='Hired'?'#dcfce7':st==='Rejected'?'#fee2e2':st==='Read'?'#dbeafe':st==='Contacted'?'#e0e7ff':'#fef9c3', color:'#0f172a', padding:'3px 8px', borderRadius:'20px', fontWeight:800, fontSize:'11px', cursor:'pointer', display:'inline-block'}}>{st==='New'?'🟡 New':st==='Read'?'👁️ Read':st} ↕</span></td><td style={{...cellStyle,background:bg}}><button onClick={()=>handleEdit(d)} style={{padding:'5px 10px',borderRadius:'8px',background:'#facc15',border:'none',fontWeight:800,cursor:'pointer'}}>EDIT</button><button onClick={()=>handleDelete(d)} style={{padding:'5px 10px',borderRadius:'8px',background:'#fee2e2',color:'#dc2626',border:'none',fontWeight:800,marginLeft:'4px',cursor:'pointer'}}>DEL</button></td></tr>)})}</tbody>
+            <table style={{width:'100%',borderCollapse:'collapse',fontSize:'12px',minWidth:isContactTab?'950px':'1250px'}}>
+              <thead><tr style={{background:theme.bgMain}}>
+                <th style={cellStyle}><input type="checkbox" checked={paginatedList.length>0 && paginatedList.every(r=>selected.includes(r._uid))} onChange={()=>{ const ids=paginatedList.map(r=>r._uid); setSelected(ids.every(id=>selected.includes(id))?prev=>prev.filter(id=>!ids.includes(id)):prev=>[...new Set([...prev,...ids])]) }}/></th>
+                <th style={cellStyle}>DATE</th><th style={cellStyle}>NAME</th><th style={cellStyle}>PHONE</th><th style={cellStyle}>EMAIL</th>
+                {isContactTab ? <><th style={cellStyle}>SERVICE</th><th style={cellStyle}>MESSAGE</th></> : <><th style={cellStyle}>POSITION</th><th style={cellStyle}>EDUCATION</th><th style={cellStyle}>DISTRICT</th><th style={cellStyle}>EXPERIENCE</th><th style={cellStyle}>INTEREST</th></>}
+                <th style={cellStyle}>STATUS</th><th style={cellStyle}>ACTIONS</th>
+              </tr></thead>
+              <tbody>{paginatedList.length===0 && <tr><td colSpan={colCount} style={{padding:'30px',textAlign:'center'}}>{loading?'Loading...':'No data - Ready for new submissions ✅'}</td></tr>}{paginatedList.map((d,i)=>{ const checked=selected.includes(d._uid); const bg = checked?'#422006':i%2===0?theme.bgCard:theme.bgMain; const st = getVal(d,['Status','status'])||'New'; return (<tr key={d._uid} style={{background:bg}}><td style={{...cellStyle,background:bg}}><input type="checkbox" checked={checked} onChange={()=>setSelected(prev=>prev.includes(d._uid)?prev.filter(id=>id!==d._uid):[...prev,d._uid])}/></td><td style={{...cellStyle,background:bg}}>{getVal(d,['Timestamp','timestamp'])?.slice(0,19)}</td><td style={{...cellStyle,background:bg,fontWeight:800}}>{getVal(d,['FullName','fullName'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Phone','phone'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Email','email'])}</td>{isContactTab ? <><td style={{...cellStyle,background:bg}}>{getVal(d,['Service','service'])}</td><td style={{...cellStyle,background:bg,maxWidth:'180px'}}>{getVal(d,['Message','message','Messages'])}</td></> : <><td style={{...cellStyle,background:bg}}>{getVal(d,['Position','position'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Education','education'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['District','district'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Experience','experience'])}</td><td style={{...cellStyle,background:bg,maxWidth:'150px'}}>{getVal(d,['Interest','interest'])}</td></>}<td style={{...cellStyle,background:bg}}><span onClick={()=>handleToggleStatus(d)} title="Click to turn New ↔ Read" style={{background: st==='Hired'?'#dcfce7':st==='Rejected'?'#fee2e2':st==='Read'?'#dbeafe':st==='Contacted'?'#e0e7ff':'#fef9c3', color:'#0f172a', padding:'3px 8px', borderRadius:'20px', fontWeight:800, fontSize:'11px', cursor:'pointer', display:'inline-block', whiteSpace:'nowrap'}}>{st==='New'?'🟡 New':st==='Read'?'👁️ Read':st} ↕</span></td><td style={{...cellStyle,background:bg,whiteSpace:'nowrap'}}><button onClick={()=>handleEdit(d)} style={{padding:'5px 10px',borderRadius:'8px',background:'#facc15',border:'none',fontWeight:800,cursor:'pointer'}}>EDIT</button><button onClick={()=>handleDelete(d)} style={{padding:'5px 10px',borderRadius:'8px',background:'#fee2e2',color:'#dc2626',border:'none',fontWeight:800,marginLeft:'4px',cursor:'pointer'}}>DEL</button></td></tr>)})}</tbody>
             </table>
           </div>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'12px 16px',borderTop:`1px solid ${theme.border}`,flexWrap:'wrap',gap:'8px',background:theme.bgMain}}>
