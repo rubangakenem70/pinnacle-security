@@ -28,12 +28,15 @@ const AdminDashboard = () => {
   const showToast = (msg) => { setToast(msg); setTimeout(()=>setToast(""), 3500); }
   const login = () => pass === ADMIN_PASSWORD ? setAuth(true) : alert("Wrong Password!");
   
+  // ✅ FIXED LOAD - JSONP, NOT fetch()
   const load = () => {
     setLoading(true);
-    fetch(GOOGLE_SHEET_WEBHOOK + "?cache=" + Date.now())
-      .then(r=>r.text()).then(text=>{
-        let d; try { d = JSON.parse(text); } catch(e) { d = []; }
-        const arr = Array.isArray(d)?d:(d.data||[]);
+    const cbName = "psl_cb_" + Date.now();
+    const old = document.getElementById("psl_jsonp");
+    if(old) old.remove();
+    window[cbName] = (d) => {
+      try {
+        const arr = Array.isArray(d) ? d : (d.data || []);
         const withId = arr.map((row,i)=>{ 
           const ts = (row.Timestamp || row.timestamp || "") + "";
           if(!ts || ts.trim()==="" || ts==="undefined") return null;
@@ -41,8 +44,23 @@ const AdminDashboard = () => {
           return { ...row, Timestamp: ts, timestamp: ts, Status: saved.Status || row.Status || 'New', _uid: `${ts}_${i}`, _index: i }
         }).filter(Boolean);
         setData(withId.sort((a,b)=> new Date(b.timestamp||0) - new Date(a.timestamp||0)));
-        setLoading(false);
-      }).catch(()=>{ setLoading(false); showToast("❌ Load failed - redeploy Apps Script as Anyone"); });
+      } catch(e) { console.log(e); }
+      setLoading(false);
+      delete window[cbName];
+      const sc = document.getElementById("psl_jsonp");
+      if(sc) sc.remove();
+    };
+    const s = document.createElement("script");
+    s.id = "psl_jsonp";
+    s.src = GOOGLE_SHEET_WEBHOOK + "?callback=" + cbName + "&cache=" + Date.now();
+    s.onerror = () => {
+      setLoading(false);
+      delete window[cbName];
+      const sc = document.getElementById("psl_jsonp");
+      if(sc) sc.remove();
+      showToast("❌ Load failed - check Apps Script");
+    };
+    document.body.appendChild(s);
   };
   
   useEffect(()=>{ if(auth) load(); },[auth]);
@@ -53,7 +71,7 @@ const AdminDashboard = () => {
     const newTrash = [{...row, deletedAt: new Date().toISOString()}, ...trash].slice(0,200);
     setTrash(newTrash); localStorage.setItem('psl_trash', JSON.stringify(newTrash));
     setData(prev => prev.filter(r => r._uid !== row._uid)); showToast("🗑 Trash");
-    await fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'delete', Timestamp: getVal(row,['Timestamp','timestamp']) }) });
+    await fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'delete', timestamps:[getVal(row,['Timestamp','timestamp'])] }) });
   };
   const handleBulkDelete = async () => {
     if(selected.length===0) return;
@@ -128,11 +146,11 @@ const AdminDashboard = () => {
         {showTrash && <div style={{background:theme.bgCard,padding:'12px',borderRadius:'12px',border:'2px dashed #facc15',marginBottom:'12px'}}><b>🗑 Trash {trash.length}</b><div style={{display:'flex',gap:'6px',flexWrap:'wrap',marginTop:'8px'}}>{trash.map(t=><div key={t._uid} style={{background:theme.bgMain,padding:'6px 10px',borderRadius:'8px',fontSize:'11px'}}>{getVal(t,['FullName','fullName'])} <button onClick={()=>{setData(p=>[t,...p]); setTrash(prev=>{const nt=prev.filter(x=>x._uid!==t._uid); localStorage.setItem('psl_trash', JSON.stringify(nt)); return nt;})}}>♻️</button></div>)}</div></div>}
 
         <div style={{background:theme.bgCard,borderRadius:'14px',overflow:'hidden',border:`1px solid ${theme.border}`}}>
-          <div style={{padding:'12px 16px',background:dark?'#0f172a':'#0f172a',color:'#facc15',fontWeight:900,fontSize:'12px'}}>{tab.toUpperCase()} — {list.length} rows — Click Contact/Applicant on left → shows here</div>
+          <div style={{padding:'12px 16px',background:dark?'#0f172a':'#0f172a',color:'#facc15',fontWeight:900,fontSize:'12px'}}>{tab.toUpperCase()} — {list.length} rows — {loading?'Loading...':'Ready'}</div>
           <div style={{overflowX:'auto'}}>
             <table style={{width:'100%',borderCollapse:'collapse',fontSize:'12px',minWidth:'700px'}}>
               <thead><tr style={{background:theme.bgMain}}><th style={cellStyle}><input type="checkbox" checked={paginatedList.length>0 && paginatedList.every(r=>selected.includes(r._uid))} onChange={()=>{ const ids=paginatedList.map(r=>r._uid); setSelected(ids.every(id=>selected.includes(id))?prev=>prev.filter(id=>!ids.includes(id)):prev=>[...new Set([...prev,...ids])]) }}/></th><th style={cellStyle}>DATE</th><th style={cellStyle}>NAME</th><th style={cellStyle}>PHONE</th><th style={cellStyle}>{tab==='contacts'?'SERVICE':'POSITION'}</th><th style={cellStyle}>ACTIONS</th></tr></thead>
-              <tbody>{paginatedList.length===0 && <tr><td colSpan={6} style={{padding:'30px',textAlign:'center'}}>No data — redeploy Apps Script</td></tr>}{paginatedList.map((d,i)=>{ const checked=selected.includes(d._uid); const bg = checked?'#422006':i%2===0?theme.bgCard:theme.bgMain; return (<tr key={d._uid} style={{background:bg}}><td style={{...cellStyle,background:bg}}><input type="checkbox" checked={checked} onChange={()=>setSelected(prev=>prev.includes(d._uid)?prev.filter(id=>id!==d._uid):[...prev,d._uid])}/></td><td style={{...cellStyle,background:bg}}>{getVal(d,['Timestamp','timestamp'])?.slice(0,19)}</td><td style={{...cellStyle,background:bg,fontWeight:800}}>{getVal(d,['FullName','fullName'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Phone','phone'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Service','service'])||getVal(d,['Position','position'])}</td><td style={{...cellStyle,background:bg}}><button onClick={()=>handleEdit(d)} style={{padding:'5px 10px',borderRadius:'8px',background:'#facc15',border:'none',fontWeight:800,cursor:'pointer'}}>EDIT</button><button onClick={()=>handleDelete(d)} style={{padding:'5px 10px',borderRadius:'8px',background:'#fee2e2',color:'#dc2626',border:'none',fontWeight:800,marginLeft:'4px',cursor:'pointer'}}>DEL</button></td></tr>)})}</tbody>
+              <tbody>{paginatedList.length===0 && <tr><td colSpan={6} style={{padding:'30px',textAlign:'center'}}>{loading?'Loading...':'No data - Ready for new submissions ✅'}</td></tr>}{paginatedList.map((d,i)=>{ const checked=selected.includes(d._uid); const bg = checked?'#422006':i%2===0?theme.bgCard:theme.bgMain; return (<tr key={d._uid} style={{background:bg}}><td style={{...cellStyle,background:bg}}><input type="checkbox" checked={checked} onChange={()=>setSelected(prev=>prev.includes(d._uid)?prev.filter(id=>id!==d._uid):[...prev,d._uid])}/></td><td style={{...cellStyle,background:bg}}>{getVal(d,['Timestamp','timestamp'])?.slice(0,19)}</td><td style={{...cellStyle,background:bg,fontWeight:800}}>{getVal(d,['FullName','fullName'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Phone','phone'])}</td><td style={{...cellStyle,background:bg}}>{getVal(d,['Service','service'])||getVal(d,['Position','position'])}</td><td style={{...cellStyle,background:bg}}><button onClick={()=>handleEdit(d)} style={{padding:'5px 10px',borderRadius:'8px',background:'#facc15',border:'none',fontWeight:800,cursor:'pointer'}}>EDIT</button><button onClick={()=>handleDelete(d)} style={{padding:'5px 10px',borderRadius:'8px',background:'#fee2e2',color:'#dc2626',border:'none',fontWeight:800,marginLeft:'4px',cursor:'pointer'}}>DEL</button></td></tr>)})}</tbody>
             </table>
           </div>
         </div>
