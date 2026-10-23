@@ -45,7 +45,6 @@ const AdminDashboard = () => {
     const cbName = "psl_cb_" + Date.now();
     const old = document.getElementById("psl_jsonp");
     if(old) old.remove();
-    // ✅ FIXED: Timeout 10s - if Apps Script hangs, show clear error
     const timeoutId = setTimeout(()=>{ setLoading(false); showToast("❌ Load timeout - Deploy NEW VERSION in Apps Script"); }, 10000);
     window[cbName] = (d) => {
       clearTimeout(timeoutId);
@@ -100,6 +99,17 @@ const AdminDashboard = () => {
   useEffect(()=>{ if(auth) load(); },[auth]);
   useEffect(()=>{ setCurrentPage(1); },[search, tab, rowsPerPage, filters]);
   const getVal = (obj, keys) => { for(let k of keys) if(obj[k]!==undefined && obj[k]!==null && obj[k]!=='') return obj[k]; return ''; }
+  // ✅ FIXED: Parse DD/MM/YYYY HH:MM:SS.mmm-xxx correctly for date filter
+  const parseTs = (ts) => {
+    if(!ts) return new Date(0);
+    const str = String(ts);
+    if(str.includes('/')){
+      const datePart = str.split(' ')[0].split('/');
+      if(datePart.length===3) return new Date(Number(datePart[2]), Number(datePart[1])-1, Number(datePart[0]));
+    }
+    const d = new Date(str);
+    return isNaN(d.getTime()) ? new Date(0) : d;
+  };
   const formatDate = (ts) => {
     if(!ts) return '';
     const str = String(ts);
@@ -287,17 +297,22 @@ const AdminDashboard = () => {
   const statusOptions = unique(data, ['Status','status']);
   const activeFilterCount = Object.values(filters).filter(v=>v).length;
   const clearFilters = () => setFilters({ service:"", position:"", district:"", education:"", status:"", dateFrom:"", dateTo:"" });
+  // ✅ FIXED: Switching tab clears old filters + selection so it never goes blank
+  const switchTab = (t) => { setTab(t); setFilters({ service:"", position:"", district:"", education:"", status:"", dateFrom:"", dateTo:"" }); setSelected([]); setCurrentPage(1); };
+  const isApplicantRow = (d) => (d.type==='applicant' || d.Type==='applicant' || !!getVal(d,['Position','position']));
   const baseList = (tab==='contacts'?contacts:tab==='applicants'?applicants:data);
   const list = baseList.filter(d=>{
     const s = `${getVal(d,['FullName','fullName'])} ${getVal(d,['Phone','phone'])} ${getVal(d,['Email','email'])} ${getVal(d,['Service','service'])} ${getVal(d,['Position','position'])} ${getVal(d,['District','district'])} ${getVal(d,['Education','education'])} ${getVal(d,['Interest','interest'])} ${getVal(d,['Message','message'])}`.toLowerCase();
     if(search && !s.includes(search.toLowerCase())) return false;
-    if(filters.service && getVal(d,['Service','service'])!==filters.service) return false;
-    if(filters.position && getVal(d,['Position','position'])!==filters.position) return false;
-    if(filters.district && getVal(d,['District','district'])!==filters.district) return false;
-    if(filters.education && getVal(d,['Education','education'])!==filters.education) return false;
+    const isApp = isApplicantRow(d);
+    // ✅ FIXED: Service only applies to contacts, Position/District/Education only to applicants. On Total, the other type passes through.
+    if(filters.service && !isApp && getVal(d,['Service','service'])!==filters.service) return false;
+    if(filters.position && isApp && getVal(d,['Position','position'])!==filters.position) return false;
+    if(filters.district && isApp && getVal(d,['District','district'])!==filters.district) return false;
+    if(filters.education && isApp && getVal(d,['Education','education'])!==filters.education) return false;
     if(filters.status && getVal(d,['Status','status'])!==filters.status) return false;
-    if(filters.dateFrom){ const ts=new Date(getVal(d,['Timestamp','timestamp'])); if(ts < new Date(filters.dateFrom)) return false; }
-    if(filters.dateTo){ const ts=new Date(getVal(d,['Timestamp','timestamp'])); if(ts > new Date(filters.dateTo+'T23:59:59')) return false; }
+    if(filters.dateFrom){ const ts=parseTs(getVal(d,['Timestamp','timestamp'])); if(ts < new Date(filters.dateFrom)) return false; }
+    if(filters.dateTo){ const ts=parseTs(getVal(d,['Timestamp','timestamp'])); if(ts > new Date(filters.dateTo+'T23:59:59')) return false; }
     return true;
   });
   const paginatedList = list.slice((currentPage-1)*rowsPerPage, currentPage*rowsPerPage);
@@ -332,9 +347,9 @@ const AdminDashboard = () => {
           <div><h2 style={{fontWeight:900,fontSize:'13px'}}>Pinnacle Security Ltd</h2></div>
         </div>
         <button onClick={()=>setDark(!dark)} style={{...menuItem(false), background:theme.bgMain}}> <span>{dark?'☀️ Light Theme':'🌙 Dark Theme'}</span> <span>{dark?'☀️':'🌙'}</span> </button>
-        <button onClick={()=>{setTab('contacts')}} style={menuItem(tab==='contacts')}> <span>📞 Contact</span> <span>{contacts.length}</span> </button>
-        <button onClick={()=>{setTab('applicants')}} style={menuItem(tab==='applicants')}> <span>🎖️ Applicant</span> <span>{applicants.length}</span> </button>
-        <button onClick={()=>{setTab('total')}} style={menuItem(tab==='total')}> <span>📊 Total</span> <span>{total}</span> </button>
+        <button onClick={()=>switchTab('contacts')} style={menuItem(tab==='contacts')}> <span>📞 Contact</span> <span>{contacts.length}</span> </button>
+        <button onClick={()=>switchTab('applicants')} style={menuItem(tab==='applicants')}> <span>🎖️ Applicant</span> <span>{applicants.length}</span> </button>
+        <button onClick={()=>switchTab('total')} style={menuItem(tab==='total')}> <span>📊 Total</span> <span>{total}</span> </button>
         <button onClick={()=>setShowAuto(true)} style={{...menuItem(false), background:'#25D366', color:'#ffffff', border:'1px solid #25D366'}}> <span>🤖 Auto Reply {autoSettings.emailOn?'📧':''} {autoSettings.whatsappOn?'💬':''}</span> <span style={{color:'#ffffff'}}>{autoSettings.emailOn||autoSettings.whatsappOn?'🟢 ON':'🔴 OFF'}</span> </button>
         <button onClick={()=>setShowTrash(!showTrash)} style={menuItem(showTrash)}> <span>🗑 Trash {trash.length}</span> </button>
         <a href="/" style={{...menuItem(false), textDecoration:'none'}}> <span>🏠 Home</span> </a>
@@ -361,10 +376,9 @@ const AdminDashboard = () => {
         {showFilters && <div style={{background:theme.bgCard,padding:'14px',borderRadius:'14px',border:`1px solid #facc15`,marginBottom:'12px'}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'10px'}}><b style={{fontSize:'13px'}}>🔍 Filters — {list.length} found</b><button onClick={clearFilters} style={{background:theme.bgMain,border:`1px solid ${theme.border}`,color:theme.text,padding:'6px 12px',borderRadius:'20px',fontWeight:800,cursor:'pointer',fontSize:'12px'}}>Clear All</button></div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:'8px'}}>
-            {isContactTab ? <>
-              <div><label style={{fontSize:'11px',fontWeight:800}}>Service</label><select value={filters.service} onChange={e=>setFilters({...filters,service:e.target.value})} style={filterSelect}><option value="">All Services</option>{serviceOptions.map(o=><option key={o} value={o}>{o}</option>)}</select></div>
-            </> : <>
-              <div><label style={{fontSize:'11px',fontWeight:800}}>Position</label><select value={filters.position} onChange={e=>setFilters({...filters,position:e.target.value})} style={filterSelect}><option value="">All Positions</option>{positionOptions.map(o=<option key={o} value={o}>{o}</option>)}</select></div>
+            {(isContactTab || tab==='total') && <div><label style={{fontSize:'11px',fontWeight:800}}>Service</label><select value={filters.service} onChange={e=>setFilters({...filters,service:e.target.value})} style={filterSelect}><option value="">All Services</option>{serviceOptions.map(o=><option key={o} value={o}>{o}</option>)}</select></div>}
+            {(tab==='applicants' || tab==='total') && <>
+              <div><label style={{fontSize:'11px',fontWeight:800}}>Position</label><select value={filters.position} onChange={e=>setFilters({...filters,position:e.target.value})} style={filterSelect}><option value="">All Positions</option>{positionOptions.map(o=><option key={o} value={o}>{o}</option>)}</select></div>
               <div><label style={{fontSize:'11px',fontWeight:800}}>District</label><select value={filters.district} onChange={e=>setFilters({...filters,district:e.target.value})} style={filterSelect}><option value="">All Districts</option>{districtOptions.map(o=><option key={o} value={o}>{o}</option>)}</select></div>
               <div><label style={{fontSize:'11px',fontWeight:800}}>Education</label><select value={filters.education} onChange={e=>setFilters({...filters,education:e.target.value})} style={filterSelect}><option value="">All Education</option>{educationOptions.map(o=><option key={o} value={o}>{o}</option>)}</select></div>
             </>}
