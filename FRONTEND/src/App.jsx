@@ -163,12 +163,86 @@ const Dropdown = ({ title, children, color="#0a1931" }) => {
   )
 }
 
+// ===== ONLY THIS NAVBAR IS CHANGED - NOTHING ELSE =====
 const Navbar = () => {
   const [open, setOpen] = useState(false);
-  const scrollTo = (id) => { setOpen(false); const el = document.getElementById(id); if (el) { const offset = 75; const top = el.getBoundingClientRect().top + window.scrollY - offset; window.scrollTo({ top, behavior: 'smooth' }); } };
+  const [hover, setHover] = useState(null);
+  const scrollTo = (id) => { setOpen(false); setHover(null); const el = document.getElementById(id); if (el) { const offset = 75; const top = el.getBoundingClientRect().top + window.scrollY - offset; window.scrollTo({ top, behavior: 'smooth' }); } };
+
+  const dropWrap = {position:'relative'};
+  const dropBtn = (active) => ({color: active ? '#ffcc00' : '#fff', textDecoration:'none', fontSize:'16px', fontWeight:700, padding:'8px 12px', cursor:'pointer', display:'inline-block'});
+  const mega = {position:'absolute', top:'100%', left:'50%', transform:'translateX(-50%)', width:'560px', background:'#fff', borderRadius:'14px', boxShadow:'0 14px 35px rgba(0,0,0,0.25)', padding:'20px', display:'grid', gridTemplateColumns:'1fr 1fr', gap:'20px', zIndex:10000, textAlign:'left'};
+  const colTitle = {color:'#0a1931', fontSize:'13px', fontWeight:900, borderBottom:'3px solid #ffcc00', paddingBottom:'6px', marginBottom:'10px', letterSpacing:'0.5px'};
+  const colLink = {display:'block', color:'#333', fontSize:'14px', fontWeight:700, padding:'8px 6px', cursor:'pointer', borderRadius:'8px'};
+  const colDesc = {display:'block', color:'#777', fontSize:'12px', fontWeight:400, lineHeight:'1.4'};
+
   return (
     <nav className="nav"><div className="nav-top"><span className="logo">PINNACLE SECURITY LTD</span><span className="menu-btn" onClick={() => setOpen(!open)}>{open ? 'X' : 'M'}</span></div>
-      <div className={'links '+(open ? 'show' : '')}><a onClick={() => scrollTo('home')}>Home</a><a onClick={() => scrollTo('about')}>About</a><a onClick={() => scrollTo('services')}>Services</a><a onClick={() => scrollTo('mission')}>Mission</a><a onClick={() => scrollTo('jobs')}>Jobs</a><a onClick={() => scrollTo('aptitude')}>Aptitude Test</a><a onClick={() => scrollTo('contact')}>Contact</a><a onClick={() => scrollTo('join')} className="btn-yellow">Apply Now</a><a href="/admin" style={{color:'#ffcc00', fontWeight:'900', border:'1px solid #ffcc00', borderRadius:'20px'}}>Admin</a></div>
+      <div className={'links '+(open ? 'show' : '')}>
+        <a onClick={() => scrollTo('home')}>Home</a>
+
+        {/* ABOUT ▼ - 2 PAGES */}
+        <div style={dropWrap} onMouseEnter={()=>setHover('about')} onMouseLeave={()=>setHover(null)}>
+          <span style={dropBtn(hover==='about')} onClick={()=>scrollTo('about')}>About ▼</span>
+          {hover==='about' && (
+            <div style={mega}>
+              <div><div style={colTitle}>ABOUT US</div>
+                <span style={colLink} onClick={()=>scrollTo('about')}>About Pinnacle <span style={colDesc}>Since 2018, 150+ officers, 60+ sites, UN 2013-2025, Serena Kigo</span></span>
+                <span style={colLink} onClick={()=>scrollTo('about')}>Our History & Welfare <span style={colDesc}>Free Food & Accommodation for all staff</span></span>
+              </div>
+              <div><div style={colTitle}>MISSION & VALUES</div>
+                <span style={colLink} onClick={()=>scrollTo('mission')}>Mission, Vision, Values <span style={colDesc}>DISCIPLINE - Our daily life</span></span>
+                <span style={colLink} onClick={()=>scrollTo('mission')}>Why Clients Trust Us <span style={colDesc}>24/7 Control Room, 10-Min Response</span></span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* SERVICES ▼ - 2 PAGES */}
+        <div style={dropWrap} onMouseEnter={()=>setHover('services')} onMouseLeave={()=>setHover(null)}>
+          <span style={dropBtn(hover==='services')} onClick={()=>scrollTo('services')}>Services ▼</span>
+          {hover==='services' && (
+            <div style={mega}>
+              <div><div style={colTitle}>🛡️ GUARDING</div>
+                <span style={colLink} onClick={()=>scrollTo('services')}>Security Guard Service <span style={colDesc}>Homes, Shops, Offices - Day / Night</span></span>
+                <span style={colLink} onClick={()=>scrollTo('services')}>Site Incharge & Supervisor <span style={colDesc}>Manages 5-15 guards, roster, OB</span></span>
+                <span style={colLink} onClick={()=>scrollTo('services')}>Construction Site Security <span style={colDesc}>Stop cement, iron bars theft</span></span>
+              </div>
+              <div><div style={colTitle}>📹 TECHNOLOGY & SPECIAL</div>
+                <span style={colLink} onClick={()=>scrollTo('services')}>CCTV, Patrol, Event, Alarm <span style={colDesc}>4 cameras 1.2M, Patrol 3x night</span></span>
+                <span style={colLink} onClick={()=>scrollTo('services')}>Hotel & Corporate - Serena Standard <span style={colDesc}>Polite, clean, 5-star service</span></span>
+                <span style={colLink} onClick={()=>scrollTo('services')}>Escort & VIP Protection <span style={colDesc}>Cash, goods, VIP escort</span></span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* CAREER ▼ - NEW LINK - 2 PAGES */}
+        <div style={dropWrap} onMouseEnter={()=>setHover('career')} onMouseLeave={()=>setHover(null)}>
+          <span style={dropBtn(hover==='career')} onClick={()=>scrollTo('jobs')}>Career ▼</span>
+          {hover==='career' && (
+            <div style={mega}>
+              <div><div style={colTitle}>💼 JOBS - WE ARE HIRING</div>
+                <span style={colLink} onClick={()=>scrollTo('jobs')}>Site Incharge - 5 Posts <span style={colDesc}>UCE + 3yrs + Free Food & Accommodation</span></span>
+                <span style={colLink} onClick={()=>scrollTo('jobs')}>Supervisor - 10 Posts <span style={colDesc}>UACE + Rider Permit + 3yrs</span></span>
+                <span style={colLink} onClick={()=>scrollTo('jobs')}>Security Officer - 50 Posts <span style={colDesc}>P7 & above, Free Food & Accommodation</span></span>
+              </div>
+              <div><div style={colTitle}>📝 APPLY & TEST</div>
+                <span style={colLink} onClick={()=>scrollTo('aptitude')}>Aptitude Test <span style={colDesc}>Must for all applicants - FREE online</span></span>
+                <span style={colLink} onClick={()=>scrollTo('join')}>Apply Now <span style={colDesc}>No Fees - Interview daily 8am Muyenga</span></span>
+                <span style={colLink} onClick={()=>scrollTo('jobs')}>Training - 2 Weeks FREE <span style={colDesc}>At Muyenga HQ, discipline + OB + radio</span></span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <a onClick={() => scrollTo('mission')}>Mission</a>
+        <a onClick={() => scrollTo('jobs')}>Jobs</a>
+        <a onClick={() => scrollTo('aptitude')}>Aptitude Test</a>
+        <a onClick={() => scrollTo('contact')}>Contact</a>
+        <a onClick={() => scrollTo('join')} className="btn-yellow">Apply Now</a>
+        <a href="/admin" style={{color:'#ffcc00', fontWeight:'900', border:'1px solid #ffcc00', borderRadius:'20px'}}>Admin</a>
+      </div>
     </nav>
   )
 }
