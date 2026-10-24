@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-const ADMIN_PASSWORD = "YOUR_ADMIN_PASSWORD_HERE";
+const ADMIN_PASSWORD = "Mose";
 const GOOGLE_SHEET_WEBHOOK = "YOUR_GOOGLE_SHEET_WEBHOOK_HERE";
 const getFullDateTime24 = () => {
   const d = new Date();
