@@ -1,10 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react'
 const ADMIN_PASSWORD = "Mose";
-const GOOGLE_SHEET_WEBHOOK = "YOUR_GOOGLE_SHEET_WEBHOOK_HERE";
+const GOOGLE_SHEET_WEBHOOK = "https://script.google.com/macros/s/AKfycbz0Fx9gSfPwPXZdi8pivw9IdQ_fzj707fPk22GBECuGYhGzwePtEPZV47TyXk8TN8bggQ/exec";
+
 const getFullDateTime24 = () => {
   const d = new Date();
   return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}.${d.getMilliseconds()}-${Math.floor(Math.random()*900)+100}`;
 };
+
+// FIXED: moved to top so load() can use it, and parses time too
+const parseTs = (ts) => {
+  if(!ts) return new Date(0);
+  const str = String(ts).trim();
+  if(str.includes('/')){
+    const parts = str.split(' ');
+    const dp = parts[0].split('/');
+    if(dp.length===3){
+      const tp = (parts[1]||'00:00:00').split(':');
+      return new Date(Number(dp[2]), Number(dp[1])-1, Number(dp[0]), Number(tp[0]||0), Number(tp[1]||0), Number(tp[2]||0));
+    }
+  }
+  const d = new Date(str);
+  return isNaN(d.getTime()) ? new Date(0) : d;
+};
+const escapeHtml = (s) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
 const AdminDashboard = () => {
   const [auth, setAuth] = useState(false);
@@ -19,30 +37,27 @@ const AdminDashboard = () => {
   const [editRow, setEditRow] = useState(null);
   const [form, setForm] = useState({});
   const [toast, setToast] = useState("");
-  const [trash, setTrash] = useState(()=>JSON.parse(localStorage.getItem('psl_trash')||'[]'));
+  const [trash, setTrash] = useState(()=>{ try{ return JSON.parse(localStorage.getItem('psl_trash')||'[]') }catch{ return [] } });
   const [showTrash, setShowTrash] = useState(false);
   const [dark, setDark] = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(270);
-  const audioRef = useRef(null);
   const resizingRef = useRef(false);
+  const toastTimer = useRef(null);
   const [showFilters, setShowFilters] = useState(false);
-  // UPDATED: added interest
   const [filters, setFilters] = useState({ service:"", position:"", district:"", education:"", status:"", interest:"", dateFrom:"", dateTo:"" });
   const [detailRow, setDetailRow] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
   const [addForm, setAddForm] = useState({ Type:"contact", FullName:"", Phone:"", Email:"", Service:"", Message:"", Position:"", Education:"", District:"", Experience:"", Interest:"" });
   const [showAuto, setShowAuto] = useState(false);
-  const [autoSettings, setAutoSettings] = useState(()=>JSON.parse(localStorage.getItem('psl_auto_settings')||JSON.stringify({ emailOn:true, whatsappOn:true, contactEmail:"Hello {name}, thank you for contacting Pinnacle Security Ltd for {service}. We received your message: \"{message}\". We will call you soon for a FREE Site Survey. Control 24/7: 0776971970. In Jesus Name, Pinnacle Security Ltd, Muyenga Hill.", applicantEmail:"Hello {name}, thank you for applying to Pinnacle Security Ltd for {position}. We received your application. We will contact you soon for interview / training at Muyenga HQ. Control 24/7: 0776971970. HR: hr@pinnaclegroup.co.ug. In Jesus Name.", contactWhats:"Hello {name}, this is Pinnacle Security Ltd, Muyenga. Thank you for contacting us for {service}. We received your message. We will call you soon for a FREE Site Survey. Control 24/7: 0776971970. In Jesus Name.", applicantWhats:"Hello {name}, this is Pinnacle Security Ltd, Muyenga. Thank you for applying for {position}. We received your application. When can you come for interview / training at Muyenga HQ? Control 24/7: 0776971970. In Jesus Name." })));
-  const [autoReplied, setAutoReplied] = useState(()=>JSON.parse(localStorage.getItem('psl_auto_replied')||'[]'));
+  const [autoSettings, setAutoSettings] = useState(()=>{ try{ return JSON.parse(localStorage.getItem('psl_auto_settings')||'null') || { emailOn:true, whatsappOn:true, contactEmail:"Hello {name}, thank you for contacting Pinnacle Security Ltd for {service}. We received your message: \"{message}\". We will call you soon for a FREE Site Survey. Control 24/7: 0776971970. In Jesus Name, Pinnacle Security Ltd, Muyenga Hill.", applicantEmail:"Hello {name}, thank you for applying to Pinnacle Security Ltd for {position}. We received your application. We will contact you soon for interview / training at Muyenga HQ. Control 24/7: 0776971970. HR: hr@pinnaclegroup.co.ug. In Jesus Name.", contactWhats:"Hello {name}, this is Pinnacle Security Ltd, Muyenga. Thank you for contacting us for {service}. We received your message. We will call you soon for a FREE Site Survey. Control 24/7: 0776971970. In Jesus Name.", applicantWhats:"Hello {name}, this is Pinnacle Security Ltd, Muyenga. Thank you for applying for {position}. We received your application. When can you come for interview / training at Muyenga HQ? Control 24/7: 0776971970. In Jesus Name." } }catch{ return { emailOn:true, whatsappOn:true, contactEmail:"", applicantEmail:"", contactWhats:"", applicantWhats:"" } } });
+  const [autoReplied, setAutoReplied] = useState(()=>{ try{ return JSON.parse(localStorage.getItem('psl_auto_replied')||'[]') }catch{ return [] } });
   const prevTimestampsRef = useRef(new Set());
-  // UPDATED: ref so load() always sees latest ON/OFF
   const autoSettingsRef = useRef(autoSettings);
   useEffect(()=>{ autoSettingsRef.current = autoSettings; },[autoSettings]);
 
-  const showToast = (msg) => { setToast(msg); setTimeout(()=>setToast(""), 3500); }
-  const login = () => pass === ADMIN_PASSWORD ? setAuth(true) : alert("Wrong Password!");
+  const showToast = (msg) => { setToast(msg); if(toastTimer.current) clearTimeout(toastTimer.current); toastTimer.current = setTimeout(()=>setToast(""), 3500); }
+  const login = () => String(pass||'').trim() === String(ADMIN_PASSWORD||'').trim() ? setAuth(true) : alert("Wrong Password!");
   const saveAutoSettings = (next) => { setAutoSettings(next); localStorage.setItem('psl_auto_settings', JSON.stringify(next)); showToast('🤖 Auto Reply Settings Saved'); };
-  // UPDATED: toggle saves instantly
   const toggleAuto = (key) => { const next = {...autoSettingsRef.current, [key]: !autoSettingsRef.current[key]}; saveAutoSettings(next); };
   const getVal = (obj, keys) => { for(let k of keys) if(obj[k]!==undefined && obj[k]!==null && obj[k]!=='') return obj[k]; return ''; }
   const fillTemplate = (tpl, d) => { return String(tpl||'').replaceAll('{name}', getVal(d,['FullName','fullName'])).replaceAll('{service}', getVal(d,['Service','service'])||'Security Service').replaceAll('{position}', getVal(d,['Position','position'])||'Security Officer').replaceAll('{message}', getVal(d,['Message','message'])||'').replaceAll('{phone}', getVal(d,['Phone','phone'])||'').replaceAll('{email}', getVal(d,['Email','email'])||''); };
@@ -57,18 +72,20 @@ const AdminDashboard = () => {
       clearTimeout(timeoutId);
       try {
         const arr = Array.isArray(d) ? d : (d.data || []);
-        const withId = arr.map((row,i)=>{ 
+        const withId = arr.map((row,i)=>{
           const ts = (row.Timestamp || row.timestamp || "") + "";
           if(!ts || ts.trim()==="" || ts==="undefined") return null;
-          const saved = JSON.parse(localStorage.getItem(`psl_${ts}`) || '{}');
+          let saved = {};
+          try{ saved = JSON.parse(localStorage.getItem(`psl_${ts}`) || '{}'); }catch{}
           return { ...row, Timestamp: ts, timestamp: ts, Status: saved.Status || row.Status || 'New', _uid: `${ts}_${i}`, _index: i }
         }).filter(Boolean);
-        const sorted = withId.sort((a,b)=> new Date(b.timestamp||0) - new Date(a.timestamp||0));
+        const sorted = withId.sort((a,b)=> parseTs(b.timestamp) - parseTs(a.timestamp));
         setData(sorted);
-        // UPDATED: use ref, not re-read localStorage + fix duplicate push bug
-        const repliedSet = new Set(JSON.parse(localStorage.getItem('psl_auto_replied')||'[]'));
+        let repliedSet = new Set();
+        try{ repliedSet = new Set(JSON.parse(localStorage.getItem('psl_auto_replied')||'[]')); }catch{}
         const settings = autoSettingsRef.current;
         let newReplied = [...repliedSet];
+        let newCount = 0;
         sorted.forEach(row=>{
           const ts = row.Timestamp;
           if(prevTimestampsRef.current.has(ts)) return;
@@ -79,12 +96,12 @@ const AdminDashboard = () => {
             const subject = isApp ? `Pinnacle Security Ltd - Your Application for ${getVal(row,['Position','position'])||'Security Officer'} - Received ✅` : `Pinnacle Security Ltd - Your ${getVal(row,['Service','service'])||'Security Service'} Enquiry - Received ✅`;
             const body = fillTemplate(isApp?settings.applicantEmail:settings.contactEmail, row);
             fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'autoReplyEmail', Timestamp: ts, to: getVal(row,['Email','email']), subject, body }) });
-            showToast(`🤖 Auto Email sent to ${getVal(row,['FullName','fullName'])} ✅`);
-            newReplied.push(ts); repliedSet.add(ts);
+            newReplied.push(ts); repliedSet.add(ts); newCount++;
           }
-          if(isNewRow && settings.whatsappOn){ showToast(`💬 NEW from ${getVal(row,['FullName','fullName'])} - Click 💬 to Auto Reply`); }
+          if(isNewRow && settings.whatsappOn){ newCount++; }
         });
-        if(newReplied.length !== JSON.parse(localStorage.getItem('psl_auto_replied')||'[]').length){ localStorage.setItem('psl_auto_replied', JSON.stringify(newReplied)); setAutoReplied(newReplied); }
+        if(newCount>0) showToast(`🤖 ${newCount} new - Auto Email sent / Click 💬 to reply`);
+        if(newReplied.length !== [...repliedSet].length || newReplied.length>0){ try{ const oldLen = JSON.parse(localStorage.getItem('psl_auto_replied')||'[]').length; if(newReplied.length!==oldLen){ localStorage.setItem('psl_auto_replied', JSON.stringify(newReplied)); setAutoReplied(newReplied); } }catch{} }
         sorted.forEach(r=>prevTimestampsRef.current.add(r.Timestamp));
       } catch(e) { console.log(e); }
       setLoading(false);
@@ -105,19 +122,9 @@ const AdminDashboard = () => {
     };
     document.body.appendChild(s);
   };
-  
+
   useEffect(()=>{ if(auth) load(); },[auth]);
   useEffect(()=>{ setCurrentPage(1); },[search, tab, rowsPerPage, filters]);
-  const parseTs = (ts) => {
-    if(!ts) return new Date(0);
-    const str = String(ts);
-    if(str.includes('/')){
-      const datePart = str.split(' ')[0].split('/');
-      if(datePart.length===3) return new Date(Number(datePart[2]), Number(datePart[1])-1, Number(datePart[0]));
-    }
-    const d = new Date(str);
-    return isNaN(d.getTime()) ? new Date(0) : d;
-  };
   const formatDate = (ts) => {
     if(!ts) return '';
     const str = String(ts);
@@ -170,7 +177,7 @@ const AdminDashboard = () => {
     const current = getVal(row,['Status','status']) || 'New';
     const next = current === 'New' ? 'Read' : current === 'Read' ? 'New' : 'Read';
     const ts = getVal(row,['Timestamp','timestamp']);
-    const saved = JSON.parse(localStorage.getItem(`psl_${ts}`) || '{}');
+    let saved = {}; try{ saved = JSON.parse(localStorage.getItem(`psl_${ts}`) || '{}'); }catch{}
     localStorage.setItem(`psl_${ts}`, JSON.stringify({...saved, Status: next}));
     setData(prev => prev.map(r => r._uid===row._uid ? { ...r, Status: next, status: next } : r));
     showToast(`👁️ ${getVal(row,['FullName','fullName'])}: ${current} → ${next}`);
@@ -230,7 +237,7 @@ const AdminDashboard = () => {
     showToast(`👁️ ${rows.length} marked as Read`);
     for(const r of rows){
       const ts = getVal(r,['Timestamp','timestamp']);
-      const saved = JSON.parse(localStorage.getItem(`psl_${ts}`)||'{}');
+      let saved = {}; try{ saved = JSON.parse(localStorage.getItem(`psl_${ts}`)||'{}'); }catch{}
       localStorage.setItem(`psl_${ts}`, JSON.stringify({...saved, Status:'Read'}));
       await fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'edit', Timestamp: ts, timestamp: ts, Status:'Read' }) });
     }
@@ -266,15 +273,15 @@ const AdminDashboard = () => {
     setTrash(prev=>{ const nt=[...dups, ...prev].slice(0,200); localStorage.setItem('psl_trash', JSON.stringify(nt)); return nt; });
     setData(keep); showToast(`🧹 ${dups.length} moved`);
   };
-  const handleEdit = (row) => { setEditRow(row); setForm({ FullName:getVal(row,['FullName','fullName']), Phone:getVal(row,['Phone','phone']), Email:getVal(row,['Email','email']), Service:getVal(row,['Service','service']), Position:getVal(row,['Position','position']), District:getVal(row,['District','district']), Status:getVal(row,['Status','status'])||'New', timestamp:getVal(row,['Timestamp','timestamp']) }); };
+  const handleEdit = (row) => { setEditRow(row); setForm({ FullName:getVal(row,['FullName','fullName']), Phone:getVal(row,['Phone','phone']), Email:getVal(row,['Email','email']), Service:getVal(row,['Service','service']), Message:getVal(row,['Message','message']), Position:getVal(row,['Position','position']), Education:getVal(row,['Education','education']), District:getVal(row,['District','district']), Experience:getVal(row,['Experience','experience']), Interest:getVal(row,['Interest','interest']), Status:getVal(row,['Status','status'])||'New', timestamp:getVal(row,['Timestamp','timestamp']) }); };
   const handleSave = async () => {
     const ts = form.timestamp;
-    const saved = JSON.parse(localStorage.getItem(`psl_${ts}`) || '{}');
+    let saved = {}; try{ saved = JSON.parse(localStorage.getItem(`psl_${ts}`) || '{}'); }catch{}
     localStorage.setItem(`psl_${ts}`, JSON.stringify({...saved, Status:form.Status}));
     setData(prev => prev.map(r => r._uid===editRow._uid ? { ...r, ...form } : r));
     setEditRow(null); showToast("✅ Updated in Admin & Sheet...");
     try {
-      await fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'edit', Timestamp: ts, timestamp: ts, FullName: form.FullName, Phone: form.Phone, Email: form.Email, Service: form.Service, Position: form.Position, District: form.District, Status: form.Status }) });
+      await fetch(GOOGLE_SHEET_WEBHOOK,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'edit', Timestamp: ts, timestamp: ts, FullName: form.FullName, Phone: form.Phone, Email: form.Email, Service: form.Service, Message: form.Message, Position: form.Position, Education: form.Education, District: form.District, Experience: form.Experience, Interest: form.Interest, Status: form.Status }) });
       showToast("✅ Updated in Admin & Sheet");
     } catch(e) { showToast("✅ Updated in Admin (Sheet retry on Refresh)"); }
   };
@@ -290,7 +297,6 @@ const AdminDashboard = () => {
     showToast(`✅ ${newRow.FullName} Added ✅`);
     if(autoSettings.emailOn && newRow.Email) handleAutoEmail(newRow);
   };
-  // ===== 1. EXPORT CSV + PDF - UPDATED =====
   const exportCSV = (rows, filename) => {
     if(!rows.length){ showToast('❌ No rows to export'); return; }
     const headers = tab==='contacts'?["Timestamp","FullName","Phone","Email","Service","Message","Status"]:["Timestamp","FullName","Phone","Email","Position","Education","District","Experience","Interest","Type","Status"];
@@ -304,25 +310,27 @@ const AdminDashboard = () => {
     const title = `Pinnacle Security Ltd - ${tab.toUpperCase()} Report - ${rows.length} rows - ${new Date().toLocaleDateString()}`;
     const head = isContact ? `<th>Date</th><th>Name</th><th>Phone</th><th>Email</th><th>Service</th><th>Status</th>` : `<th>Date</th><th>Name</th><th>Phone</th><th>Email</th><th>Position</th><th>District</th><th>Education</th><th>Status</th>`;
     const body = rows.map(r=>{
-      const cells = isContact ? `<td>${formatDate(getVal(r,['Timestamp','timestamp']))}</td><td>${getVal(r,['FullName','fullName'])}</td><td>${getVal(r,['Phone','phone'])}</td><td>${getVal(r,['Email','email'])}</td><td>${getVal(r,['Service','service'])}</td><td>${getVal(r,['Status','status'])}</td>` : `<td>${formatDate(getVal(r,['Timestamp','timestamp']))}</td><td>${getVal(r,['FullName','fullName'])}</td><td>${getVal(r,['Phone','phone'])}</td><td>${getVal(r,['Email','email'])}</td><td>${getVal(r,['Position','position'])}</td><td>${getVal(r,['District','district'])}</td><td>${getVal(r,['Education','education'])}</td><td>${getVal(r,['Status','status'])}</td>`;
+      const cells = isContact ? `<td>${escapeHtml(formatDate(getVal(r,['Timestamp','timestamp'])))}</td><td>${escapeHtml(getVal(r,['FullName','fullName']))}</td><td>${escapeHtml(getVal(r,['Phone','phone']))}</td><td>${escapeHtml(getVal(r,['Email','email']))}</td><td>${escapeHtml(getVal(r,['Service','service']))}</td><td>${escapeHtml(getVal(r,['Status','status']))}</td>` : `<td>${escapeHtml(formatDate(getVal(r,['Timestamp','timestamp'])))}</td><td>${escapeHtml(getVal(r,['FullName','fullName']))}</td><td>${escapeHtml(getVal(r,['Phone','phone']))}</td><td>${escapeHtml(getVal(r,['Email','email']))}</td><td>${escapeHtml(getVal(r,['Position','position']))}</td><td>${escapeHtml(getVal(r,['District','district']))}</td><td>${escapeHtml(getVal(r,['Education','education']))}</td><td>${escapeHtml(getVal(r,['Status','status']))}</td>`;
       return `<tr>${cells}</tr>`;
     }).join('');
     const w = window.open('', '_blank');
-    w.document.write(`<html><head><title>${title}</title><style>body{font-family:Arial;padding:20px} h2{color:#dc2626} table{width:100%;border-collapse:collapse;font-size:11px} th,td{border:1px solid #333;padding:6px;text-align:left} th{background:#dc2626;color:#fff} @media print{ button{display:none} }</style></head><body><h2>${title}</h2><p>Pinnacle Security Ltd | Muyenga Hill | Control 24/7: 0776971970</p><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table><br/><button onclick="window.print()">🖨️ Print / Save as PDF</button></body></html>`);
+    if(!w){ showToast('❌ Allow popups for PDF'); return; }
+    w.document.write(`<html><head><title>${escapeHtml(title)}</title><style>body{font-family:Arial;padding:20px} h2{color:#dc2626} table{width:100%;border-collapse:collapse;font-size:11px} th,td{border:1px solid #333;padding:6px;text-align:left} th{background:#dc2626;color:#fff} @media print{ button{display:none} }</style></head><body><h2>${escapeHtml(title)}</h2><p>Pinnacle Security Ltd | Muyenga Hill | Control 24/7: 0776971970</p><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table><br/><button onclick="window.print()">🖨️ Print / Save as PDF</button></body></html>`);
     w.document.close();
     showToast(`✅ PDF Ready - ${rows.length} rows - Click Print`);
   };
 
   if(!auth){ return ( <div style={{minHeight:'100vh',background:dark?'#0f172a':'#f1f5f9',display:'flex',justifyContent:'center',alignItems:'center',fontFamily:'Arial, sans-serif'}}><div style={{background:'#fff',padding:'40px 32px',borderRadius:'24px',width:'92%',maxWidth:'400px',textAlign:'center'}}><div style={{width:'64px',height:'64px',background:'#facc15',borderRadius:'16px',margin:'0 auto 14px',display:'grid',placeItems:'center',fontWeight:900,fontSize:'28px'}}>P</div><h2 style={{fontWeight:900}}>PINNACLE ADMIN</h2><input type="password" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()} placeholder="Password" style={{width:'100%',padding:'14px',borderRadius:'12px',marginTop:'20px',border:'1px solid #ddd'}}/><button onClick={login} style={{width:'100%',marginTop:'12px',background:'#facc15',padding:'14px',borderRadius:'12px',fontWeight:900,border:'none',cursor:'pointer'}}>UNLOCK</button></div></div> ) }
 
-  const applicants = data.filter(d => (d.type==='applicant' || d.Type==='applicant' || getVal(d,['Position','position']))); 
-  const contacts = data.filter(d => !applicants.includes(d)); 
+  const applicants = data.filter(d => (d.type==='applicant' || d.Type==='applicant' || getVal(d,['Position','position'])));
+  const contacts = data.filter(d => !applicants.includes(d));
   const total = data.length;
   const unique = (arr, keys) => { const s=new Set(); arr.forEach(d=>{ const v=getVal(d,keys); if(v) s.add(v); }); return [...s].sort(); };
   const serviceOptions = unique(contacts, ['Service','service']);
   const positionOptions = unique(applicants, ['Position','position']);
   const districtOptions = unique(applicants, ['District','district']);
   const educationOptions = unique(applicants, ['Education','education']);
+  const interestOptions = unique(data, ['Interest','interest']);
   const statusOptions = unique(data, ['Status','status']);
   const activeFilterCount = Object.values(filters).filter(v=>v).length;
   const clearFilters = () => setFilters({ service:"", position:"", district:"", education:"", status:"", interest:"", dateFrom:"", dateTo:"" });
@@ -352,14 +360,7 @@ const AdminDashboard = () => {
   const menuItem = (active) => ({padding:'11px 14px',borderRadius:'12px',fontSize:'13px',fontWeight:active?900:700,cursor:'pointer',background:active?'#facc15':'transparent',color:active?'#0f172a':theme.text,border:`1px solid ${theme.border}`,textAlign:'left',width:'100%',display:'flex',justifyContent:'space-between',fontFamily:'Arial, sans-serif'});
   const filterSelect = {padding:'8px 10px',borderRadius:'10px',border:`1px solid ${theme.border}`,background:theme.bgCard,color:theme.text,fontSize:'12px',fontWeight:700,width:'100%',fontFamily:'Arial, sans-serif'};
   const isContactTab = tab==='contacts';
-  const colCount = isContactTab ? 9 : tab==='applicants' ? 12 : 12;
-  const getMailLink = (d) => {
-    const email = getVal(d,['Email','email']);
-    const isApplicant = getVal(d,['Position','position']) || d.Type==='applicant' || d.type==='applicant';
-    const subject = isApplicant ? `Pinnacle Security Ltd - Your Application for ${getVal(d,['Position','position'])||'Security Officer'}` : `Pinnacle Security Ltd - Your ${getVal(d,['Service','service'])||'Security Service'} Enquiry`;
-    const body = fillTemplate(isApplicant?autoSettings.applicantEmail:autoSettings.contactEmail, d);
-    return `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  };
+  const colCount = isContactTab ? 9 : 12;
   const iconBtn = (bg) => ({width:'20px',height:'20px',borderRadius:'5px',background:bg,border:'none',cursor:'pointer',fontSize:'11px',display:'grid',placeItems:'center',padding:0,textDecoration:'none',lineHeight:'1'});
   const stickyActionTh = {...headerStyle, position:'sticky', right:0, zIndex:2, minWidth:'160px'};
   const stickyActionTd = (bg) => ({...cellStyle, background:bg, position:'sticky', right:0, zIndex:1, minWidth:'160px'});
@@ -411,7 +412,7 @@ const AdminDashboard = () => {
               <div><label style={{fontSize:'11px',fontWeight:800}}>Position</label><select value={filters.position} onChange={e=>setFilters({...filters,position:e.target.value})} style={filterSelect}><option value="">All Positions</option>{positionOptions.map(o=><option key={o} value={o}>{o}</option>)}</select></div>
               <div><label style={{fontSize:'11px',fontWeight:800}}>District</label><select value={filters.district} onChange={e=>setFilters({...filters,district:e.target.value})} style={filterSelect}><option value="">All Districts</option>{districtOptions.map(o=><option key={o} value={o}>{o}</option>)}</select></div>
               <div><label style={{fontSize:'11px',fontWeight:800}}>Education</label><select value={filters.education} onChange={e=>setFilters({...filters,education:e.target.value})} style={filterSelect}><option value="">All Education</option>{educationOptions.map(o=><option key={o} value={o}>{o}</option>)}</select></div>
-              <div><label style={{fontSize:'11px',fontWeight:800}}>Interest</label><select value={filters.interest} onChange={e=>setFilters({...filters,interest:e.target.value})} style={filterSelect}><option value="">All Interest</option><option value="Work">Work</option><option value="Experience">Experience</option><option value="Woth">Woth</option></select></div>
+              <div><label style={{fontSize:'11px',fontWeight:800}}>Interest</label><select value={filters.interest} onChange={e=>setFilters({...filters,interest:e.target.value})} style={filterSelect}><option value="">All Interest</option>{interestOptions.map(o=><option key={o} value={o}>{o}</option>)}</select></div>
             </>}
             <div><label style={{fontSize:'11px',fontWeight:800}}>Status</label><select value={filters.status} onChange={e=>setFilters({...filters,status:e.target.value})} style={filterSelect}><option value="">All Status</option>{statusOptions.map(o=><option key={o} value={o}>{o}</option>)}<option value="New">New</option><option value="Read">Read</option><option value="Contacted">Contacted</option><option value="Hired">Hired</option><option value="Rejected">Rejected</option></select></div>
             <div><label style={{fontSize:'11px',fontWeight:800}}>From Date</label><input type="date" value={filters.dateFrom} onChange={e=>setFilters({...filters,dateFrom:e.target.value})} style={filterSelect}/></div>
@@ -448,7 +449,7 @@ const AdminDashboard = () => {
           </div>
         </div>
       </div>
-      {editRow && <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.5)',zIndex:10001,display:'flex',justifyContent:'center',alignItems:'center'}}><div style={{background:'#fff',borderRadius:'16px',padding:'20px',width:'90%',maxWidth:'400px'}}><h3>Edit {form.FullName}</h3><div style={{display:'grid',gap:'8px',marginTop:'10px'}}>{["FullName","Phone","Email","Service","Position"].map(f=><input key={f} value={form[f]||''} onChange={e=>setForm({...form,[f]:e.target.value})} placeholder={f} style={{padding:'10px',borderRadius:'8px',border:'1px solid #ddd'}}/>)}<select value={form.Status} onChange={e=>setForm({...form, Status:e.target.value})} style={{padding:'10px',borderRadius:'8px',border:'1px solid #ddd'}}><option>New</option><option>Read</option><option>Contacted</option><option>Hired</option><option>Rejected</option></select></div><div style={{display:'flex',gap:'8px',marginTop:'10px'}}><button onClick={()=>setEditRow(null)} style={{flex:1,padding:'10px',borderRadius:'10px',border:'1px solid #ddd'}}>Cancel</button><button onClick={handleSave} style={{flex:1,background:'#0f172a',color:'#facc15',padding:'10px',borderRadius:'10px',fontWeight:900}}>Save to Admin & Sheet</button></div></div></div>}
+      {editRow && <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.5)',zIndex:10001,display:'flex',justifyContent:'center',alignItems:'center'}}><div style={{background:'#fff',borderRadius:'16px',padding:'20px',width:'90%',maxWidth:'440px',maxHeight:'90vh',overflowY:'auto'}}><h3>Edit {form.FullName}</h3><div style={{display:'grid',gap:'8px',marginTop:'10px'}}>{["FullName","Phone","Email","Service","Message","Position","Education","District","Experience","Interest"].map(f=><input key={f} value={form[f]||''} onChange={e=>setForm({...form,[f]:e.target.value})} placeholder={f} style={{padding:'10px',borderRadius:'8px',border:'1px solid #ddd'}}/>)}<select value={form.Status} onChange={e=>setForm({...form, Status:e.target.value})} style={{padding:'10px',borderRadius:'8px',border:'1px solid #ddd'}}><option>New</option><option>Read</option><option>Contacted</option><option>Hired</option><option>Rejected</option></select></div><div style={{display:'flex',gap:'8px',marginTop:'10px'}}><button onClick={()=>setEditRow(null)} style={{flex:1,padding:'10px',borderRadius:'10px',border:'1px solid #ddd'}}>Cancel</button><button onClick={handleSave} style={{flex:1,background:'#0f172a',color:'#facc15',padding:'10px',borderRadius:'10px',fontWeight:900}}>Save to Admin & Sheet</button></div></div></div>}
       {detailRow && <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.6)',zIndex:10002,display:'flex',justifyContent:'center',alignItems:'center',padding:'16px'}} onClick={()=>setDetailRow(null)}><div style={{background:'#fff',borderRadius:'16px',padding:'22px',width:'100%',maxWidth:'480px',color:'#0f172a',maxHeight:'90vh',overflowY:'auto'}} onClick={e=>e.stopPropagation()}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><h3 style={{fontWeight:900}}>👁️ View Details</h3><button onClick={()=>setDetailRow(null)} style={{border:'none',background:'#eee',width:'32px',height:'32px',borderRadius:'50%',cursor:'pointer',fontWeight:900}}>✕</button></div><div style={{marginTop:'14px',display:'grid',gap:'8px',fontSize:'14px',lineHeight:1.6}}><p><b>📅 Date:</b> {getVal(detailRow,['Timestamp','timestamp'])}</p><p><b>👤 Name:</b> {getVal(detailRow,['FullName','fullName'])}</p><p><b>📞 Phone:</b> {getVal(detailRow,['Phone','phone'])}</p><p><b>📧 Email:</b> {getVal(detailRow,['Email','email'])||'-'}</p>{getVal(detailRow,['Service','service']) && <p><b>🛡️ Service:</b> {getVal(detailRow,['Service','service'])}</p>}{getVal(detailRow,['Message','message']) && <p><b>💬 Message:</b> {getVal(detailRow,['Message','message'])}</p>}{getVal(detailRow,['Position','position']) && <p><b>🎖️ Position:</b> {getVal(detailRow,['Position','position'])}</p>}{getVal(detailRow,['Education','education']) && <p><b>🎓 Education:</b> {getVal(detailRow,['Education','education'])}</p>}{getVal(detailRow,['District','district']) && <p><b>📍 District:</b> {getVal(detailRow,['District','district'])}</p>}{getVal(detailRow,['Experience','experience']) && <p><b>💼 Experience:</b> {getVal(detailRow,['Experience','experience'])}</p>}{getVal(detailRow,['Interest','interest']) && <p><b>❤️ Interest:</b> {getVal(detailRow,['Interest','interest'])}</p>}<p><b>📌 Status:</b> {getVal(detailRow,['Status','status'])||'New'}</p></div><div style={{display:'flex',gap:'6px',marginTop:'16px',flexWrap:'wrap'}}><button onClick={()=>handleAutoWhatsApp(detailRow)} style={{flex:1,background:'#25D366',color:'#fff',padding:'12px',borderRadius:'10px',fontWeight:900,border:'none',cursor:'pointer'}}>🤖 Auto WhatsApp</button><button onClick={()=>handleAutoEmail(detailRow)} style={{flex:1,background:'#dbeafe',color:'#0f172a',padding:'12px',borderRadius:'10px',fontWeight:900,border:'none',cursor:'pointer'}}>🤖 Auto Email</button><a href={getCallLink(detailRow)} style={{flex:1,background:'#dcfce7',color:'#0f172a',padding:'12px',borderRadius:'10px',fontWeight:900,textAlign:'center',textDecoration:'none'}}>📞 Call</a><button onClick={()=>{ setDetailRow(null); handleEdit(detailRow); }} style={{flex:1,background:'#facc15',padding:'12px',borderRadius:'10px',fontWeight:900,border:'none',cursor:'pointer'}}>✏️ Edit</button><button onClick={()=>{ setDetailRow(null); handleDelete(detailRow); }} style={{flex:1,background:'#fee2e2',color:'#dc2626',padding:'12px',borderRadius:'10px',fontWeight:900,border:'none',cursor:'pointer'}}>🗑️ Delete</button></div></div></div>}
       {showAdd && <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.6)',zIndex:10003,display:'flex',justifyContent:'center',alignItems:'center',padding:'16px'}} onClick={()=>setShowAdd(false)}><div style={{background:'#fff',borderRadius:'16px',padding:'22px',width:'100%',maxWidth:'480px',color:'#0f172a',maxHeight:'90vh',overflowY:'auto'}} onClick={e=>e.stopPropagation()}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><h3 style={{fontWeight:900}}>➕ ADD NEW</h3><button onClick={()=>setShowAdd(false)} style={{border:'none',background:'#eee',width:'32px',height:'32px',borderRadius:'50%',cursor:'pointer',fontWeight:900}}>✕</button></div><div style={{display:'grid',gap:'8px',marginTop:'14px'}}><select value={addForm.Type} onChange={e=>setAddForm({...addForm, Type:e.target.value})} style={{padding:'10px',borderRadius:'8px',border:'1px solid #ddd'}}><option value="contact">📞 Contact - Needs Security Service</option><option value="applicant">🎖️ Applicant - Wants Job</option></select><input value={addForm.FullName} onChange={e=>setAddForm({...addForm, FullName:e.target.value})} placeholder="Full Name *" style={{padding:'10px',borderRadius:'8px',border:'1px solid #ddd'}}/><input value={addForm.Phone} onChange={e=>setAddForm({...addForm, Phone:e.target.value})} placeholder="Phone * e.g 0785576219" style={{padding:'10px',borderRadius:'8px',border:'1px solid #ddd'}}/><input value={addForm.Email} onChange={e=>setAddForm({...addForm, Email:e.target.value})} placeholder="Email" style={{padding:'10px',borderRadius:'8px',border:'1px solid #ddd'}}/>{addForm.Type==='contact' ? <><input value={addForm.Service} onChange={e=>setAddForm({...addForm, Service:e.target.value})} placeholder="Service e.g Security Guard" style={{padding:'10px',borderRadius:'8px',border:'1px solid #ddd'}}/><input value={addForm.Message} onChange={e=>setAddForm({...addForm, Message:e.target.value})} placeholder="Message" style={{padding:'10px',borderRadius:'8px',border:'1px solid #ddd'}}/></> : <><input value={addForm.Position} onChange={e=>setAddForm({...addForm, Position:e.target.value})} placeholder="Position e.g SECURITY OFFICER" style={{padding:'10px',borderRadius:'8px',border:'1px solid #ddd'}}/><input value={addForm.Education} onChange={e=>setAddForm({...addForm, Education:e.target.value})} placeholder="Education e.g UACE / Degree" style={{padding:'10px',borderRadius:'8px',border:'1px solid #ddd'}}/><input value={addForm.District} onChange={e=>setAddForm({...addForm, District:e.target.value})} placeholder="District e.g Gulu" style={{padding:'10px',borderRadius:'8px',border:'1px solid #ddd'}}/><input value={addForm.Experience} onChange={e=>setAddForm({...addForm, Experience:e.target.value})} placeholder="Experience years e.g 4" style={{padding:'10px',borderRadius:'8px',border:'1px solid #ddd'}}/><input value={addForm.Interest} onChange={e=>setAddForm({...addForm, Interest:e.target.value})} placeholder="Interest e.g Work / Experience" style={{padding:'10px',borderRadius:'8px',border:'1px solid #ddd'}}/></>}</div><div style={{display:'flex',gap:'8px',marginTop:'14px'}}><button onClick={()=>setShowAdd(false)} style={{flex:1,padding:'12px',borderRadius:'10px',border:'1px solid #ddd',fontWeight:800}}>Cancel</button><button onClick={handleAddSave} style={{flex:1,background:'#0f172a',color:'#facc15',padding:'12px',borderRadius:'10px',fontWeight:900,border:'none',cursor:'pointer'}}>✅ Save to Admin & Sheet</button></div></div></div>}
       {showAuto && <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.6)',zIndex:10004,display:'flex',justifyContent:'center',alignItems:'center',padding:'16px'}} onClick={()=>setShowAuto(false)}><div style={{background:'#fff',borderRadius:'16px',padding:'22px',width:'100%',maxWidth:'560px',color:'#0f172a',maxHeight:'90vh',overflowY:'auto'}} onClick={e=>e.stopPropagation()}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><h3 style={{fontWeight:900}}>🤖 Auto Reply Settings</h3><button onClick={()=>setShowAuto(false)} style={{border:'none',background:'#eee',width:'32px',height:'32px',borderRadius:'50%',cursor:'pointer',fontWeight:900}}>✕</button></div><p style={{fontSize:'12px',marginTop:'8px',color:'#666'}}>Use {`{name}`} {`{service}`} {`{position}`} {`{message}`} - it will change automatically for each person.</p><div style={{display:'grid',gap:'10px',marginTop:'12px'}}><label style={{display:'flex',gap:'8px',alignItems:'center',fontWeight:800}}><input type="checkbox" checked={autoSettings.emailOn} onChange={()=>toggleAuto('emailOn')} /> 📧 Auto Email - Send automatically when new form arrives (100% Automatic)</label><label style={{display:'flex',gap:'8px',alignItems:'center',fontWeight:800}}><input type="checkbox" checked={autoSettings.whatsappOn} onChange={()=>toggleAuto('whatsappOn')} /> 💬 Auto WhatsApp - Show 1-Click 🤖 button (WhatsApp needs 1 click)</label><div><label style={{fontSize:'12px',fontWeight:800}}>📧 Contact Email Message</label><textarea value={autoSettings.contactEmail} onChange={e=>setAutoSettings({...autoSettings, contactEmail:e.target.value})} rows={4} style={{width:'100%',padding:'10px',borderRadius:'8px',border:'1px solid #ddd'}} /></div><div><label style={{fontSize:'12px',fontWeight:800}}>📧 Applicant Email Message</label><textarea value={autoSettings.applicantEmail} onChange={e=>setAutoSettings({...autoSettings, applicantEmail:e.target.value})} rows={4} style={{width:'100%',padding:'10px',borderRadius:'8px',border:'1px solid #ddd'}} /></div><div><label style={{fontSize:'12px',fontWeight:800}}>💬 Contact WhatsApp Message</label><textarea value={autoSettings.contactWhats} onChange={e=>setAutoSettings({...autoSettings, contactWhats:e.target.value})} rows={3} style={{width:'100%',padding:'10px',borderRadius:'8px',border:'1px solid #ddd'}} /></div><div><label style={{fontSize:'12px',fontWeight:800}}>💬 Applicant WhatsApp Message</label><textarea value={autoSettings.applicantWhats} onChange={e=>setAutoSettings({...autoSettings, applicantWhats:e.target.value})} rows={3} style={{width:'100%',padding:'10px',borderRadius:'8px',border:'1px solid #ddd'}} /></div></div><div style={{display:'flex',gap:'8px',marginTop:'14px'}}><button onClick={()=>setShowAuto(false)} style={{flex:1,padding:'12px',borderRadius:'10px',border:'1px solid #ddd',fontWeight:800}}>Close</button><button onClick={()=>{saveAutoSettings(autoSettings); setShowAuto(false);}} style={{flex:1,background:'#0f172a',color:'#facc15',padding:'12px',borderRadius:'10px',fontWeight:900,border:'none',cursor:'pointer'}}>💾 Save Auto Reply</button></div></div></div>}
