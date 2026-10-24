@@ -4,7 +4,6 @@ const GOOGLE_SHEET_WEBHOOK = "https://script.google.com/macros/s/AKfycbz0Fx9gSfP
 const FONT = "'Inter','Segoe UI','Poppins',system-ui,sans-serif";
 // ✅ NO YELLOW - NAVY from your arrow
 const ACCENT = '#1e293b';
-const ACCENT_TEXT = '#ffffff';
 const C = { add:'#22c55e', auto:'#a855f7', filter:'#f59e0b', csv:'#2563eb', pdf:'#dc2626', email:'#0ea5e9', whats:'#25D366', menu:'#1e293b', trash:'#dc2626', view:'#2563eb', edit:'#f59e0b', call:'#14b8a6', del:'#dc2626' };
 const getFullDateTime24 = () => { const parts = new Intl.DateTimeFormat('en-GB',{timeZone:'Africa/Kampala',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).formatToParts(new Date()); const g=(t)=>parts.find(p=>p.type===t)?.value||'00'; const d=new Date(); return `${g('day')}/${g('month')}/${g('year')} ${g('hour')}:${g('minute')}:${g('second')}.${d.getMilliseconds()}-${Math.floor(Math.random()*900)+100}`; };
 const parseTs = (ts) => { if(!ts) return new Date(0); const str=String(ts).trim(); if(str.includes('/')){ const parts=str.split(' '); const dp=parts[0].split('/'); if(dp.length===3){ const tp=(parts[1]||'00:00:00').split(':'); return new Date(Number(dp[2]),Number(dp[1])-1,Number(dp[0]),Number(tp[0]||0),Number(tp[1]||0),Number(tp[2]||0)); } } const d=new Date(str); return isNaN(d.getTime())?new Date(0):d; };
@@ -71,15 +70,31 @@ const AdminDashboard = () => {
   const filterSelect={padding:'8px 10px',borderRadius:'10px',border:`1px solid ${theme.border}`,background:theme.bgCard,color:theme.text,fontSize:'12px',fontWeight:700,width:'100%',fontFamily:FONT};
   const isContactTab=tab==='contacts'; const colCount=isContactTab?7:10;
   const iconBtn=(bg)=>({background:bg,color:'#fff',border:'none',width:'36px',height:'36px',borderRadius:'50%',fontWeight:900,cursor:'pointer',fontSize:'16px',display:'grid',placeItems:'center',flexShrink:0});
-  // ✅ ACTION - BIG WHITE, BLACK TEXT, EASY TO SEE
-  const actionBtn={background:'#ffffff',color:'#000000',border:'3px solid #0f172a',padding:'10px 18px',borderRadius:'24px',fontWeight:900,cursor:'pointer',fontSize:'14px',fontFamily:FONT,whiteSpace:'nowrap',flexShrink:0,boxShadow:'0 4px 14px rgba(0,0,0,.35)'};
-  const dropWrap={position:'absolute',top:'50px',left:'50%',transform:'translateX(-50%)',zIndex:3000,background:'#ffffff',border:'3px solid #0f172a',borderRadius:'16px',width:'300px',overflow:'hidden',boxShadow:'0 24px 50px rgba(0,0,0,.5)'};
-  const dropItem=(color)=>({width:'100%',textAlign:'left',padding:'14px 16px',background:'#ffffff',border:'none',borderBottom:'1px solid #e2e8f0',color:'#000000',cursor:'pointer',fontSize:'15px',fontWeight:800,fontFamily:FONT,borderLeft:`6px solid ${color}`});
+  // ✅ ACTION - IN LEFT PANEL, WHITE BIG BUTTON
+  const actionBtn={background:'#ffffff',color:'#000000',border:'3px solid #0f172a',padding:'12px 14px',borderRadius:'12px',fontWeight:900,cursor:'pointer',fontSize:'14px',fontFamily:FONT,width:'100%',textAlign:'center',boxShadow:'0 4px 14px rgba(0,0,0,.35)'};
+  const dropItem=(color)=>({width:'100%',textAlign:'left',padding:'13px 14px',background:'#ffffff',border:'none',borderBottom:'1px solid #e2e8f0',color:'#000000',cursor:'pointer',fontSize:'14px',fontWeight:800,fontFamily:FONT,borderLeft:`6px solid ${color}`});
   const modalInput={padding:'10px',borderRadius:'8px',border:`1px solid ${theme.border}`,fontFamily:FONT,background:theme.input,color:theme.text};
+  // ✅ PDF TEXT ONLY STYLE
+  const pdfBtn={background:C.pdf,color:'#fff',border:'none',padding:'9px 16px',borderRadius:'20px',fontWeight:900,cursor:'pointer',fontSize:'13px',fontFamily:FONT,flexShrink:0,letterSpacing:'1px'};
   const sidebarContent=(<><div style={{display:'flex',alignItems:'center',gap:'10px',paddingBottom:'14px',borderBottom:`1px solid ${theme.border}`}}><div style={{width:'42px',height:'42px',background:ACCENT,borderRadius:'12px',display:'grid',placeItems:'center',fontWeight:900,color:'#fff',border:'1px solid #fff'}}>P</div><div><h2 style={{fontWeight:900,fontSize:'13px',color:theme.text}}>Pinnacle Security Ltd</h2></div>{isMobile&&<button onClick={()=>setShowSidebar(false)} style={{marginLeft:'auto',border:'none',background:theme.bgMain,color:theme.text,padding:'6px 10px',borderRadius:'8px',cursor:'pointer'}}>✕</button>}</div>
     <button onClick={()=>setDark(!dark)} style={{...menuItem(false),background:theme.bgMain}}><span>{dark?'☀️ Light Mode':'🌙 Dark Mode'}</span><span>{dark?'☀️':'🌙'}</span></button>
     <button onClick={()=>switchTab('contacts')} style={menuItem(tab==='contacts')}><span>📞 Contact</span><span>{contacts.length}</span></button>
     <button onClick={()=>switchTab('applicants')} style={menuItem(tab==='applicants')}><span>👤 Applicant</span><span>{applicants.length}</span></button>
+    {/* ✅ ACTION IN LEFT PANEL */}
+    <div style={{border:`1px solid ${theme.border}`,borderRadius:'12px',padding:'8px',background:theme.bgMain}}>
+      <button onClick={()=>setShowActionMenu(!showActionMenu)} style={actionBtn}>⚙️ Actions {selectedRow?`• ${titleCase(getVal(selectedRow,['FullName','fullName']))}`:''} ▼</button>
+      {showActionMenu&&<div style={{marginTop:'8px',background:'#ffffff',border:'3px solid #0f172a',borderRadius:'12px',overflow:'hidden'}}>
+        <div style={{padding:'10px 12px',fontWeight:900,fontSize:'12px',color:'#fff',background:ACCENT,textAlign:'center'}}>{selectedRow?'CHOOSE ACTION':'TAP A ROW FIRST'}</div>
+        <button onClick={()=>{selectedRow&&setDetailRow(selectedRow); setShowActionMenu(false);}} style={dropItem(C.view)} disabled={!selectedRow}>👁️ View</button>
+        <button onClick={()=>{selectedRow&&handleEdit(selectedRow); setShowActionMenu(false);}} style={dropItem(C.edit)} disabled={!selectedRow}>✏️ Edit</button>
+        <button onClick={()=>{selectedRow&&handleAutoEmail(selectedRow); setShowActionMenu(false);}} style={dropItem(C.email)} disabled={!selectedRow}>📧 Auto Email</button>
+        <button onClick={()=>{selectedRow&&handleAutoWhatsApp(selectedRow); setShowActionMenu(false);}} style={dropItem(C.whats)} disabled={!selectedRow}>💬 WhatsApp</button>
+        <button onClick={()=>{selectedRow&&(window.location.href=getCallLink(selectedRow)); setShowActionMenu(false);}} style={dropItem(C.call)} disabled={!selectedRow}>📞 Call</button>
+        <button onClick={()=>{selectedRow&&handleDelete(selectedRow); setShowActionMenu(false);}} style={dropItem(C.del)} disabled={!selectedRow}>🗑️ Delete</button>
+        {selected.length>0&&<button onClick={()=>{setSelected([]); setShowActionMenu(false);}} style={dropItem('#64748b')}>❌ Clear</button>}
+        {selected.length>1&&<><button onClick={()=>{handleBulkEmail(); setShowActionMenu(false);}} style={dropItem(C.email)}>📧 Bulk Email ({selected.length})</button><button onClick={()=>{handleBulkWhatsApp(); setShowActionMenu(false);}} style={dropItem(C.whats)}>💬 Bulk WhatsApp ({selected.length})</button><button onClick={()=>{handleBulkDelete(); setShowActionMenu(false);}} style={dropItem(C.del)}>🗑️ Delete ({selected.length})</button></>}
+      </div>}
+    </div>
     <button onClick={()=>setShowAuto(true)} style={{...menuItem(false),background:C.auto,color:'#fff',border:`1px solid ${C.auto}`}}><span>🤖 Auto Reply</span><span style={{color:'#fff'}}>{autoSettings.emailOn||autoSettings.whatsappOn?'ON':'OFF'}</span></button>
     <button onClick={()=>setShowTrash(!showTrash)} style={menuItem(showTrash)}><span>🗑️ Trash {trash.length}</span></button>
     <a href="/" style={{...menuItem(false),textDecoration:'none'}}><span>🏠 Home</span></a>
@@ -90,33 +105,19 @@ const AdminDashboard = () => {
   return (
     <div style={{background:theme.bgMain,minHeight:'100vh',color:theme.text,display:'flex',fontFamily:FONT,position:'relative'}}>
       {toast&&<div style={{position:'fixed',top:'80px',right:'20px',background:'#fff',color:'#000',padding:'12px 18px',borderRadius:'20px',fontWeight:800,zIndex:9999,border:'3px solid #0f172a',fontFamily:FONT}}>{toast}</div>}
-      {showActionMenu&&<div onClick={()=>setShowActionMenu(false)} style={{position:'fixed',inset:0,zIndex:2999,background:'rgba(0,0,0,.65)'}} />}
       {!isMobile&&<div style={{width:sidebarWidth,minWidth:sidebarWidth,background:theme.sidebar,padding:'18px 14px',display:'flex',flexDirection:'column',gap:'8px',position:'sticky',top:0,height:'100vh',overflowY:'auto'}}>{sidebarContent}</div>}
       {isMobile&&showSidebar&&<div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.5)',zIndex:10005}} onClick={()=>setShowSidebar(false)}><div style={{width:'270px',maxWidth:'85vw',background:theme.sidebar,padding:'18px 14px',display:'flex',flexDirection:'column',gap:'8px',height:'100vh',overflowY:'auto'}} onClick={e=>e.stopPropagation()}>{sidebarContent}</div></div>}
       {!isMobile&&<div onMouseDown={(e)=>{resizingRef.current=true; document.body.style.cursor='col-resize';}} style={{width:'8px',cursor:'col-resize',background:ACCENT,flexShrink:0,position:'sticky',top:0,height:'100vh',zIndex:10}} />}
       <div style={{flex:1,padding:isMobile?'10px':'18px',overflowX:'hidden',minWidth:0,paddingBottom:'90px'}}>
+        {/* ✅ TOP BAR - NO ACTION, PDF TEXT ONLY */}
         <div style={{background:theme.bgCard,padding:'8px 10px',borderRadius:'12px',display:'flex',gap:'6px',border:`1px solid ${theme.border}`,marginBottom:'8px',flexWrap:'wrap',overflowX:'auto',alignItems:'center',justifyContent:'center'}}>
           {isMobile&&<button onClick={()=>setShowSidebar(true)} style={iconBtn(ACCENT)} title="Menu">☰</button>}
           <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search..." style={{width:'130px',flexShrink:0,background:theme.input,border:`1px solid ${theme.border}`,padding:'10px 12px',borderRadius:'20px',color:theme.text,fontFamily:FONT,fontSize:'12px',textAlign:'center'}}/>
-          <div style={{position:'relative',flexShrink:0,zIndex:3000}}>
-            <button onClick={(e)=>{e.stopPropagation(); setShowActionMenu(!showActionMenu);}} style={actionBtn} title="Actions">⚙️ Actions {selectedRow?`• ${titleCase(getVal(selectedRow,['FullName','fullName']))}`:''} ▼</button>
-            {showActionMenu&&<div style={dropWrap} onClick={e=>e.stopPropagation()}>
-              <div style={{padding:'12px 14px',fontWeight:900,fontSize:'14px',color:'#fff',background:ACCENT,textAlign:'center'}}>👇 CHOOSE ACTION 👇</div>
-              <button onClick={()=>{selectedRow&&setDetailRow(selectedRow); setShowActionMenu(false);}} style={dropItem(C.view)} disabled={!selectedRow}>👁️ View</button>
-              <button onClick={()=>{selectedRow&&handleEdit(selectedRow); setShowActionMenu(false);}} style={dropItem(C.edit)} disabled={!selectedRow}>✏️ Edit</button>
-              <button onClick={()=>{selectedRow&&handleAutoEmail(selectedRow); setShowActionMenu(false);}} style={dropItem(C.email)} disabled={!selectedRow}>📧 Auto Email</button>
-              <button onClick={()=>{selectedRow&&handleAutoWhatsApp(selectedRow); setShowActionMenu(false);}} style={dropItem(C.whats)} disabled={!selectedRow}>💬 WhatsApp</button>
-              <button onClick={()=>{selectedRow&&(window.location.href=getCallLink(selectedRow)); setShowActionMenu(false);}} style={dropItem(C.call)} disabled={!selectedRow}>📞 Call</button>
-              <button onClick={()=>{selectedRow&&handleDelete(selectedRow); setShowActionMenu(false);}} style={dropItem(C.del)} disabled={!selectedRow}>🗑️ Delete</button>
-              {selected.length>0&&<button onClick={()=>{setSelected([]); setShowActionMenu(false);}} style={dropItem('#64748b')}>❌ Clear</button>}
-              {selected.length>1&&<><button onClick={()=>{handleBulkEmail(); setShowActionMenu(false);}} style={dropItem(C.email)}>📧 Bulk Email ({selected.length})</button><button onClick={()=>{handleBulkWhatsApp(); setShowActionMenu(false);}} style={dropItem(C.whats)}>💬 Bulk WhatsApp ({selected.length})</button><button onClick={()=>{handleBulkDelete(); setShowActionMenu(false);}} style={dropItem(C.del)}>🗑️ Delete ({selected.length})</button></>}
-            </div>}
-          </div>
           <button onClick={()=>setShowAdd(true)} style={iconBtn(C.add)} title="Add New">➕</button>
           <button onClick={()=>setShowAuto(true)} style={iconBtn(C.auto)} title={`Auto Reply ${autoSettings.emailOn?'ON':'OFF'}`}>🤖</button>
           <button onClick={()=>setShowFilters(!showFilters)} style={iconBtn(C.filter)} title={`Filters ${activeFilterCount?`(${activeFilterCount})`:''}`}>🎛️</button>
           <button onClick={()=>exportCSV(list,`${tab}.csv`)} style={iconBtn(C.csv)} title={`CSV (${list.length})`}>📄</button>
-          <button onClick={()=>exportPDF(list)} style={iconBtn(C.pdf)} title={`PDF (${list.length})`}>🧾</button>
+          <button onClick={()=>exportPDF(list)} style={pdfBtn}>PDF</button>
           <button onClick={handleBulkEmailAll} style={iconBtn(C.email)} title={`Bulk Email ALL (${list.length})`}>📧</button>
           <button onClick={handleBulkWhatsAppAll} style={iconBtn(C.whats)} title={`Bulk WhatsApp ALL (${list.length})`}>💬</button>
           <select value={rowsPerPage} onChange={e=>setRowsPerPage(Number(e.target.value))} style={{padding:'8px',borderRadius:'20px',border:`1px solid ${theme.border}`,background:ACCENT,color:'#fff',fontFamily:FONT,fontSize:'11px',fontWeight:900}}><option value={5}>5</option><option value={10}>10</option><option value={20}>20</option><option value={30}>30</option><option value={40}>40</option><option value={50}>50</option><option value={100}>100</option></select>
