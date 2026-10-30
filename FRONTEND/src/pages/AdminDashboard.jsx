@@ -25,6 +25,8 @@ export default function AdminDashboard() {
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({});
   const [selectedIds, setSelectedIds] = useState([]);
+  const [autoNotify, setAutoNotify] = useState(true);
+  const [notifyInfo, setNotifyInfo] = useState(null);
   const [statusMap, setStatusMap] = useState(function(){ return safeParse(localStorage.getItem("psl_status")||"{}", {}); });
   const [edits, setEdits] = useState(function(){ return safeParse(localStorage.getItem("psl_edits")||"{}", {}); });
   const [trash, setTrash] = useState(function(){ return safeParse(localStorage.getItem("psl_trash")||"[]", []); });
@@ -130,20 +132,65 @@ export default function AdminDashboard() {
   const contacts = data.filter(function(d){ return !isApplicant(d); });
   const applicants = data.filter(function(d){ return isApplicant(d); });
 
-  const openList = function(view){ setPage(view); setSearch(""); setFilterStatus("All"); setFilterService("All"); setSort("newest"); setCurrentPage(1); setExpanded(null); setEditing(false); setSelectedIds([]); try{ window.history.pushState({},"","/admin?view="+view); }catch(e){} window.scrollTo(0,0); };
-  const backHome = function(){ setPage("home"); setSearch(""); setSelectedIds([]); setExpanded(null); setEditing(false); try{ window.history.pushState({},"","/admin"); }catch(e){} };
+  const openList = function(view){ setPage(view); setSearch(""); setFilterStatus("All"); setFilterService("All"); setSort("newest"); setCurrentPage(1); setExpanded(null); setEditing(false); setSelectedIds([]); setNotifyInfo(null); try{ window.history.pushState({},"","/admin?view="+view); }catch(e){} window.scrollTo(0,0); };
+  const backHome = function(){ setPage("home"); setSearch(""); setSelectedIds([]); setExpanded(null); setEditing(false); setNotifyInfo(null); try{ window.history.pushState({},"","/admin"); }catch(e){} };
 
-  const waLink = function(d){
+  const cleanPhone = function(d){
     let p = String(getVal(d,["Phone","phone"])||"").replace(/\s/g,"").replace(/^\+/,"");
     if(p.indexOf("0")===0) p = "256"+p.slice(1);
-    const text = "Hello " + getVal(d,["FullName","fullName"]) + ", this is Pinnacle Security Ltd, Muyenga. Thank you for contacting us. We will call you soon. Control 24/7: 0776971970.";
-    return "https://wa.me/" + p + "?text=" + encodeURIComponent(text);
+    return p;
+  };
+  const waLinkFor = function(d, text){
+    return "https://wa.me/" + cleanPhone(d) + "?text=" + encodeURIComponent(text);
+  };
+  const waLink = function(d){
+    const text = "Hello " + getVal(d,["FullName","fullName"]) + ", this is Pinnacle Security Ltd, Muyenga. Thank you for contacting us. We will call you soon.";
+    return waLinkFor(d, text);
+  };
+
+  // ===== AUTO EMAIL / SMS MESSAGE BY STATUS =====
+  const messageForStatus = function(d, status){
+    const name = getVal(d,["FullName","fullName"]);
+    const service = getVal(d,["Service","service"])||getVal(d,["Position","position"])||"our service";
+    if(status==="Contacted") return "Hello " + name + ", this is Pinnacle Security Ltd, Muyenga. Thank you for contacting us about " + service + ". We have received your request and we will call you shortly to discuss. Thank you for choosing Pinnacle.";
+    if(status==="Hired") return "Hello " + name + ", congratulations! This is Pinnacle Security Ltd, Muyenga. You have been HIRED. Please come to our office in Muyenga with your National ID and documents. We will call you with reporting details. Welcome to Pinnacle Security.";
+    if(status==="Rejected") return "Hello " + name + ", this is Pinnacle Security Ltd, Muyenga. Thank you for applying for " + service + ". After review, we are sorry you were not selected this time. Please try again next time. Thank you for your interest in Pinnacle.";
+    if(status==="Resolved") return "Hello " + name + ", this is Pinnacle Security Ltd, Muyenga. Your request about " + service + " has been RESOLVED. Thank you for choosing Pinnacle. Please contact us anytime you need security services.";
+    return "Hello " + name + ", this is Pinnacle Security Ltd, Muyenga. Thank you for contacting us.";
+  };
+  const autoNotifyFor = function(d, newStatus){
+    if(!autoNotify) return;
+    if(newStatus!=="Contacted" && newStatus!=="Hired" && newStatus!=="Rejected") return;
+    const msg = messageForStatus(d, newStatus);
+    const email = getVal(d,["Email","email"]);
+    const subject = "Pinnacle Security Ltd - " + newStatus;
+    // Show auto-notify bar + auto-open WhatsApp (SMS)
+    setNotifyInfo({name: getVal(d,["FullName","fullName"]), status: newStatus, msg: msg, email: email, phone: getVal(d,["Phone","phone"]), d: d});
+    // Auto open WhatsApp after small delay so user sees it is automatic
+    setTimeout(function(){
+      window.open(waLinkFor(d, msg), "_blank");
+    }, 400);
+    showToast("Auto message opened for " + newStatus);
+  };
+  const sendAutoEmail = function(){
+    if(!notifyInfo) return;
+    const subject = "Pinnacle Security Ltd - " + notifyInfo.status;
+    window.location.href = "mailto:" + notifyInfo.email + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(notifyInfo.msg);
+  };
+  const sendAutoSMS = function(){
+    if(!notifyInfo) return;
+    // SMS via phone app + WhatsApp fallback
+    window.open("sms:" + cleanPhone(notifyInfo.d) + "?body=" + encodeURIComponent(notifyInfo.msg), "_blank");
+    setTimeout(function(){ window.open(waLinkFor(notifyInfo.d, notifyInfo.msg), "_blank"); }, 500);
   };
 
   const changeStatus = function(d, newStatus){
+    const old = getStatus(d);
+    if(old===newStatus) return;
     const obj = {}; Object.keys(statusMap).forEach(function(k){ obj[k]=statusMap[k]; }); obj[getId(d)]=newStatus;
     setStatusMap(obj); localStorage.setItem("psl_status", JSON.stringify(obj));
     showToast(getVal(d,["FullName","fullName"]) + " -> " + newStatus);
+    autoNotifyFor(d, newStatus);
   };
 
   const moveToTrash = function(d){
@@ -222,28 +269,29 @@ export default function AdminDashboard() {
     const list = (page==="trash" ? trash : data).filter(function(d){ return selectedIds.indexOf(d._id)!==-1; });
     const emails = list.map(function(d){ return getVal(d,["Email","email"]); }).filter(function(e){ return e && e.indexOf("@")!==-1; });
     if(!emails.length) return showToast("No emails for selected");
-    window.location.href = "mailto:?bcc=" + emails.join(",") + "&subject=" + encodeURIComponent("Pinnacle Security Ltd - Update") + "&body=" + encodeURIComponent("Hello,\n\nThis is Pinnacle Security Ltd, Muyenga.\n\nThank you.\nControl 24/7: 0776971970");
+    window.location.href = "mailto:?bcc=" + emails.join(",") + "&subject=" + encodeURIComponent("Pinnacle Security Ltd - Update") + "&body=" + encodeURIComponent("Hello,\n\nThis is Pinnacle Security Ltd, Muyenga.\n\nThank you.");
   };
   const bulkStatus = function(newStatus){
     if(!selectedIds.length) return showToast("Select first");
     const obj = {}; Object.keys(statusMap).forEach(function(k){ obj[k]=statusMap[k]; });
-    (page==="trash" ? trash : data).forEach(function(d){ if(selectedIds.indexOf(d._id)!==-1) obj[getId(d)]=newStatus; });
+    (page==="trash" ? trash : data).forEach(function(d){ if(selectedIds.indexOf(d._id)!==-1){ obj[getId(d)]=newStatus; autoNotifyFor(d, newStatus); } });
     setStatusMap(obj); localStorage.setItem("psl_status", JSON.stringify(obj));
     showToast("Status updated for " + selectedIds.length);
   };
 
+  // PRINT - NO Control footer anymore
   const detailHTML = function(d){
     let rows = "";
-    if(hasVal(getVal(d,["Phone","phone"]))) rows += "<tr><td><b>Phone</b></td><td>"+getVal(d,["Phone","phone"])+"</td></tr>";
-    if(hasVal(getVal(d,["Email","email"]))) rows += "<tr><td><b>Email</b></td><td>"+getVal(d,["Email","email"])+"</td></tr>";
-    if(hasVal(getVal(d,["Service","service"]))) rows += "<tr><td><b>Service</b></td><td>"+getVal(d,["Service","service"])+"</td></tr>";
-    if(hasVal(getVal(d,["Position","position"]))) rows += "<tr><td><b>Position</b></td><td>"+getVal(d,["Position","position"])+"</td></tr>";
-    if(hasVal(getVal(d,["District","district"]))) rows += "<tr><td><b>District</b></td><td>"+getVal(d,["District","district"])+"</td></tr>";
-    if(hasVal(getVal(d,["Education","education"]))) rows += "<tr><td><b>Education</b></td><td>"+getVal(d,["Education","education"])+"</td></tr>";
-    if(hasVal(getVal(d,["Experience","experience"]))) rows += "<tr><td><b>Experience</b></td><td>"+getVal(d,["Experience","experience"])+"</td></tr>";
-    rows += "<tr><td><b>Status</b></td><td>"+getStatus(d)+"</td></tr>";
-    if(!isApplicant(d) && hasVal(getVal(d,["Message","Messages","message","messages"]))) rows += "<tr><td><b>Message</b></td><td>"+getVal(d,["Message","Messages","message","messages"])+"</td></tr>";
-    return "<div style='border:1px solid #ddd;border-radius:8px;padding:16px;margin-bottom:14px;page-break-inside:avoid'><h3 style='margin:0;color:#0A1931'>"+getVal(d,["FullName","fullName"])+" - "+getStatus(d)+"</h3><table style='width:100%;border-collapse:collapse;margin-top:10px'>"+rows.replace(/<tr>/g,"<tr style='border:1px solid #eee'><td style='border:1px solid #eee;padding:8px'>").replace(/<\/td><td>/g,"</td><td style='border:1px solid #eee;padding:8px'>")+"</table></div>";
+    if(hasVal(getVal(d,["Phone","phone"]))) rows += "<tr><td style='border:1px solid #eee;padding:8px'><b>Phone</b></td><td style='border:1px solid #eee;padding:8px'>"+getVal(d,["Phone","phone"])+"</td></tr>";
+    if(hasVal(getVal(d,["Email","email"]))) rows += "<tr><td style='border:1px solid #eee;padding:8px'><b>Email</b></td><td style='border:1px solid #eee;padding:8px'>"+getVal(d,["Email","email"])+"</td></tr>";
+    if(hasVal(getVal(d,["Service","service"]))) rows += "<tr><td style='border:1px solid #eee;padding:8px'><b>Service</b></td><td style='border:1px solid #eee;padding:8px'>"+getVal(d,["Service","service"])+"</td></tr>";
+    if(hasVal(getVal(d,["Position","position"]))) rows += "<tr><td style='border:1px solid #eee;padding:8px'><b>Position</b></td><td style='border:1px solid #eee;padding:8px'>"+getVal(d,["Position","position"])+"</td></tr>";
+    if(hasVal(getVal(d,["District","district"]))) rows += "<tr><td style='border:1px solid #eee;padding:8px'><b>District</b></td><td style='border:1px solid #eee;padding:8px'>"+getVal(d,["District","district"])+"</td></tr>";
+    if(hasVal(getVal(d,["Education","education"]))) rows += "<tr><td style='border:1px solid #eee;padding:8px'><b>Education</b></td><td style='border:1px solid #eee;padding:8px'>"+getVal(d,["Education","education"])+"</td></tr>";
+    if(hasVal(getVal(d,["Experience","experience"]))) rows += "<tr><td style='border:1px solid #eee;padding:8px'><b>Experience</b></td><td style='border:1px solid #eee;padding:8px'>"+getVal(d,["Experience","experience"])+"</td></tr>";
+    rows += "<tr><td style='border:1px solid #eee;padding:8px'><b>Status</b></td><td style='border:1px solid #eee;padding:8px'>"+getStatus(d)+"</td></tr>";
+    if(!isApplicant(d) && hasVal(getVal(d,["Message","Messages","message","messages"]))) rows += "<tr><td style='border:1px solid #eee;padding:8px'><b>Message</b></td><td style='border:1px solid #eee;padding:8px'>"+getVal(d,["Message","Messages","message","messages"])+"</td></tr>";
+    return "<div style='border:1px solid #ddd;border-radius:8px;padding:16px;margin-bottom:14px;page-break-inside:avoid'><h3 style='margin:0;color:#0A1931'>"+getVal(d,["FullName","fullName"])+" - "+getStatus(d)+"</h3><table style='width:100%;border-collapse:collapse;margin-top:10px'>"+rows+"</table></div>";
   };
   const printTableHTML = function(list, titleText){
     let head = "";
@@ -259,14 +307,14 @@ export default function AdminDashboard() {
       rows = list.map(function(d){ return "<tr><td>"+getVal(d,["FullName","fullName"])+"</td><td>"+getVal(d,["Phone","phone"])+"</td><td>"+(getVal(d,["Email","email"])||"-")+"</td><td>"+(getVal(d,["Service","service"])||getVal(d,["Position","position"])||"-")+"</td><td>"+(getVal(d,["District","district"])||"-")+"</td><td>"+(getVal(d,["Education","education"])||"-")+"</td><td>"+(getVal(d,["Experience","experience"])||"-")+"</td><td>"+getStatus(d)+"</td></tr>"; }).join("");
     }
     const w = window.open("", "_blank"); if(!w) return;
-    w.document.write("<html><head><title>"+titleText+"</title><style>@page{size:landscape}body{font-family:Arial;padding:16px}h1{color:#0A1931;font-size:18px}table{width:100%;border-collapse:collapse;font-size:11px}th{background:#0A1931;color:#fff;padding:8px;text-align:left;border:1px solid #ddd}td{border:1px solid #ddd;padding:7px;vertical-align:top}</style></head><body><h1>PINNACLE SECURITY LTD - "+titleText+"</h1><p>Total: "+list.length+" | Printed: "+new Date().toLocaleString()+"</p><table>"+head+rows+"</table><p>Control 24/7: 0776971970 | Muyenga, Kampala</p></body></html>");
+    w.document.write("<html><head><title>"+titleText+"</title><style>@page{size:landscape}body{font-family:Arial;padding:16px}h1{color:#0A1931;font-size:18px}table{width:100%;border-collapse:collapse;font-size:11px}th{background:#0A1931;color:#fff;padding:8px;text-align:left;border:1px solid #ddd}td{border:1px solid #ddd;padding:7px;vertical-align:top}</style></head><body><h1>PINNACLE SECURITY LTD - "+titleText+"</h1><p>Total: "+list.length+" | Printed: "+new Date().toLocaleString()+"</p><table>"+head+rows+"</table></body></html>");
     w.document.close(); setTimeout(function(){ w.print(); }, 500);
   };
   const openPrintWindow = function(list, titleText){
     let body = "";
     list.forEach(function(d){ body += detailHTML(d); });
     const w = window.open("", "_blank"); if(!w) return;
-    w.document.write("<html><head><title>"+titleText+"</title><style>@page{size:landscape}body{font-family:Arial;padding:20px}h1{color:#0A1931}</style></head><body><h1>PINNACLE SECURITY LTD - "+titleText+"</h1><p>Total: "+list.length+" | Printed: "+new Date().toLocaleString()+"</p>"+body+"<p>Control 24/7: 0776971970 | Muyenga, Kampala</p></body></html>");
+    w.document.write("<html><head><title>"+titleText+"</title><style>@page{size:landscape}body{font-family:Arial;padding:20px}h1{color:#0A1931}</style></head><body><h1>PINNACLE SECURITY LTD - "+titleText+"</h1><p>Total: "+list.length+" | Printed: "+new Date().toLocaleString()+"</p>"+body+"</body></html>");
     w.document.close(); setTimeout(function(){ w.print(); }, 500);
   };
   const printSingle = function(d){ openPrintWindow([d], getVal(d,["FullName","fullName"])); };
@@ -279,10 +327,14 @@ export default function AdminDashboard() {
   baseList.forEach(function(d){ const v = getVal(d,["Service","service"])||getVal(d,["Position","position"]); if(v) serviceSet[v]=1; });
   const services = ["All"].concat(Object.keys(serviceSet));
 
+  // SEARCH EVERYTHING
   let filtered = baseList.slice();
   if(search.trim()){
     const s = search.toLowerCase();
-    filtered = filtered.filter(function(d){ const txt = (getVal(d,["FullName","fullName"])+" "+getVal(d,["Phone","phone"])+" "+getVal(d,["Service","service"])+" "+getVal(d,["Position","position"])+" "+getVal(d,["District","district"])+" "+getVal(d,["Email","email"])+" "+getVal(d,["Message","Messages","message","messages"])).toLowerCase(); return txt.indexOf(s)!==-1; });
+    filtered = filtered.filter(function(d){
+      const txt = (getVal(d,["FullName","fullName"])+" "+getVal(d,["Phone","phone"])+" "+getVal(d,["Email","email"])+" "+getVal(d,["Service","service"])+" "+getVal(d,["Position","position"])+" "+getVal(d,["District","district"])+" "+getVal(d,["Education","education"])+" "+getVal(d,["Experience","experience"])+" "+getVal(d,["Message","Messages","message","messages"])+" "+getStatus(d)).toLowerCase();
+      return txt.indexOf(s)!==-1;
+    });
   }
   if(filterStatus!=="All") filtered = filtered.filter(function(d){ return getStatus(d)===filterStatus; });
   if(filterService!=="All") filtered = filtered.filter(function(d){ return (getVal(d,["Service","service"])||getVal(d,["Position","position"]))===filterService; });
@@ -312,13 +364,23 @@ export default function AdminDashboard() {
     const a = document.createElement("a"); a.href=url; a.download="pinnacle_"+page+".csv"; a.click(); URL.revokeObjectURL(url);
   };
 
-  // LINE IN COLUMN - borderRight on every th/td
   const th = {background:NAVY, color:'#fff', padding:'10px 8px', fontSize:'12px', textAlign:'center', whiteSpace:'nowrap', borderRight:'1px solid #334155'};
   const tdBase = {padding:'10px 8px', fontSize:'12px', borderBottom:'1px solid #e5e7eb', borderRight:'1px solid #e5e7eb', verticalAlign:'top', textAlign:'center'};
   const iconBtn = {border:'none', padding:'6px', borderRadius:'8px', cursor:'pointer', fontSize:'13px', height:'32px', width:'100%', display:'flex', alignItems:'center', justifyContent:'center'};
   const inputStyle = {width:'100%', padding:'9px 10px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'13px', boxSizing:'border-box', outline:'none'};
 
-  // SMALL FORM - HIDE EMPTY FIELDS, APPLICANT NO MESSAGE
+  // TOP-RIGHT ICONS - DESIGNED NICELY
+  const TopIcons = function(){
+    return (
+      <div style={{display:'flex', gap:'6px', alignItems:'center', background:'rgba(255,255,255,0.18)', backdropFilter:'blur(6px)', padding:'5px', borderRadius:'999px', boxShadow:'0 4px 14px rgba(0,0,0,0.2)', border:'1px solid rgba(255,255,255,0.25)'}}>
+        <a href="/" title="Home - Website" style={{width:'36px', height:'36px', borderRadius:'50%', background:'#fff', color:NAVY, display:'grid', placeItems:'center', textDecoration:'none', fontSize:'17px', boxShadow:'0 2px 6px rgba(0,0,0,0.15)'}}>🏠</a>
+        <button onClick={function(){openList("all");}} title="All" style={{width:'36px', height:'36px', borderRadius:'50%', background:'#fff', border:'none', cursor:'pointer', fontSize:'17px', boxShadow:'0 2px 6px rgba(0,0,0,0.15)'}}>📦</button>
+        <button onClick={function(){openList("trash");}} title="Trash" style={{position:'relative', width:'36px', height:'36px', borderRadius:'50%', background:'#fff', border:'none', cursor:'pointer', fontSize:'17px', boxShadow:'0 2px 6px rgba(0,0,0,0.15)'}}>🗑️{trash.length>0 ? <span style={{position:'absolute', top:'-4px', right:'-4px', minWidth:'18px', height:'18px', borderRadius:'999px', background:'#dc2626', color:'#fff', fontSize:'10px', fontWeight:900, display:'grid', placeItems:'center', padding:'0 4px', border:'2px solid #fff'}}>{trash.length}</span> : null}</button>
+        <button onClick={function(){setAuth(false);}} title="Logout" style={{height:'36px', borderRadius:'999px', background:NAVY, color:'#fff', border:'none', cursor:'pointer', fontSize:'11px', fontWeight:800, padding:'0 12px'}}>LOGOUT</button>
+      </div>
+    );
+  };
+
   const renderSmallForm = function(d){
     const applicant = isApplicant(d);
     const phone = getVal(d,["Phone","phone"]);
@@ -335,17 +397,14 @@ export default function AdminDashboard() {
             <b style={{color:NAVY, fontSize:'14px'}}>{editing ? "✏️ " : "👁️ "}{getVal(d,["FullName","fullName"])}</b>
             <button onClick={function(){setExpanded(null); setEditing(false);}} style={{border:'none', background:'#f1f5f9', borderRadius:'50%', width:'26px', height:'26px', cursor:'pointer', fontWeight:900, fontSize:'12px'}}>✕</button>
           </div>
-
           {!editing ? (
             <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px', fontSize:'12px', marginTop:'10px'}}>
               {hasVal(phone) ? <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Phone</b><br/>{phone}</div> : null}
               {hasVal(email) ? <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Email</b><br/>{email}</div> : null}
               {hasVal(service) ? <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Service / Position</b><br/>{service}</div> : null}
-              {/* CONTACT: District / Education / Experience HIDDEN IF EMPTY */}
               {hasVal(district) ? <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>District</b><br/>{district}</div> : null}
               {hasVal(education) ? <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Education</b><br/>{education}</div> : null}
               {hasVal(experience) ? <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Experience</b><br/>{experience}</div> : null}
-              {/* APPLICANT: NO MESSAGE AT ALL. CONTACT: ONLY IF HAS MESSAGE */}
               {!applicant && hasVal(message) ? <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px', gridColumn:'span 2'}}><b>Message</b><br/>{message}</div> : null}
               <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Status</b><br/><select value={getStatus(d)} onChange={function(e){changeStatus(d,e.target.value);}} style={{padding:'6px', borderRadius:'20px', fontWeight:800, fontSize:'11px', background:statusColor(getStatus(d)), border:'1px solid #ddd'}}>{statusOptions(d).map(function(s){ return <option key={s} value={s}>{s}</option>; })}</select></div>
             </div>
@@ -384,32 +443,49 @@ export default function AdminDashboard() {
     return (
       <div style={{background:'#f0f4ff', minHeight:'100vh', fontFamily:'Arial'}}>
         {toast ? <div style={{position:'fixed', top:'16px', right:'16px', background:'#000', color:'#fff', padding:'10px 14px', borderRadius:'20px', fontWeight:800, zIndex:10000, fontSize:'13px'}}>{toast}</div> : null}
-        <div style={{background:'linear-gradient(90deg,#0A1931,#1e3a8a,#2563eb)', color:'#fff', padding:'12px 14px', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+        <div style={{background:'linear-gradient(90deg,#0A1931,#1e3a8a,#2563eb)', color:'#fff', padding:'10px 14px', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
           <b style={{fontSize:'13px'}}>PINNACLE SECURITY LTD</b>
-          <div style={{display:'flex', gap:'8px'}}>
-            <button onClick={backHome} style={{background:'rgba(255,255,255,0.2)', border:'none', color:'#fff', fontSize:'18px', cursor:'pointer', borderRadius:'8px', width:'36px', height:'36px'}}>🏠</button>
-            <button onClick={function(){openList("all");}} style={{background:'rgba(255,255,255,0.2)', border:'none', color:'#fff', fontSize:'18px', cursor:'pointer', borderRadius:'8px', width:'36px', height:'36px'}}>📦</button>
-            <button onClick={function(){openList("trash");}} style={{background:'rgba(255,255,255,0.2)', border:'none', color:'#fff', fontSize:'16px', cursor:'pointer', borderRadius:'8px', padding:'0 10px'}}>🗑️ {trash.length}</button>
-          </div>
+          <TopIcons />
         </div>
 
         {expanded && expandedData ? renderSmallForm(expandedData) : null}
 
+        {/* AUTO NOTIFY BAR - WHEN STATUS = CONTACTED / HIRED / REJECTED */}
+        {notifyInfo ? (
+          <div style={{maxWidth:'900px', margin:'12px auto 0', padding:'0 14px'}}>
+            <div style={{background:'#dcfce7', border:'1px solid #86efac', borderRadius:'12px', padding:'12px', fontSize:'13px'}}>
+              <b>✉️ Auto message ready for {notifyInfo.name} - {notifyInfo.status}</b>
+              <p style={{margin:'6px 0', color:'#166534'}}>{notifyInfo.msg}</p>
+              <p style={{margin:'4px 0', fontSize:'12px', color:'#666'}}>WhatsApp opened automatically. Tap below to also send Email / SMS:</p>
+              <div style={{display:'flex', gap:'8px', flexWrap:'wrap', marginTop:'8px'}}>
+                <button onClick={sendAutoEmail} style={{background:'#2563eb', color:'#fff', border:'none', padding:'9px 12px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>📧 Send Email to {notifyInfo.email||"..."}</button>
+                <button onClick={sendAutoSMS} style={{background:'#25D366', color:'#fff', border:'none', padding:'9px 12px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>💬 Send SMS / WhatsApp to {notifyInfo.phone}</button>
+                <button onClick={function(){setNotifyInfo(null);}} style={{background:'#fff', border:'1px solid #ddd', padding:'9px 12px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>Close</button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
         <div style={{maxWidth:'1400px', margin:'0 auto', padding:'14px', visibility: expanded ? 'hidden' : 'visible', height: expanded ? '0' : 'auto', overflow: expanded ? 'hidden' : 'visible'}}>
-          {/* TITLE + BUTTONS - CENTERED */}
           <div style={{display:'flex', justifyContent:'center', alignItems:'center', flexWrap:'wrap', gap:'10px', textAlign:'center'}}>
-            <button onClick={backHome} style={{background:NAVY, color:'#fff', border:'none', padding:'9px 14px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>← Back</button>
+            <button onClick={backHome} style={{background:NAVY, color:'#fff', border:'none', padding:'9px 14px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>Back</button>
             <h2 style={{margin:0, color:NAVY, fontSize:'18px'}}>{title} <span style={{fontSize:'13px', color:'#666'}}>({filtered.length})</span></h2>
             <button onClick={exportCSV} style={{background:'#2563eb', color:'#fff', border:'none', padding:'9px 14px', borderRadius:'8px', fontWeight:800, fontSize:'11px', cursor:'pointer'}}>CSV</button>
             <button onClick={printAllDetails} style={{background:'#facc15', color:'#000', border:'none', padding:'9px 14px', borderRadius:'8px', fontWeight:800, fontSize:'11px', cursor:'pointer'}}>🖨️ PDF</button>
+            <label style={{fontSize:'11px', fontWeight:800, color:NAVY, background:'#fff', padding:'8px 10px', borderRadius:'8px', border:'1px solid #ddd', cursor:'pointer', display:'flex', alignItems:'center', gap:'5px'}}>
+              <input type="checkbox" checked={autoNotify} onChange={function(e){setAutoNotify(e.target.checked);}} /> Auto Email / SMS ON
+            </label>
           </div>
 
-          {/* SEARCH - REDUCED + CENTERED, ALL CENTERED */}
-          <div style={{display:'flex', gap:'8px', marginTop:'14px', flexWrap:'wrap', justifyContent:'center', alignItems:'center'}}>
-            <input value={search} onChange={function(e){setSearch(e.target.value); setCurrentPage(1);}} placeholder="🔍 Search..." style={{width:'280px', maxWidth:'90%', padding:'9px 12px', borderRadius:'20px', border:'1px solid #ddd', fontSize:'13px', outline:'none', background:'#fff', textAlign:'center'}} />
-            <select value={sort} onChange={function(e){setSort(e.target.value);}} style={{padding:'9px 8px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'12px', background:'#fff', fontWeight:700}}><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="az">A-Z</option></select>
-            <select value={filterStatus} onChange={function(e){setFilterStatus(e.target.value); setCurrentPage(1);}} style={{padding:'9px 8px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'12px', background:'#fff', fontWeight:700}}><option value="All">All Status</option><option value="New">New</option><option value="Contacted">Contacted</option><option value="Rejected">Rejected</option><option value="Resolved">Resolved</option><option value="Hired">Hired</option></select>
-            <select value={filterService} onChange={function(e){setFilterService(e.target.value); setCurrentPage(1);}} style={{padding:'9px 8px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'12px', background:'#fff', fontWeight:700}}>{services.map(function(s){ return <option key={s} value={s}>{s==="All"?"All Service":s}</option>; })}</select>
+          {/* SEARCH EVERYTHING - CENTERED */}
+          <div style={{display:'flex', flexDirection:'column', alignItems:'center', marginTop:'14px'}}>
+            <div style={{display:'flex', gap:'8px', flexWrap:'wrap', justifyContent:'center', alignItems:'center'}}>
+              <input value={search} onChange={function(e){setSearch(e.target.value); setCurrentPage(1);}} placeholder="Search name, phone, email, service, message, district..." title="Searches EVERYTHING: Name, Phone, Email, Service, Position, District, Education, Experience, Message, Status" style={{width:'360px', maxWidth:'92vw', padding:'9px 14px', borderRadius:'20px', border:'1px solid #ddd', fontSize:'13px', outline:'none', background:'#fff', textAlign:'center'}} />
+              <select value={sort} onChange={function(e){setSort(e.target.value);}} style={{padding:'9px 8px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'12px', background:'#fff', fontWeight:700}}><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="az">A-Z</option></select>
+              <select value={filterStatus} onChange={function(e){setFilterStatus(e.target.value); setCurrentPage(1);}} style={{padding:'9px 8px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'12px', background:'#fff', fontWeight:700}}><option value="All">All Status</option><option value="New">New</option><option value="Contacted">Contacted</option><option value="Rejected">Rejected</option><option value="Resolved">Resolved</option><option value="Hired">Hired</option></select>
+              <select value={filterService} onChange={function(e){setFilterService(e.target.value); setCurrentPage(1);}} style={{padding:'9px 8px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'12px', background:'#fff', fontWeight:700}}>{services.map(function(s){ return <option key={s} value={s}>{s==="All"?"All Service":s}</option>; })}</select>
+            </div>
+            <p style={{fontSize:'11px', color:'#666', margin:'6px 0 0', textAlign:'center'}}>Searches EVERYTHING: Name • Phone • Email • Service • Position • District • Education • Experience • Message • Status</p>
           </div>
 
           {selectedIds.length>0 ? (
@@ -422,7 +498,6 @@ export default function AdminDashboard() {
             </div>
           ) : null}
 
-          {/* TABLE - LINE IN EVERY COLUMN, CENTERED */}
           <div style={{background:'#fff', borderRadius:'12px', overflow:'hidden', marginTop:'14px', border:'1px solid #ddd', boxShadow:'0 2px 10px rgba(0,0,0,0.05)'}}>
             <div style={{overflowX:'auto'}}>
               <table style={{width:'100%', borderCollapse:'collapse', minWidth:'1050px'}}>
@@ -488,14 +563,9 @@ export default function AdminDashboard() {
   return (
     <div style={{background:'#f0f4ff', minHeight:'100vh', fontFamily:'Arial', padding:'0'}}>
       {toast ? <div style={{position:'fixed', top:'16px', right:'16px', background:'#000', color:'#fff', padding:'10px 14px', borderRadius:'20px', fontWeight:800, zIndex:10000, fontSize:'13px'}}>{toast}</div> : null}
-      <div style={{background:'linear-gradient(90deg,#0A1931,#1e3a8a,#2563eb)', color:'#fff', padding:'12px 14px', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+      <div style={{background:'linear-gradient(90deg,#0A1931,#1e3a8a,#2563eb)', color:'#fff', padding:'10px 14px', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
         <b style={{fontSize:'13px'}}>PINNACLE SECURITY LTD</b>
-        <div style={{display:'flex', gap:'6px', alignItems:'center'}}>
-          <a href="/" style={{color:'#fff', textDecoration:'none', fontSize:'18px'}}>🏠</a>
-          <button onClick={function(){openList("all");}} style={{background:'rgba(255,255,255,0.2)', border:'none', color:'#fff', fontSize:'18px', cursor:'pointer', borderRadius:'8px', width:'36px', height:'36px'}}>📦</button>
-          <button onClick={function(){openList("trash");}} style={{background:'rgba(255,255,255,0.2)', border:'none', color:'#fff', fontSize:'16px', cursor:'pointer', borderRadius:'8px', padding:'0 10px'}}>🗑️ {trash.length}</button>
-          <button onClick={function(){setAuth(false);}} style={{background:'rgba(255,255,255,0.2)', border:'none', color:'#fff', fontSize:'11px', fontWeight:800, cursor:'pointer', borderRadius:'8px', padding:'8px 10px'}}>LOGOUT</button>
-        </div>
+        <TopIcons />
       </div>
       <div style={{maxWidth:'520px', margin:'0 auto', padding:'18px 14px 20px'}}>
         <div style={{background:'linear-gradient(135deg,#0A1931 0%,#2563eb 60%,#f59e0b 130%)', borderRadius:'16px', padding:'20px', color:'#fff', marginBottom:'16px'}}>
