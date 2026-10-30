@@ -63,7 +63,7 @@ const AdminDashboard = () => {
   const exportCSV=(rows,filename)=>{ if(!rows.length){showToast('No rows to export'); return;} const headers=tab==='applicants'?["Timestamp","FullName","Phone","Email","Position","Education","District","Experience","Interest","Type","Status"]:["Timestamp","FullName","Phone","Email","Service","Message","Status"]; const csv="\uFEFF"+[headers.join(",")].concat(rows.map(r=>headers.map(h=>`"${String(getVal(r,[h,h.toLowerCase()])||'').replace(/"/g,'""')}"`).join(","))).join("\n"); const blob=new Blob([csv],{type:"text/csv;charset=utf-8"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=filename||`${tab}_${new Date().toISOString().slice(0,10)}.csv`; a.click(); URL.revokeObjectURL(url); showToast(`CSV Exported - ${rows.length} rows`); };
   const exportPDF=(rows)=>{ if(!rows.length){showToast('No rows to export'); return;} const isContact=tab==='contacts'; const title=`Pinnacle Security Ltd - ${tab.toUpperCase()} Report - ${rows.length} rows - ${new Date().toLocaleDateString('en-GB',{timeZone:'Africa/Kampala'})}`; const head=isContact?`<th>Date</th><th>Name</th><th>Phone</th><th>Email</th><th>Service</th><th>Status</th>`:`<th>Date</th><th>Name</th><th>Phone</th><th>Email</th><th>Position</th><th>District</th><th>Education</th><th>Status</th>`; const body=rows.map(r=>{ const cells=isContact?`<td>${escapeHtml(formatDate(getVal(r,['Timestamp','timestamp'])))}</td><td>${escapeHtml(titleCase(getVal(r,['FullName','fullName'])))}</td><td>${escapeHtml(getVal(r,['Phone','phone']))}</td><td>${escapeHtml(getVal(r,['Email','email']))}</td><td>${escapeHtml(getVal(r,['Service','service']))}</td><td>${escapeHtml(getVal(r,['Status','status']))}</td>`:`<td>${escapeHtml(formatDate(getVal(r,['Timestamp','timestamp'])))}</td><td>${escapeHtml(titleCase(getVal(r,['FullName','fullName'])))}</td><td>${escapeHtml(getVal(r,['Phone','phone']))}</td><td>${escapeHtml(getVal(r,['Email','email']))}</td><td>${escapeHtml(getVal(r,['Position','position']))}</td><td>${escapeHtml(getVal(r,['District','district']))}</td><td>${escapeHtml(getVal(r,['Education','education']))}</td><td>${escapeHtml(getVal(r,['Status','status']))}</td>`; return `<tr>${cells}</tr>`; }).join(''); const w=window.open('', '_blank'); if(!w){showToast('Allow popups for PDF'); return;} w.document.write(`<html><head><title>${escapeHtml(title)}</title><style>body{font-family:${FONT};padding:20px} h2{color:#111} table{width:100%;border-collapse:collapse;font-size:11px} th,td{border:1px solid #333;padding:6px;text-align:left} th{background:${NAVY};color:#fff} @media print{ button{display:none} }</style></head><body><h2>${escapeHtml(title)}</h2><p>Pinnacle Security Ltd | Muyenga Hill | Control 24/7: 0776971970</p><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table><br/><button onclick="window.print()">Print / Save as PDF</button></body></html>`); w.document.close(); showToast(`PDF Ready - ${rows.length} rows`); };
 
-  const theme=dark?{bgMain:'#0f172a',bgCard:'#1e293b',text:'#f1f5f9',border:'#334155',input:'#0f172a',modal:'#1e293b',sub:'#cbd5e1',page:'#0f172a'}:{bgMain:'#f1f5f9',bgCard:'#ffffff',text:'#0f172a',border:'#e2e8f0',input:'#f1f5f9',modal:'#ffffff',sub:'#64748b',page:'#f1f5f9'};
+  const theme=dark?{bgMain:'#0f172a',bgCard:'#1e293b',text:'#f1f5f9',border:'#334155',input:'#0f172a',modal:'#1e293b',sub:'#cbd5e1',page:'#0f172a'}:{bgMain:'#f8fafc',bgCard:'#ffffff',text:'#0f172a',border:'#e2e8f0',input:'#f1f5f9',modal:'#ffffff',sub:'#64748b',page:'#f8fafc'};
   if(!auth){ return (<div style={{minHeight:'100vh',background:NAVY,display:'flex',justifyContent:'center',alignItems:'center',fontFamily:FONT}}><div style={{background:'#fff',padding:'40px 32px',borderRadius:'16px',width:'92%',maxWidth:'400px',textAlign:'center'}}><div style={{width:'64px',height:'64px',background:NAVY,borderRadius:'12px',margin:'0 auto 14px',display:'grid',placeItems:'center',fontWeight:900,fontSize:'28px',color:'#fff'}}>P</div><h2 style={{fontWeight:900,color:NAVY}}>PINNACLE ADMIN</h2><input type="password" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()} placeholder="Password" style={{width:'100%',padding:'14px',borderRadius:'10px',marginTop:'20px',border:'1px solid #ddd',fontFamily:FONT}}/><button onClick={login} style={{width:'100%',marginTop:'12px',background:NAVY,padding:'14px',borderRadius:'10px',fontWeight:900,border:'none',cursor:'pointer',fontFamily:FONT,color:'#fff'}}>UNLOCK</button></div></div>) }
 
   const applicants=data.filter(d=>isApplicantRow(d)); const contacts=data.filter(d=>!isApplicantRow(d));
@@ -84,51 +84,57 @@ const AdminDashboard = () => {
   const modalInput={padding:'10px',borderRadius:'8px',border:`1px solid ${theme.border}`,fontFamily:FONT,background:theme.input,color:theme.text,width:'100%'};
   const iconBtn=(bg)=>({background:bg,color:'#fff',border:'none',padding:'8px 12px',borderRadius:'20px',fontWeight:900,cursor:'pointer',fontSize:'12px',fontFamily:FONT});
   const navBtn=(active)=>({background:active?NAVY:'#eef2f7',color:active?'#fff':'#0f172a',border:'none',padding:'8px 12px',borderRadius:'8px',fontWeight:800,cursor:'pointer',fontSize:'12px',fontFamily:FONT,whiteSpace:'nowrap'});
-  // SMALL BOXES - REDUCED SIZE
-  const statBox={background:NAVY2,borderRadius:'10px',padding:'12px 6px',textAlign:'center',cursor:'pointer',color:'#fff',minHeight:'86px',display:'flex',flexDirection:'column',justifyContent:'center'};
-  const viewBtn={background:NAVY,color:'#fff',border:'none',padding:'10px 8px',borderRadius:'8px',fontWeight:800,cursor:'pointer',fontSize:'12px',fontFamily:FONT,width:'100%'};
+  // SMALL BOXES LIKE YOUR PHOTO - WHITE, SHORT, LIKE 2 / 8 / 4 / 14
+  const statBox={background:'#ffffff',border:'1px solid #f1f5f9',borderRadius:'4px',padding:'18px 6px 16px',textAlign:'center',cursor:'pointer',color:'#0f172a',minHeight:'70px',display:'flex',flexDirection:'column',justifyContent:'center',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'};
+  const statNum={fontSize:'19px',fontWeight:700,lineHeight:1};
+  const statLabel={fontSize:'12px',color:'#6b7280',marginTop:'6px',fontWeight:400};
+  const viewBtn={background:NAVY,color:'#fff',border:'none',padding:'0 8px',height:'44px',borderRadius:'5px',fontWeight:700,cursor:'pointer',fontSize:'12px',fontFamily:FONT,width:'100%',letterSpacing:'0.4px',display:'flex',alignItems:'center',justifyContent:'center'};
   const smallBtn={background:'#fff',border:'1px solid #e2e8f0',color:'#0f172a',padding:'7px 10px',borderRadius:'20px',fontWeight:700,cursor:'pointer',fontSize:'11px',fontFamily:FONT};
   const recent = [...data].sort((a,b)=>parseTs(getVal(b,['Timestamp','timestamp']))-parseTs(getVal(a,['Timestamp','timestamp']))).slice(0,5);
 
   return (
     <div style={{background:theme.page,minHeight:'100vh',color:theme.text,fontFamily:FONT}}>
       {toast&&<div style={{position:'fixed',top:'80px',right:'20px',background:'#fff',color:'#000',padding:'12px 18px',borderRadius:'20px',fontWeight:800,zIndex:9999,border:'3px solid #0f172a',fontFamily:FONT}}>{toast}</div>}
-      {/* TOP HEADER + TABS REMOVED - YOU CIRCLED THEM */}
+      {/* TOP HEADER REMOVED - LIKE PHOTO HAS ONLY WELCOME BELOW */}
 
-      <div style={{maxWidth:'520px',margin:'0 auto',padding:'16px 12px 40px'}}>
+      <div style={{maxWidth:'480px',margin:'0 auto',padding:'18px 16px 40px'}}>
       {view==='dashboard' ? (
       <>
-        <h2 style={{fontSize:'16px',fontWeight:900,marginBottom:'10px',color:theme.text}}>Welcome, Admin</h2>
-        {/* SMALL 2x2 BOXES */}
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
-          <div onClick={()=>goToList('contacts')} style={statBox}><div style={{fontSize:'20px',fontWeight:900,color:GOLD,lineHeight:1}}>{contacts.length}</div><div style={{fontSize:'11px',color:'#e2e8f0',marginTop:'4px'}}>Contacts</div><div style={{fontSize:'10px',color:'#94a3b8'}}>Tap to open</div></div>
-          <div onClick={()=>goToList('applicants')} style={statBox}><div style={{fontSize:'20px',fontWeight:900,color:GOLD,lineHeight:1}}>{applicants.length}</div><div style={{fontSize:'11px',color:'#e2e8f0',marginTop:'4px'}}>Applicants</div><div style={{fontSize:'10px',color:'#94a3b8'}}>Tap to open</div></div>
-          <div onClick={()=>goToList('contacts')} style={statBox}><div style={{fontSize:'20px',fontWeight:900,color:GOLD,lineHeight:1}}>{data.length}</div><div style={{fontSize:'11px',color:'#e2e8f0',marginTop:'4px'}}>Total</div><div style={{fontSize:'10px',color:'#94a3b8'}}>All records</div></div>
-          <div onClick={()=>{setView('list'); setShowTrash(true);}} style={statBox}><div style={{fontSize:'20px',fontWeight:900,color:GOLD,lineHeight:1}}>{trash.length}</div><div style={{fontSize:'11px',color:'#e2e8f0',marginTop:'4px'}}>Trash</div><div style={{fontSize:'10px',color:'#94a3b8'}}>Tap to view</div></div>
+        <h2 style={{fontSize:'18px',fontWeight:700,marginBottom:'14px',color:'#1e293b',letterSpacing:'-0.2px'}}>Welcome, Admin</h2>
+        {/* SMALL WHITE 2x2 BOXES - EXACTLY LIKE PHOTO: 2 Guards / 8 Incidents */}
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'14px'}}>
+          <div onClick={()=>goToList('contacts')} style={statBox}><div style={{...statNum,color:'#0f172a'}}>{contacts.length}</div><div style={statLabel}>Contacts</div></div>
+          <div onClick={()=>goToList('applicants')} style={statBox}><div style={{...statNum,color:'#dc2626'}}>{applicants.length}</div><div style={statLabel}>Applicants</div></div>
+          <div onClick={()=>goToList('contacts')} style={statBox}><div style={{...statNum,color:'#2563eb'}}>{data.length}</div><div style={statLabel}>Total</div></div>
+          <div onClick={()=>{setView('list'); setShowTrash(true);}} style={statBox}><div style={{...statNum,color:'#f59e0b'}}>{trash.length}</div><div style={statLabel}>Trash</div></div>
         </div>
-        {/* SMALL BUTTONS - NOT LONG */}
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px',marginTop:'10px'}}>
-          <button onClick={()=>goToList('contacts')} style={viewBtn}>View Contacts </button>
-          <button onClick={()=>goToList('applicants')} style={viewBtn}>View Applicants </button>
-          <button onClick={()=>{goToList('contacts'); setTimeout(()=>setShowAdd(true),100);}} style={{...viewBtn,background:'#059669'}}>+ Add New</button>
-          <button onClick={()=>openInNewPage('contacts')} style={{...viewBtn,background:'#fff',color:NAVY,border:'1px solid #ddd'}}>New Page</button>
+        {/* BUTTONS LIKE PHOTO - 2 COLUMNS, SMALL HEIGHT, GAP */}
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'14px',marginTop:'22px'}}>
+          <button onClick={()=>goToList('contacts')} style={{...viewBtn,background:'#0A1931'}}>👮 MANAGE CONTACTS</button>
+          <button onClick={()=>goToList('applicants')} style={{...viewBtn,background:'#dc2626'}}>🚨 VIEW APPLICANTS</button>
         </div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'14px',marginTop:'14px'}}>
+          <button onClick={()=>{goToList('contacts'); setTimeout(()=>setShowAdd(true),100);}} style={{...viewBtn,background:'#0077cc'}}>+ ADD NEW</button>
+          <button onClick={()=>openInNewPage('contacts')} style={{...viewBtn,background:'#facc15',color:'#0f172a'}}>↗ NEW PAGE</button>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'14px',marginTop:'14px'}}>
+          <button onClick={()=>setShowAuto(true)} style={{...viewBtn,background:'#059669'}}>🤖 AUTO REPLY</button>
+          <button onClick={load} style={{...viewBtn,background:'#eef2f7',color:'#0f172a',fontWeight:600}}>🔄 REFRESH</button>
+        </div>
+        <button onClick={logout} style={{width:'100%',marginTop:'14px',background:'#7c8a9a',color:'#fff',border:'none',height:'44px',borderRadius:'5px',fontWeight:700,cursor:'pointer',fontSize:'12px',fontFamily:FONT,letterSpacing:'0.8px'}}>LOGOUT</button>
         {/* WELCOME CARD - SMALL */}
-        <div style={{background:'#fff',borderRadius:'10px',padding:'14px',marginTop:'10px'}}>
-          <h3 style={{fontSize:'14px',fontWeight:900,color:NAVY}}>Welcome to Pinnacle Security Website</h3>
-          <p style={{fontSize:'13px',lineHeight:'1.6',color:'#334155',marginTop:'6px'}}> Tick ✓ to select many, then Delete. Trash keeps them until you Restore or Permanent Delete.</p>
+        <div style={{background:'#fff',borderRadius:'8px',padding:'14px',marginTop:'18px',border:'1px solid #e8e8e8'}}>
+          <h3 style={{fontSize:'14px',fontWeight:800,color:NAVY}}>Welcome to Pinnacle Security Website</h3>
+          <p style={{fontSize:'13px',lineHeight:'1.6',color:'#334155',marginTop:'6px'}}>Same as your App - everything works here. Tick ✓ to select many, then Delete. Trash keeps them until you Restore or Permanent Delete.</p>
           <div style={{display:'flex',gap:'6px',flexWrap:'wrap',marginTop:'10px'}}>
             <button onClick={()=>setDark(!dark)} style={smallBtn}>{dark?'☀️ Light':'🌙 Dark'}</button>
-            <button onClick={()=>setShowAuto(true)} style={smallBtn}>🤖 Auto {autoSettings.emailOn?'ON':'OFF'}</button>
-            <button onClick={load} style={smallBtn}>🔄 Refresh</button>
-            <a href="/" style={{...smallBtn,textDecoration:'none'}}>🏠 Website</a>
-            <button onClick={logout} style={{...smallBtn,background:'#fee2e2',color:'#dc2626'}}>Logout</button>
+            <a href="/" style={{...smallBtn,textDecoration:'none'}}>🏠 Home</a>
             <button onClick={()=>exportPDF(list)} style={{...smallBtn,background:'#dc2626',color:'#fff'}}>📄 PDF</button>
           </div>
         </div>
         {/* RECENT */}
-        <div style={{background:'#fff',borderRadius:'10px',padding:'14px',marginTop:'10px'}}>
-          <h3 style={{fontSize:'14px',fontWeight:900,color:NAVY}}>Recent Contacts & Applicants</h3>
+        <div style={{background:'#fff',borderRadius:'8px',padding:'14px',marginTop:'10px',border:'1px solid #e8e8e8'}}>
+          <h3 style={{fontSize:'14px',fontWeight:800,color:NAVY}}>Recent Contacts & Applicants</h3>
           {recent.length===0 && <p style={{fontSize:'12px',color:'#64748b',marginTop:'8px'}}>{loading?'Loading...':'No data - Ready for new submissions'}</p>}
           {recent.map(r=>(
             <div key={r._uid} onClick={()=>setDetailRow(r)} style={{padding:'10px 0',borderBottom:'1px solid #f1f5f9',cursor:'pointer',fontSize:'13px'}}>
