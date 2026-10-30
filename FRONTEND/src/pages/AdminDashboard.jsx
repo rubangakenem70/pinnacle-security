@@ -593,7 +593,7 @@ export default function AdminDashboard() {
       </div>
       <div style={{maxWidth:'520px', margin:'0 auto', padding:'18px 14px 20px'}}>
         <div style={{background:'linear-gradient(135deg,#0A1931 0%,#2563eb 60%,#f59e0b 130%)', borderRadius:'16px', padding:'20px', color:'#fff', marginBottom:'16px'}}>
-          <br></br><p style={{margin:0, fontSize:'13px', opacity:0.9}}>Welcome,</p></b>
+          <br><p style={{margin:0, fontSize:'13px', opacity:0.9}}>Welcome,</p></b>
           <pre style={{margin:'4px 0 0', fontSize:'26px', fontWeight:900}}>{username} </pre>
         </div>
         <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px'}}>
