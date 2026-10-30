@@ -1,7 +1,7 @@
 import AdminDashboard from './pages/AdminDashboard.jsx';
 import React, { useState, useEffect } from 'react'
 
-const ADMIN_PASSWORD = "Pinnacle2026!Secure123";
+const ADMIN_PASSWORD = "Rubangakene";
 const GOOGLE_SHEET_WEBHOOK = "https://script.google.com/macros/s/AKfycbz0Fx9gSfPwPXZdi8pivw9IdQ_fzj707fPk22GBECuGYhGzwePtEPZV47TyXk8TN8bggQ/exec";
 const KOBO_APTITUDE_TEST = "https://ee.kobotoolbox.org/x/ODCdeyaJ";
 const GOOGLE_APTITUDE_REGISTER = "https://forms.gle/W8JroZ8n8HGArq248";
@@ -275,7 +275,7 @@ export default function App(){
         .mission-card{background:#fff; padding:20px; border-radius:12px; line-height:1.7} .mission-card.gold{background:#fffbe6} .mission-card.dark{background:#1a1a1a; color:#fff}
         .memo-clean{background:#fff; border-radius:14px; overflow:hidden}
         .memo-head{background:#0A1931; color:#fff; padding:20px} .memo-head h2{color:#FFD700; text-align:left; font-size:20px}
-        .memo-body-dark{padding:20px} .memo-intro{margin-bottom:16px}
+        .memo-body-dark{padding:20px} .memo-intro{margin-bottom:'16px}
         @media(max-width:800px){ .home-grid-3,.mission-grid{grid-template-columns:1fr} .menu-btn{display:block} .links{display:none} .links.show{display:flex; flex-direction:column; align-items:flex-start; margin-top:12px} .hero h1{font-size:24px} }
         [data-theme="dark"] .section h2{color:#fff !important}
         [data-theme="dark"] .section{color:#fff !important}
