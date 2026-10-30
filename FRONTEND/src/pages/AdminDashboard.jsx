@@ -593,9 +593,8 @@ export default function AdminDashboard() {
       </div>
       <div style={{maxWidth:'520px', margin:'0 auto', padding:'18px 14px 20px'}}>
         <div style={{background:'linear-gradient(135deg,#0A1931 0%,#2563eb 60%,#f59e0b 130%)', borderRadius:'16px', padding:'20px', color:'#fff', marginBottom:'16px'}}>
-          <p style={{margin:0, fontSize:'13px', opacity:0.9}}>Welcome,</p>
-          <h2 style={{margin:'4px 0 0', fontSize:'26px', fontWeight:900}}>{username} 👋</h2>
-          <p style={{margin:'8px 0 0', fontSize:'12px', opacity:0.9}}>Pinnacle Security Ltd • {data.length} total • {contacts.length} Contacts • {applicants.length} Applicants</p>
+          <br></br><p style={{margin:0, fontSize:'13px', opacity:0.9}}>Welcome,</p></b>
+          <pre style={{margin:'4px 0 0', fontSize:'26px', fontWeight:900}}>{username} </pre>
         </div>
         <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px'}}>
           <div onClick={function(){openList("contacts");}} style={boxStyle('linear-gradient(135deg,#2563eb,#0ea5e9)')}>
