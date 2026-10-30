@@ -13,12 +13,10 @@ const AdminDashboard = () => {
   const [auth,setAuth]=useState(false); const [pass,setPass]=useState(""); const [data,setData]=useState([]); const [search,setSearch]=useState(""); const [tab,setTab]=useState("contacts"); const [loading,setLoading]=useState(false); const [currentPage,setCurrentPage]=useState(1); const [rowsPerPage,setRowsPerPage]=useState(5); const [selected,setSelected]=useState([]); const [sortBy,setSortBy]=useState("dateAsc"); const [editRow,setEditRow]=useState(null); const [form,setForm]=useState({}); const [toast,setToast]=useState(""); const [trash,setTrash]=useState(()=>{try{return JSON.parse(localStorage.getItem('psl_trash')||'[]')}catch{return[]}}); const [showTrash,setShowTrash]=useState(false); const [dark,setDark]=useState(true); const [sidebarWidth,setSidebarWidth]=useState(270); const [showSidebar,setShowSidebar]=useState(false); const [isMobile,setIsMobile]=useState(typeof window!=='undefined' && window.innerWidth<768);
   const resizingRef=useRef(false); const toastTimer=useRef(null); const [showFilters,setShowFilters]=useState(false); const [filters,setFilters]=useState({service:"",position:"",district:"",education:"",status:"",dateFrom:"",dateTo:""}); const [detailRow,setDetailRow]=useState(null); const [showAdd,setShowAdd]=useState(false); const [addForm,setAddForm]=useState({Type:"contact",FullName:"",Phone:"",Email:"",Service:"",Message:"",Position:"",Education:"",District:"",Experience:"",Interest:""}); const [showAuto,setShowAuto]=useState(false);
   const [showActionMenu,setShowActionMenu]=useState(false);
-  // ===== DASHBOARD VIEW - ONLY ADDED =====
   const [view,setView]=useState("dashboard");
   const openInNewPage = (t) => { window.open(window.location.pathname + '?tab=' + t + '&view=list', '_blank'); };
   useEffect(()=>{ const p = new URLSearchParams(window.location.search); const t = p.get('tab'); const v = p.get('view'); if(t==='contacts'||t==='applicants'){ setTab(t); } if(v==='list'){ setView('list'); } },[]);
   const goToList = (t) => { setTab(t); setFilters({service:"",position:"",district:"",education:"",status:"",dateFrom:"",dateTo:""}); setSelected([]); setCurrentPage(1); setView('list'); if(isMobile) setShowSidebar(false); };
-  // ===== END DASHBOARD VIEW =====
   const [autoSettings,setAutoSettings]=useState(()=>{try{return JSON.parse(localStorage.getItem('psl_auto_settings')||'null')||{emailOn:true,whatsappOn:true,contactEmail:"Hello {name}, thank you for contacting Pinnacle Security Ltd for {service}. We received your message: \"{message}\". We will call you soon for a FREE Site Survey. Control 24/7: 0776971970. In Jesus Name, Pinnacle Security Ltd, Muyenga Hill.",applicantEmail:"Hello {name}, thank you for applying to Pinnacle Security Ltd for {position}. We received your application. We will contact you soon for interview / training at Muyenga HQ. Control 24/7: 0776971970. HR: hr@pinnaclegroup.co.ug. In Jesus Name.",contactWhats:"Hello {name}, this is Pinnacle Security Ltd, Muyenga. Thank you for contacting us for {service}. We received your message. We will call you soon for a FREE Site Survey. Control 24/7: 0776971970. In Jesus Name.",applicantWhats:"Hello {name}, this is Pinnacle Security Ltd, Muyenga. Thank you for applying for {position}. We received your application. When can you come for interview / training at Muyenga HQ? Control 24/7: 0776971970. In Jesus Name."}}catch{return{emailOn:true,whatsappOn:true,contactEmail:"",applicantEmail:"",contactWhats:"",applicantWhats:""}}});
   const [autoReplied,setAutoReplied]=useState(()=>{try{return JSON.parse(localStorage.getItem('psl_auto_replied')||'[]')}catch{return[]}}); const prevTimestampsRef=useRef(new Set()); const autoSettingsRef=useRef(autoSettings); useEffect(()=>{autoSettingsRef.current=autoSettings},[autoSettings]);
   useEffect(()=>{ const h=()=>setIsMobile(window.innerWidth<768); window.addEventListener('resize',h); return()=>window.removeEventListener('resize',h); },[]);
@@ -81,51 +79,37 @@ const AdminDashboard = () => {
   const dropItem=(color)=>({width:'100%',textAlign:'left',padding:'13px 14px',background:'#ffffff',border:'none',borderBottom:'1px solid #e2e8f0',color:'#000000',cursor:'pointer',fontSize:'14px',fontWeight:800,fontFamily:FONT,borderLeft:`6px solid ${color}`});
   const modalInput={padding:'10px',borderRadius:'8px',border:`1px solid ${theme.border}`,fontFamily:FONT,background:theme.input,color:theme.text};
   const pdfBtn={background:C.pdf,color:'#fff',border:'none',padding:'9px 16px',borderRadius:'20px',fontWeight:900,cursor:'pointer',fontSize:'13px',fontFamily:FONT,flexShrink:0,letterSpacing:'1px'};
-  // Dashboard card styles - same look as screenshot
-  const statCard = {background:theme.bgCard,border:`1px solid ${theme.border}`,borderRadius:'12px',padding:'18px 10px',textAlign:'center',cursor:'pointer'};
-  const bigBtn = (bg,color='#fff') => ({background:bg,color,border:'none',padding:'14px 10px',borderRadius:'10px',fontWeight:900,cursor:'pointer',fontSize:'13px',fontFamily:FONT,letterSpacing:'0.5px',width:'100%'});
-  const sidebarContent=(<><div style={{display:'flex',alignItems:'center',gap:'10px',paddingBottom:'14px',borderBottom:`1px solid ${theme.border}`}}><div style={{width:'42px',height:'42px',background:ACCENT,borderRadius:'12px',display:'grid',placeItems:'center',fontWeight:900,color:'#fff',border:'1px solid #fff'}}>P</div><div><h2 style={{fontWeight:900,fontSize:'13px',color:theme.text}}>Pinnacle Security Ltd</h2></div>{isMobile&&<button onClick={()=>setShowSidebar(false)} style={{marginLeft:'auto',border:'none',background:theme.bgMain,color:theme.text,padding:'6px 10px',borderRadius:'8px',cursor:'pointer'}}>✕</button>}</div>
-    <button onClick={()=>setView('dashboard')} style={menuItem(view==='dashboard')}><span>🏠 Dashboard</span></button>
-    <button onClick={()=>setDark(!dark)} style={{...menuItem(false),background:theme.bgMain}}><span>{dark?'☀️ Light Mode':'🌙 Dark Mode'}</span><span>{dark?'☀️':'🌙'}</span></button>
-    <button onClick={()=>switchTab('contacts')} style={menuItem(view==='list'&&tab==='contacts')}><span>📞 Contact</span><span>{contacts.length}</span></button>
-    <button onClick={()=>switchTab('applicants')} style={menuItem(view==='list'&&tab==='applicants')}><span>👤 Applicant</span><span>{applicants.length}</span></button>
-    <div style={{border:`1px solid ${theme.border}`,borderRadius:'12px',padding:'8px',background:theme.bgMain}}>
-      <button onClick={()=>setShowActionMenu(!showActionMenu)} style={actionBtn}>⚙️ Actions {selectedRow?`• ${titleCase(getVal(selectedRow,['FullName','fullName']))}`:''} ▼</button>
-      {showActionMenu&&<div style={{marginTop:'8px',background:'#ffffff',border:'3px solid #0f172a',borderRadius:'12px',overflow:'hidden'}}>
-        <div style={{padding:'10px 12px',fontWeight:900,fontSize:'12px',color:'#fff',background:ACCENT,textAlign:'center'}}>{selectedRow?'CHOOSE ACTION':'TAP A ROW FIRST'}</div>
-        <button onClick={()=>{selectedRow&&setDetailRow(selectedRow); setShowActionMenu(false);}} style={dropItem(C.view)} disabled={!selectedRow}>👁️ View</button>
-        <button onClick={()=>{selectedRow&&handleEdit(selectedRow); setShowActionMenu(false);}} style={dropItem(C.edit)} disabled={!selectedRow}>✏️ Edit</button>
-        <button onClick={()=>{selectedRow&&handleAutoEmail(selectedRow); setShowActionMenu(false);}} style={dropItem(C.email)} disabled={!selectedRow}>📧 Auto Email</button>
-        <button onClick={()=>{selectedRow&&handleAutoWhatsApp(selectedRow); setShowActionMenu(false);}} style={dropItem(C.whats)} disabled={!selectedRow}>💬 WhatsApp</button>
-        <button onClick={()=>{selectedRow&&(window.location.href=getCallLink(selectedRow)); setShowActionMenu(false);}} style={dropItem(C.call)} disabled={!selectedRow}>📞 Call</button>
-        <button onClick={()=>{selectedRow&&handleDelete(selectedRow); setShowActionMenu(false);}} style={dropItem(C.del)} disabled={!selectedRow}>🗑️ Delete</button>
-        {selected.length>0&&<><button onClick={()=>{setSelected([]); setShowActionMenu(false);}} style={dropItem('#64748b')}>❌ Clear ({selected.length})</button><button onClick={()=>{handleBulkDelete(); setShowActionMenu(false);}} style={dropItem(C.del)}>🗑️ DELETE ALL SELECTED ({selected.length})</button><button onClick={()=>{handleBulkEmail(); setShowActionMenu(false);}} style={dropItem(C.email)}>📧 Bulk Email ({selected.length})</button><button onClick={()=>{handleBulkWhatsApp(); setShowActionMenu(false);}} style={dropItem(C.whats)}>💬 Bulk WhatsApp ({selected.length})</button></>}
-      </div>}
-    </div>
-    <button onClick={()=>setShowAuto(true)} style={{...menuItem(false),background:C.auto,color:'#fff',border:`1px solid ${C.auto}`}}><span>🤖 Auto Reply</span><span style={{color:'#fff'}}>{autoSettings.emailOn||autoSettings.whatsappOn?'ON':'OFF'}</span></button>
-    <button onClick={()=>setShowTrash(!showTrash)} style={menuItem(showTrash)}><span>🗑️ Trash {trash.length}</span></button>
-    <a href="/" style={{...menuItem(false),textDecoration:'none'}}><span>🏠 Home</span></a>
-    <button onClick={load} style={menuItem(false)}><span>🔄 {loading?'Refresh...':'Refresh'}</span></button>
-    <button onClick={logout} style={{...menuItem(false),background:C.del,color:'#fff',border:`1px solid ${C.del}`}}><span>🚪 Log Out</span><span>↗</span></button>
-    <div style={{marginTop:'auto',background:theme.bgMain,padding:'10px',borderRadius:'12px',border:`1px solid ${theme.border}`}}><p style={{fontSize:'11px',fontWeight:700,color:theme.text}}>View: {view==='dashboard'?'DASHBOARD':tab.toUpperCase()} • {list.length} rows</p><p style={{fontSize:'11px',fontWeight:700,marginTop:'4px',color:theme.text}}>Auto Replied: {autoReplied.length}</p><div style={{display:'flex',gap:'6px',marginTop:'8px'}}><button onClick={()=>exportCSV(list,`${tab}.csv`)} style={{flex:1,background:C.csv,border:'none',padding:'8px',borderRadius:'8px',fontWeight:900,fontSize:'11px',cursor:'pointer',fontFamily:FONT,color:'#fff'}}>CSV</button><button onClick={clearDuplicates} style={{flex:1,background:theme.bgCard,border:`1px solid ${theme.border}`,padding:'8px',borderRadius:'8px',fontWeight:800,fontSize:'11px',cursor:'pointer',color:theme.text,fontFamily:FONT}}>DUP</button></div></div></>);
+  // SQUARE BOXES - NOT LONG
+  const statCard = {background:theme.bgCard,border:`1px solid ${theme.border}`,borderRadius:'14px',aspectRatio:'1 / 1',display:'flex',flexDirection:'column',justifyContent:'center',alignItems:'center',gap:'6px',cursor:'pointer',width:'100%'};
+  const bigBtn = (bg,color='#fff') => ({background:bg,color,border:'none',padding:'14px 8px',borderRadius:'12px',fontWeight:900,cursor:'pointer',fontSize:'12px',fontFamily:FONT,width:'100%'});
+  const topBtn = {background:theme.bgCard,border:`1px solid ${theme.border}`,color:theme.text,padding:'8px 12px',borderRadius:'20px',fontWeight:800,cursor:'pointer',fontSize:'12px',fontFamily:FONT,whiteSpace:'nowrap'};
 
   return (
-    <div style={{background:theme.bgMain,minHeight:'100vh',color:theme.text,display:'flex',fontFamily:FONT,position:'relative'}}>
+    <div style={{background:theme.bgMain,minHeight:'100vh',color:theme.text,fontFamily:FONT}}>
       {toast&&<div style={{position:'fixed',top:'80px',right:'20px',background:'#fff',color:'#000',padding:'12px 18px',borderRadius:'20px',fontWeight:800,zIndex:9999,border:'3px solid #0f172a',fontFamily:FONT}}>{toast}</div>}
-      {!isMobile&&<div style={{width:sidebarWidth,minWidth:sidebarWidth,background:theme.sidebar,padding:'18px 14px',display:'flex',flexDirection:'column',gap:'8px',position:'sticky',top:0,height:'100vh',overflowY:'auto'}}>{sidebarContent}</div>}
-      {isMobile&&showSidebar&&<div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.5)',zIndex:10005}} onClick={()=>setShowSidebar(false)}><div style={{width:'270px',maxWidth:'85vw',background:theme.sidebar,padding:'18px 14px',display:'flex',flexDirection:'column',gap:'8px',height:'100vh',overflowY:'auto'}} onClick={e=>e.stopPropagation()}>{sidebarContent}</div></div>}
-      {!isMobile&&<div onMouseDown={(e)=>{resizingRef.current=true; document.body.style.cursor='col-resize';}} style={{width:'8px',cursor:'col-resize',background:ACCENT,flexShrink:0,position:'sticky',top:0,height:'100vh',zIndex:10}} />}
-      <div style={{flex:1,padding:isMobile?'10px':'18px',overflowX:'hidden',minWidth:0,paddingBottom:'90px'}}>
+      {/* TOP BAR - SIDEBAR REMOVED, THIS REPLACES IT */}
+      <div style={{maxWidth:'720px',margin:'0 auto',padding:'14px 12px 0',display:'flex',gap:'8px',flexWrap:'wrap',alignItems:'center',justifyContent:'center'}}>
+        <button onClick={()=>setView('dashboard')} style={topBtn}>🏠 Dashboard</button>
+        <button onClick={()=>goToList('contacts')} style={topBtn}>📞 Contact {contacts.length}</button>
+        <button onClick={()=>goToList('applicants')} style={topBtn}>👤 Applicant {applicants.length}</button>
+        <button onClick={()=>setDark(!dark)} style={topBtn}>{dark?'☀️ Light':'🌙 Dark'}</button>
+        <button onClick={()=>setShowAuto(true)} style={{...topBtn,background:C.auto,color:'#fff',border:`1px solid ${C.auto}`}}>🤖 Auto {autoSettings.emailOn?'ON':'OFF'}</button>
+        <button onClick={load} style={topBtn}>🔄 Refresh</button>
+        <a href="/" style={{...topBtn,textDecoration:'none'}}>🏠 Home</a>
+        <button onClick={logout} style={{...topBtn,background:C.del,color:'#fff',border:`1px solid ${C.del}`}}>🚪 Logout</button>
+      </div>
 
+      <div style={{maxWidth:'720px',margin:'0 auto',padding:'14px 12px',paddingBottom:'90px'}}>
         {view==='dashboard' ? (
         <>
           <div style={{background:ACCENT,padding:'12px 14px',borderRadius:'10px',display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'14px'}}><span style={{color:'#fff',fontWeight:900,fontSize:'13px'}}>PINNACLE SECURITY LTD</span><span style={{color:'#facc15',fontWeight:800,fontSize:'12px'}}>Pinnacle</span></div>
           <h2 style={{fontSize:'18px',fontWeight:900,marginBottom:'14px',color:theme.text}}>Welcome, Admin</h2>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px',marginBottom:'12px'}}>
-            <div onClick={()=>goToList('contacts')} style={statCard}><div style={{fontSize:'22px',fontWeight:900}}>{contacts.length}</div><div style={{fontSize:'12px',color:theme.sub}}>Contacts</div></div>
-            <div onClick={()=>goToList('applicants')} style={statCard}><div style={{fontSize:'22px',fontWeight:900,color:'#dc2626'}}>{applicants.length}</div><div style={{fontSize:'12px',color:theme.sub}}>Applicants</div></div>
-            <div onClick={()=>goToList('contacts')} style={statCard}><div style={{fontSize:'22px',fontWeight:900,color:'#2563eb'}}>{data.length}</div><div style={{fontSize:'12px',color:theme.sub}}>Total</div></div>
-            <div onClick={()=>{setView('list'); setShowTrash(true);}} style={statCard}><div style={{fontSize:'22px',fontWeight:900,color:'#f59e0b'}}>{trash.length}</div><div style={{fontSize:'12px',color:theme.sub}}>Trash</div></div>
+          {/* SQUARE BOXES - 2x2 SQUARE */}
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px',marginBottom:'12px'}}>
+            <div onClick={()=>goToList('contacts')} style={statCard}><div style={{fontSize:'28px',fontWeight:900}}>5</div><div style={{fontSize:'12px',color:theme.sub}}>Contacts</div><div style={{fontSize:'11px',color:theme.sub}}>Tap to open</div></div>
+            <div onClick={()=>goToList('applicants')} style={statCard}><div style={{fontSize:'28px',fontWeight:900,color:'#dc2626'}}>{applicants.length}</div><div style={{fontSize:'12px',color:theme.sub}}>Applicants</div><div style={{fontSize:'11px',color:theme.sub}}>Tap to open</div></div>
+            <div onClick={()=>goToList('contacts')} style={statCard}><div style={{fontSize:'28px',fontWeight:900,color:'#2563eb'}}>{data.length}</div><div style={{fontSize:'12px',color:theme.sub}}>Total</div><div style={{fontSize:'11px',color:theme.sub}}>All records</div></div>
+            <div onClick={()=>{setView('list'); setShowTrash(true);}} style={statCard}><div style={{fontSize:'28px',fontWeight:900,color:'#f59e0b'}}>{trash.length}</div><div style={{fontSize:'12px',color:theme.sub}}>Trash</div><div style={{fontSize:'11px',color:theme.sub}}>Tap to view</div></div>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px'}}>
             <button onClick={()=>goToList('contacts')} style={bigBtn(ACCENT)}>📞 MANAGE CONTACT</button>
@@ -140,13 +124,25 @@ const AdminDashboard = () => {
             <button onClick={()=>openInNewPage('applicants')} style={{background:theme.bgCard,border:`1px solid ${theme.border}`,padding:'12px',borderRadius:'10px',fontWeight:800,cursor:'pointer',color:theme.text,fontFamily:FONT}}>👤 Applicants in New Page ↗</button>
           </div>
           <button onClick={logout} style={{...bigBtn('#64748b'),marginTop:'12px'}}>LOGOUT</button>
-          <p style={{textAlign:'center',fontSize:'11px',color:theme.sub,marginTop:'10px'}}>Tap a card to open its list • Tap New Page to open it in a new tab</p>
+          <p style={{textAlign:'center',fontSize:'11px',color:theme.sub,marginTop:'10px'}}>Tap a square box to open its list • Tap New Page to open it in a new tab</p>
         </>
         ) : (
         <>
         <button onClick={()=>setView('dashboard')} style={{background:theme.bgCard,border:`1px solid ${theme.border}`,color:theme.text,padding:'8px 14px',borderRadius:'20px',fontWeight:800,cursor:'pointer',marginBottom:'10px',fontFamily:FONT}}>⬅ Back to Dashboard</button>
+        {/* ACTIONS - REPLACES SIDEBAR ACTIONS */}
+        <div style={{background:theme.bgCard,padding:'10px',borderRadius:'12px',border:`1px solid ${theme.border}`,marginBottom:'10px'}}>
+          <button onClick={()=>setShowActionMenu(!showActionMenu)} style={actionBtn}>⚙️ Actions {selectedRow?`• ${titleCase(getVal(selectedRow,['FullName','fullName']))}`:''} ▼</button>
+          {showActionMenu&&<div style={{marginTop:'8px',background:'#ffffff',border:'3px solid #0f172a',borderRadius:'12px',overflow:'hidden'}}>
+            <div style={{padding:'10px 12px',fontWeight:900,fontSize:'12px',color:'#fff',background:ACCENT,textAlign:'center'}}>{selectedRow?'CHOOSE ACTION':'TAP A ROW FIRST'}</div>
+            <button onClick={()=>{selectedRow&&setDetailRow(selectedRow); setShowActionMenu(false);}} style={dropItem(C.view)} disabled={!selectedRow}>👁️ View</button>
+            <button onClick={()=>{selectedRow&&handleEdit(selectedRow); setShowActionMenu(false);}} style={dropItem(C.edit)} disabled={!selectedRow}>✏️ Edit</button>
+            <button onClick={()=>{selectedRow&&handleAutoEmail(selectedRow); setShowActionMenu(false);}} style={dropItem(C.email)} disabled={!selectedRow}>📧 Auto Email</button>
+            <button onClick={()=>{selectedRow&&handleAutoWhatsApp(selectedRow); setShowActionMenu(false);}} style={dropItem(C.whats)} disabled={!selectedRow}>💬 WhatsApp</button>
+            <button onClick={()=>{selectedRow&&(window.location.href=getCallLink(selectedRow)); setShowActionMenu(false);}} style={dropItem(C.call)} disabled={!selectedRow}>📞 Call</button>
+            <button onClick={()=>{selectedRow&&handleDelete(selectedRow); setShowActionMenu(false);}} style={dropItem(C.del)} disabled={!selectedRow}>🗑️ Delete</button>
+          </div>}
+        </div>
         <div style={{background:theme.bgCard,padding:'8px 10px',borderRadius:'12px',display:'flex',gap:'6px',border:`1px solid ${theme.border}`,marginBottom:'8px',flexWrap:'wrap',overflowX:'auto',alignItems:'center',justifyContent:'center'}}>
-          {isMobile&&<button onClick={()=>setShowSidebar(true)} style={iconBtn(ACCENT)} title="Menu">☰</button>}
           <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search..." style={{width:'130px',flexShrink:0,background:theme.input,border:`1px solid ${theme.border}`,padding:'10px 12px',borderRadius:'20px',color:theme.text,fontFamily:FONT,fontSize:'12px',textAlign:'center'}}/>
           <button onClick={()=>setShowAdd(true)} style={iconBtn(C.add)} title="Add New">➕</button>
           <button onClick={()=>setShowAuto(true)} style={iconBtn(C.auto)} title={`Auto Reply ${autoSettings.emailOn?'ON':'OFF'}`}>🤖</button>
