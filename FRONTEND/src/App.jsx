@@ -1,7 +1,7 @@
 import AdminDashboard from './pages/AdminDashboard.jsx';
 import React, { useState, useEffect } from 'react'
-
 const ADMIN_PASSWORD = "Rubangakene";
+
 const GOOGLE_SHEET_WEBHOOK = "https://script.google.com/macros/s/AKfycbz0Fx9gSfPwPXZdi8pivw9IdQ_fzj707fPk22GBECuGYhGzwePtEPZV47TyXk8TN8bggQ/exec";
 const KOBO_APTITUDE_TEST = "https://ee.kobotoolbox.org/x/ODCdeyaJ";
 const GOOGLE_APTITUDE_REGISTER = "https://forms.gle/W8JroZ8n8HGArq248";
