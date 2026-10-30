@@ -364,9 +364,8 @@ const Contact = () => {
         </div>
       </div>
     </div>
-  )
-}
-)
+  )}
+
 
 /* ================= APP - THEME FIXED AT ONCE ================= */
 export default function App(){
