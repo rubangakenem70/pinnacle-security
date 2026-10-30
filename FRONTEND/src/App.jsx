@@ -51,7 +51,7 @@ const Navbar = ({ theme, toggleTheme }) => {
   return (
     <nav style={{background:'#0A1931', position:'fixed', top:0, left:0, right:0, zIndex:9999, width:'100%', boxShadow:'0 4px 16px rgba(0,0,0,0.35)', borderBottom:'2px solid #FFD700'}}>
       <div style={{maxWidth:'1440px', margin:'0 auto', padding: isMobile ? '10px 12px' : '10px 14px', display:'flex', justifyContent:'space-between', alignItems:'center', gap:'8px', flexWrap:'nowrap'}}>
-        <span onClick={()=>scrollTo('home')} style={{color:'#FFD700', fontWeight:900, fontSize: isMobile ? '14px' : '17px', lineHeight:'1.15', whiteSpace:'nowrap', cursor:'pointer', flexShrink:0}}>PINNACLE<br/>SECURITY LTD</span>
+        <span onClick={()=>scrollTo('home')} style={{color:'#FFD700', fontWeight:900, fontSize: isMobile ? '15px' : '17px', lineHeight:'1.15', whiteSpace:'nowrap', cursor:'pointer', flexShrink:0}}>PINNACLE<br/>SECURITY LTD</span>
 
         {!isMobile && (
           <div style={{display:'flex', alignItems:'center', gap:'2px', marginLeft:'auto', justifyContent:'flex-end', flex:1, flexWrap:'nowrap'}}>
@@ -77,31 +77,39 @@ const Navbar = ({ theme, toggleTheme }) => {
           </div>
         )}
 
-        <div style={{display:'flex', gap: isMobile ? '5px' : '6px', alignItems:'center', flexShrink:0, marginLeft: isMobile ? 'auto' : '8px', flexWrap:'nowrap'}}>
-          <a onClick={() => scrollTo('join')} style={{background:'#FFD700', color:'#0A1931', padding: isMobile ? '8px 10px' : '8px 12px', borderRadius:'20px', fontWeight:900, textDecoration:'none', whiteSpace:'nowrap', cursor:'pointer', fontSize: isMobile ? '12px' : '13px'}}>Apply Now</a>
-          <a href="/admin" style={{color:'#ffcc00', fontWeight:'900', border:'1px solid #ffcc00', borderRadius:'20px', padding: isMobile ? '7px 9px' : '7px 10px', textDecoration:'none', whiteSpace:'nowrap', fontSize: isMobile ? '12px' : '12.5px'}}>Admin</a>
-          <button onClick={toggleTheme} style={{background: theme==='dark' ? '#ffcc00' : 'transparent', color: theme==='dark' ? '#0a1931' : '#ffcc00', border:'1px solid #ffcc00', padding: isMobile ? '7px 9px' : '7px 10px', borderRadius:'20px', fontWeight:900, cursor:'pointer', whiteSpace:'nowrap', fontSize: isMobile ? '12px' : '12.5px'}}>
-            {theme==='dark' ? '☀️ Light' : '🌙 Dark'}
-          </button>
-          {isMobile && (
-            <button onClick={() => setOpen(!open)} aria-label="Menu" style={{background:'transparent', border:'1px solid #FFD700', width:'42px', height:'42px', borderRadius:'8px', cursor:'pointer', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', gap:'5px', padding:0, flexShrink:0}}>
-              <span style={{display:'block', width:'22px', height:'2.5px', background:'#FFD700', borderRadius:'2px'}}></span>
-              <span style={{display:'block', width:'22px', height:'2.5px', background:'#FFD700', borderRadius:'2px'}}></span>
-              <span style={{display:'block', width:'22px', height:'2.5px', background:'#FFD700', borderRadius:'2px'}}></span>
+        {/* PC ONLY - Apply Now / Admin / Dark - HIDDEN ON PHONE */}
+        {!isMobile && (
+          <div style={{display:'flex', gap:'6px', alignItems:'center', flexShrink:0, marginLeft:'8px', flexWrap:'nowrap'}}>
+            <a onClick={() => scrollTo('join')} style={{background:'#FFD700', color:'#0A1931', padding:'8px 12px', borderRadius:'20px', fontWeight:900, textDecoration:'none', whiteSpace:'nowrap', cursor:'pointer', fontSize:'13px'}}>Apply Now</a>
+            <a href="/admin" style={{color:'#ffcc00', fontWeight:'900', border:'1px solid #ffcc00', borderRadius:'20px', padding:'7px 10px', textDecoration:'none', whiteSpace:'nowrap', fontSize:'12.5px'}}>Admin</a>
+            <button onClick={toggleTheme} style={{background: theme==='dark' ? '#ffcc00' : 'transparent', color: theme==='dark' ? '#0a1931' : '#ffcc00', border:'1px solid #ffcc00', padding:'7px 10px', borderRadius:'20px', fontWeight:900, cursor:'pointer', whiteSpace:'nowrap', fontSize:'12.5px'}}>
+              {theme==='dark' ? '☀️ Light' : '🌙 Dark'}
             </button>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* PHONE ONLY - ONLY 3 LINES, NOTHING ELSE */}
+        {isMobile && (
+          <button onClick={() => setOpen(!open)} aria-label="Menu" style={{background:'transparent', border:'1px solid #FFD700', width:'44px', height:'42px', borderRadius:'8px', cursor:'pointer', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', gap:'5px', padding:0, flexShrink:0, marginLeft:'auto'}}>
+            <span style={{display:'block', width:'22px', height:'2.5px', background:'#FFD700', borderRadius:'2px'}}></span>
+            <span style={{display:'block', width:'22px', height:'2.5px', background:'#FFD700', borderRadius:'2px'}}></span>
+            <span style={{display:'block', width:'22px', height:'2.5px', background:'#FFD700', borderRadius:'2px'}}></span>
+          </button>
+        )}
       </div>
 
       {isMobile && open && (
-        <div style={{background:'#0A1931', borderTop:'1px solid rgba(255,255,255,0.15)', padding:'6px 0 10px', display:'flex', flexDirection:'column', maxHeight:'70vh', overflowY:'auto'}}>
+        <div style={{background:'#0A1931', borderTop:'1px solid rgba(255,255,255,0.15)', padding:'6px 0 10px', display:'flex', flexDirection:'column', maxHeight:'75vh', overflowY:'auto'}}>
+          <button style={{...mobileLink, background:'#FFD700', color:'#0A1931', fontWeight:900, borderRadius:'10px', margin:'8px 12px', width:'auto', textAlign:'center'}} onClick={() => scrollTo('join')}>✅ Apply Now - No Fees</button>
+          <a href="/admin" style={{...mobileLink, color:'#ffcc00', textAlign:'center', fontWeight:900, textDecoration:'none', display:'block'}}>🔐 Admin</a>
+          <button style={{...mobileLink, textAlign:'center', color:'#ffcc00', fontWeight:900}} onClick={toggleTheme}>{theme==='dark' ? '☀️ Switch to Light Mode' : '🌙 Switch to Dark Mode'}</button>
+          <div style={{height:'1px', background:'rgba(255,255,255,0.2)', margin:'8px 0'}}></div>
           <button style={mobileLink} onClick={() => scrollTo('home')}>🏠 Home</button>
           <button style={mobileLink} onClick={() => scrollTo('about')}>ℹ️ About Pinnacle</button>
           <button style={mobileLink} onClick={() => scrollTo('services')}>🛡️ Services - Guard, CCTV, Patrol</button>
           <button style={mobileLink} onClick={() => scrollTo('mission')}>🎯 Mission, Vision, Values</button>
           <button style={mobileLink} onClick={() => scrollTo('jobs')}>💼 Jobs - We Are Hiring</button>
           <button style={mobileLink} onClick={() => scrollTo('aptitude')}>📝 Aptitude Test - Must Do</button>
-          <button style={mobileLink} onClick={() => scrollTo('join')}>✅ Apply Now - No Fees</button>
           <button style={{...mobileLink, borderBottom:'none'}} onClick={() => scrollTo('contact')}>📞 Contact - 0776971970</button>
         </div>
       )}
@@ -320,7 +328,6 @@ export default function App(){
     <div style={{background: t.bg, minHeight:'100vh', color: t.text, fontFamily:'Arial', overflowX:'hidden'}}>
       <style>{`* {box-sizing:border-box} body{margin:0} html{scroll-behavior:smooth} img{max-width:100%}`}</style>
       <Navbar theme={theme} toggleTheme={toggleTheme} />
-      {/* SPACER FOR FIXED NAVBAR - SO HERO IS NOT HIDDEN */}
       <div style={{height:'64px'}}></div>
       <div id="home"><Home t={t} /></div>
       <div id="about"><About t={t} /></div>
