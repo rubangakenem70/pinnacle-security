@@ -3,19 +3,26 @@ import React, { useState, useEffect } from 'react';
 const PASSWORD = "Rubangakene";
 const WEBHOOK = "https://script.google.com/macros/s/AKfycbz0Fx9gSfPwPXZdi8pivw9IdQ_fzj707fPk22GBECuGYhGzwePtEPZV47TyXk8TN8bggQ/exec";
 const NAVY = "#0A1931";
-const GOLD = "#facc15";
 
 export default function AdminDashboard() {
   const [auth, setAuth] = useState(false);
   const [pass, setPass] = useState("");
   const [data, setData] = useState([]);
   const [search, setSearch] = useState("");
-  const [tab, setTab] = useState("all"); // all | contacts | applicants
+  const [tab, setTab] = useState("all");
   const [loading, setLoading] = useState(false);
-  const [selected, setSelected] = useState(null);
+  const [popup, setPopup] = useState(null);
+  const [detailId, setDetailId] = useState("");
   const [toast, setToast] = useState("");
 
   const showToast = (m) => { setToast(m); setTimeout(()=>setToast(""), 3000); };
+
+  // CHECK URL - if ?detail=... then show that person full page
+  useEffect(()=>{
+    const p = new URLSearchParams(window.location.search);
+    const d = p.get("detail");
+    if(d) setDetailId(decodeURIComponent(d));
+  },[]);
 
   const login = () => {
     if (pass.trim() === PASSWORD) setAuth(true);
@@ -56,22 +63,21 @@ export default function AdminDashboard() {
     const s = document.createElement("script");
     s.id = "psl_jsonp";
     s.src = WEBHOOK + "?callback=" + cb + "&cache=" + Date.now();
-    s.onerror = () => { setLoading(false); showToast("Load failed - Check Google Script Deploy = Anyone"); };
+    s.onerror = () => { setLoading(false); showToast("Load failed"); };
     document.body.appendChild(s);
   };
 
   useEffect(()=>{ if(auth) load(); },[auth]);
 
+  // ---------- LOGIN ----------
   if(!auth){
     return (
       <div style={{minHeight:'100vh', background:NAVY, display:'flex', justifyContent:'center', alignItems:'center', fontFamily:'Arial'}}>
         <div style={{background:'#fff', padding:'32px', borderRadius:'16px', width:'92%', maxWidth:'380px', textAlign:'center'}}>
           <div style={{width:'64px', height:'64px', background:NAVY, borderRadius:'12px', margin:'0 auto 12px', display:'grid', placeItems:'center', color:'#fff', fontWeight:900, fontSize:'28px'}}>P</div>
           <h2 style={{color:NAVY, margin:0}}>PINNACLE ADMIN</h2>
-          <p style={{fontSize:'13px', color:'#666'}}>New Admin Page</p>
           <input type="password" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()} placeholder="Password" style={{width:'100%', padding:'14px', borderRadius:'10px', marginTop:'16px', border:'1px solid #ddd', boxSizing:'border-box'}} />
           <button onClick={login} style={{width:'100%', marginTop:'12px', background:NAVY, color:'#fff', padding:'14px', border:'none', borderRadius:'10px', fontWeight:900, cursor:'pointer'}}>UNLOCK</button>
-          <p style={{fontSize:'11px', color:'#999', marginTop:'10px'}}>Password: Rubangakene</p>
         </div>
       </div>
     );
@@ -86,9 +92,34 @@ export default function AdminDashboard() {
     return s.includes(search.toLowerCase());
   }).reverse();
 
+  // If URL has ?detail= , find that person
+  const detailRow = detailId ? data.find(d => String(getVal(d,["Timestamp","timestamp"])) === String(detailId) || d._id === detailId) : null;
+
+  const openInNewPage = (d) => {
+    const ts = getVal(d,["Timestamp","timestamp"]);
+    window.open(window.location.pathname + "?detail=" + encodeURIComponent(ts), "_blank");
+  };
+
+  const waLink = (d) => {
+    let p = String(getVal(d,["Phone","phone"])||"").replace(/\s/g,"").replace(/^\+/,"");
+    if(p.startsWith("0")) p = "256"+p.slice(1);
+    const text = `Hello ${getVal(d,["FullName","fullName"])}, this is Pinnacle Security Ltd, Muyenga. Thank you for contacting us. We will call you soon. Control 24/7: 0776971970.`;
+    return `https://wa.me/${p}?text=${encodeURIComponent(text)}`;
+  };
+
+  const handleDelete = async (row) => {
+    if(!confirm("Delete " + getVal(row,["FullName","fullName"]) + "?")) return;
+    const ts = getVal(row,["Timestamp","timestamp"]);
+    setData(prev=>prev.filter(r=>r._id!==row._id));
+    setPopup(null);
+    if(detailId) { setDetailId(""); window.history.pushState({}, "", "/admin"); }
+    showToast("Deleted");
+    await fetch(WEBHOOK,{method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'delete', timestamps:[ts], Timestamp: ts})});
+  };
+
   const exportCSV = () => {
     if(!filtered.length) return showToast("No rows");
-    const head = ["Timestamp","FullName","Phone","Email","Service","Position","District","Message","Type"];
+    const head = ["Timestamp","FullName","Phone","Email","Service","Position","District","Education","Experience","Interest","Message","Type"];
     const csv = "\uFEFF" + [head.join(",")].concat(filtered.map(r=> head.map(h=>{
       let v = "";
       if(h==="Timestamp") v = getVal(r,["Timestamp","timestamp"]);
@@ -102,39 +133,59 @@ export default function AdminDashboard() {
     URL.revokeObjectURL(url);
   };
 
-  const handleDelete = async (row) => {
-    if(!confirm("Delete " + getVal(row,["FullName","fullName"]) + "?")) return;
-    const ts = getVal(row,["Timestamp","timestamp"]);
-    setData(prev=>prev.filter(r=>r._id!==row._id));
-    setSelected(null);
-    showToast("Deleted");
-    await fetch(WEBHOOK,{method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'delete', timestamps:[ts], Timestamp: ts})});
-  };
-
-  const waLink = (d) => {
-    let p = String(getVal(d,["Phone","phone"])||"").replace(/\s/g,"").replace(/^\+/,"");
-    if(p.startsWith("0")) p = "256"+p.slice(1);
-    const name = getVal(d,["FullName","fullName"]);
-    const text = `Hello ${name}, this is Pinnacle Security Ltd, Muyenga. Thank you for contacting us. We will call you soon. Control 24/7: 0776971970.`;
-    return `https://wa.me/${p}?text=${encodeURIComponent(text)}`;
-  };
-
-  const btn = (bg) => ({background:bg, color:'#fff', border:'none', padding:'10px 14px', borderRadius:'20px', fontWeight:800, cursor:'pointer', fontSize:'12px'});
+  const btn = (bg) => ({background:bg, color:'#fff', border:'none', padding:'10px 14px', borderRadius:'20px', fontWeight:800, cursor:'pointer', fontSize:'12px', textDecoration:'none', display:'inline-block', textAlign:'center'});
   const tabBtn = (active) => ({background: active?NAVY:'#eef2f7', color: active?'#fff':'#000', border:'none', padding:'10px 12px', borderRadius:'20px', fontWeight:800, cursor:'pointer', fontSize:'12px', flex:1});
 
+  // ---------- DETAIL FULL PAGE - When opened in NEW PAGE ----------
+  if(detailId){
+    return (
+      <div style={{background:'#f8fafc', minHeight:'100vh', fontFamily:'Arial', padding:'16px'}}>
+        <div style={{maxWidth:'600px', margin:'0 auto'}}>
+          <button onClick={()=>{setDetailId(""); window.history.pushState({}, "", "/admin");}} style={{...btn(NAVY)}}>⬅ Back to List</button>
+          {loading && <p>Loading detail...</p>}
+          {!loading && !detailRow && <div style={{background:'#fff', padding:'20px', borderRadius:'12px', marginTop:'14px'}}><h3>Not found</h3><p>This person may have been deleted or still loading. Tap Refresh.</p><button onClick={load} style={btn(NAVY)}>🔄 Refresh</button></div>}
+          {detailRow && (
+            <div style={{background:'#fff', borderRadius:'16px', padding:'20px', marginTop:'14px'}}>
+              <div style={{display:'flex', justifyContent:'space-between'}}><h2 style={{margin:0, color:NAVY}}>{getVal(detailRow,["FullName","fullName"])}</h2><span style={{fontSize:'11px', background: isApplicant(detailRow)?'#fee2e2':'#dcfce7', padding:'6px 10px', borderRadius:'20px', fontWeight:800, height:'fit-content'}}>{isApplicant(detailRow)?"APPLICANT":"CONTACT"}</span></div>
+              <p style={{color:'#666', fontSize:'13px'}}>{getVal(detailRow,["Timestamp","timestamp"])}</p>
+              <div style={{display:'grid', gap:'10px', fontSize:'15px', marginTop:'10px'}}>
+                <div><b>📞 Phone:</b> {getVal(detailRow,["Phone","phone"])}</div>
+                <div><b>📧 Email:</b> {getVal(detailRow,["Email","email"]) || "-"}</div>
+                {getVal(detailRow,["Service","service"]) && <div><b>🛡️ Service:</b> {getVal(detailRow,["Service","service"])}</div>}
+                {getVal(detailRow,["Position","position"]) && <div><b>💼 Position:</b> {getVal(detailRow,["Position","position"])}</div>}
+                {getVal(detailRow,["Education","education"]) && <div><b>🎓 Education:</b> {getVal(detailRow,["Education","education"])}</div>}
+                {getVal(detailRow,["District","district"]) && <div><b>📍 District:</b> {getVal(detailRow,["District","district"])}</div>}
+                {getVal(detailRow,["Experience","experience"]) && <div><b>⏳ Experience:</b> {getVal(detailRow,["Experience","experience"])}</div>}
+                {getVal(detailRow,["Interest","interest"]) && <div><b>⭐ Interest:</b> {getVal(detailRow,["Interest","interest"])}</div>}
+                {getVal(detailRow,["Message","Messages","message","messages"]) && <div style={{background:'#f8fafc', padding:'12px', borderRadius:'10px'}}><b>💬 Message:</b><br/>{getVal(detailRow,["Message","Messages","message","messages"])}</div>}
+              </div>
+              <div style={{display:'flex', gap:'8px', flexWrap:'wrap', marginTop:'16px'}}>
+                <a href={`tel:${getVal(detailRow,["Phone","phone"])}`} style={btn(NAVY)}>📞 Call</a>
+                <a href={waLink(detailRow)} target="_blank" rel="noreferrer" style={btn('#25D366')}>💬 WhatsApp</a>
+                <a href={`mailto:${getVal(detailRow,["Email","email"])}`} style={btn('#0ea5e9')}>📧 Email</a>
+                <button onClick={()=>handleDelete(detailRow)} style={btn('#dc2626')}>🗑️ Delete</button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- MAIN LIST - 1 COLUMN ----------
   return (
     <div style={{background:'#f8fafc', minHeight:'100vh', fontFamily:'Arial', padding:'16px'}}>
-      {toast && <div style={{position:'fixed', top:'20px', right:'20px', background:'#000', color:'#fff', padding:'12px 18px', borderRadius:'20px', fontWeight:800, zIndex:999}}>{toast}</div>}
+      {toast && <div style={{position:'fixed', top:'20px', right:'20px', background:'#000', color:'#fff', padding:'12px 18px', borderRadius:'20px', fontWeight:800, zIndex:9999}}>{toast}</div>}
       <div style={{maxWidth:'600px', margin:'0 auto'}}>
         <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
           <h2 style={{margin:0, color:NAVY}}>Welcome, Admin</h2>
-          <button onClick={()=>setAuth(false)} style={{...btn('#64748b')}}>Logout</button>
+          <button onClick={()=>setAuth(false)} style={btn('#64748b')}>Logout</button>
         </div>
 
         <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'10px', marginTop:'14px'}}>
-          <div onClick={()=>setTab("contacts")} style={{background:'#fff', padding:'16px', borderRadius:'12px', textAlign:'center', cursor:'pointer', border:'1px solid #eee'}}><div style={{fontSize:'22px', fontWeight:900}}>{contacts.length}</div><div style={{fontSize:'12px', color:'#666'}}>Contacts</div></div>
-          <div onClick={()=>setTab("applicants")} style={{background:'#fff', padding:'16px', borderRadius:'12px', textAlign:'center', cursor:'pointer', border:'1px solid #eee'}}><div style={{fontSize:'22px', fontWeight:900, color:'#dc2626'}}>{applicants.length}</div><div style={{fontSize:'12px', color:'#666'}}>Applicants</div></div>
-          <div onClick={()=>setTab("all")} style={{background:'#fff', padding:'16px', borderRadius:'12px', textAlign:'center', cursor:'pointer', border:'1px solid #eee'}}><div style={{fontSize:'22px', fontWeight:900, color:'#2563eb'}}>{data.length}</div><div style={{fontSize:'12px', color:'#666'}}>Total</div></div>
+          <div onClick={()=>setTab("contacts")} style={{background:'#fff', padding:'16px', borderRadius:'12px', textAlign:'center', cursor:'pointer'}}><div style={{fontSize:'22px', fontWeight:900}}>{contacts.length}</div><div style={{fontSize:'12px', color:'#666'}}>Contacts</div></div>
+          <div onClick={()=>setTab("applicants")} style={{background:'#fff', padding:'16px', borderRadius:'12px', textAlign:'center', cursor:'pointer'}}><div style={{fontSize:'22px', fontWeight:900, color:'#dc2626'}}>{applicants.length}</div><div style={{fontSize:'12px', color:'#666'}}>Applicants</div></div>
+          <div onClick={()=>setTab("all")} style={{background:'#fff', padding:'16px', borderRadius:'12px', textAlign:'center', cursor:'pointer'}}><div style={{fontSize:'22px', fontWeight:900, color:'#2563eb'}}>{data.length}</div><div style={{fontSize:'12px', color:'#666'}}>Total</div></div>
         </div>
 
         <div style={{display:'flex', gap:'8px', marginTop:'12px'}}>
@@ -149,31 +200,58 @@ export default function AdminDashboard() {
           <button onClick={exportCSV} style={btn('#2563eb')}>CSV</button>
         </div>
 
-        <p style={{fontSize:'13px', color:'#666', marginTop:'10px'}}>{loading ? "Loading..." : `${filtered.length} found - Tap a card to view`}</p>
+        <p style={{fontSize:'13px', color:'#666', marginTop:'10px'}}>{loading ? "Loading..." : `${filtered.length} found - Tap a card to see detail`}</p>
 
-        {filtered.map(d=>(
-          <div key={d._id} onClick={()=>setSelected(selected?._id===d._id?null:d)} style={{background:'#fff', borderRadius:'12px', padding:'14px', marginBottom:'10px', border:'1px solid #eee', cursor:'pointer'}}>
-            <div style={{display:'flex', justifyContent:'space-between'}}><b>{getVal(d,["FullName","fullName"]) || "No Name"}</b><span style={{fontSize:'11px', background: isApplicant(d)?'#fee2e2':'#dcfce7', padding:'4px 8px', borderRadius:'20px', fontWeight:800}}>{isApplicant(d)?"APPLICANT":"CONTACT"}</span></div>
-            <div style={{fontSize:'13px', color:'#333', marginTop:'6px'}}>📞 {getVal(d,["Phone","phone"])} • 📧 {getVal(d,["Email","email"]) || "-"}</div>
-            <div style={{fontSize:'13px', color:'#555', marginTop:'4px'}}>{getVal(d,["Service","service"]) || getVal(d,["Position","position"]) || ""} {getVal(d,["District","district"]) ? "• "+getVal(d,["District","district"]) : ""}</div>
-            <div style={{fontSize:'12px', color:'#888', marginTop:'4px'}}>{getVal(d,["Timestamp","timestamp"])}</div>
-            {getVal(d,["Message","Messages","message","messages"]) && <div style={{fontSize:'13px', background:'#f8fafc', padding:'8px', borderRadius:'8px', marginTop:'8px'}}>{getVal(d,["Message","Messages","message","messages"])}</div>}
+        {/* 1 COLUMN LIST */}
+        <div style={{display:'flex', flexDirection:'column', gap:'10px'}}>
+          {filtered.map(d=>(
+            <div key={d._id} onClick={()=>setPopup(d)} style={{background:'#fff', borderRadius:'12px', padding:'14px', border:'1px solid #eee', cursor:'pointer'}}>
+              <div style={{display:'flex', justifyContent:'space-between', gap:'8px'}}><b>{getVal(d,["FullName","fullName"]) || "No Name"}</b><span style={{fontSize:'11px', background: isApplicant(d)?'#fee2e2':'#dcfce7', padding:'4px 8px', borderRadius:'20px', fontWeight:800, whiteSpace:'nowrap'}}>{isApplicant(d)?"APPLICANT":"CONTACT"}</span></div>
+              <div style={{fontSize:'13px', color:'#333', marginTop:'6px'}}>📞 {getVal(d,["Phone","phone"])} • 📧 {getVal(d,["Email","email"]) || "-"}</div>
+              <div style={{fontSize:'13px', color:'#555', marginTop:'4px'}}>{getVal(d,["Service","service"]) || getVal(d,["Position","position"]) || ""} {getVal(d,["District","district"]) ? "• "+getVal(d,["District","district"]) : ""}</div>
+              <div style={{fontSize:'12px', color:'#888', marginTop:'4px'}}>{getVal(d,["Timestamp","timestamp"])}</div>
+              <div style={{fontSize:'12px', color:NAVY, fontWeight:800, marginTop:'6px'}}>Tap to view detail →</div>
+            </div>
+          ))}
+        </div>
 
-            {selected?._id===d._id && (
-              <div style={{display:'flex', gap:'6px', flexWrap:'wrap', marginTop:'10px'}} onClick={e=>e.stopPropagation()}>
-                <a href={`tel:${getVal(d,["Phone","phone"])}`} style={{...btn('#0A1931'), textDecoration:'none'}}>📞 Call</a>
-                <a href={waLink(d)} target="_blank" rel="noreferrer" style={{...btn('#25D366'), textDecoration:'none'}}>💬 WhatsApp</a>
-                <a href={`mailto:${getVal(d,["Email","email"])}`} style={{...btn('#0ea5e9'), textDecoration:'none'}}>📧 Email</a>
-                <button onClick={()=>handleDelete(d)} style={btn('#dc2626')}>🗑️ Delete</button>
-              </div>
-            )}
-          </div>
-        ))}
-
-        {filtered.length===0 && !loading && <p style={{textAlign:'center', color:'#888', marginTop:'30px'}}>No data yet - Ready for new submissions</p>}
-
+        {filtered.length===0 && !loading && <p style={{textAlign:'center', color:'#888', marginTop:'30px'}}>No data yet</p>}
         <a href="/" style={{display:'block', textAlign:'center', marginTop:'20px', color:NAVY, fontWeight:800}}>🏠 Back to Home</a>
       </div>
+
+      {/* POPUP - TAP CARD */}
+      {popup && (
+        <div style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:10000, display:'flex', justifyContent:'center', alignItems:'flex-end', padding:'0'}} onClick={()=>setPopup(null)}>
+          <div style={{background:'#fff', borderRadius:'20px 20px 0 0', padding:'20px', width:'100%', maxWidth:'600px', maxHeight:'90vh', overflowY:'auto', fontFamily:'Arial'}} onClick={e=>e.stopPropagation()}>
+            <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start'}}>
+              <h2 style={{margin:0, color:NAVY}}>{getVal(popup,["FullName","fullName"])}</h2>
+              <button onClick={()=>setPopup(null)} style={{border:'none', background:NAVY, color:'#fff', width:'32px', height:'32px', borderRadius:'50%', cursor:'pointer'}}>✕</button>
+            </div>
+            <span style={{fontSize:'11px', background: isApplicant(popup)?'#fee2e2':'#dcfce7', padding:'5px 10px', borderRadius:'20px', fontWeight:800, display:'inline-block', marginTop:'8px'}}>{isApplicant(popup)?"APPLICANT":"CONTACT"}</span>
+            <p style={{color:'#666', fontSize:'13px'}}>{getVal(popup,["Timestamp","timestamp"])}</p>
+            <div style={{display:'grid', gap:'10px', fontSize:'15px'}}>
+              <div><b>📞 Phone:</b> {getVal(popup,["Phone","phone"])}</div>
+              <div><b>📧 Email:</b> {getVal(popup,["Email","email"]) || "-"}</div>
+              {getVal(popup,["Service","service"]) && <div><b>🛡️ Service:</b> {getVal(popup,["Service","service"])}</div>}
+              {getVal(popup,["Position","position"]) && <div><b>💼 Position:</b> {getVal(popup,["Position","position"])}</div>}
+              {getVal(popup,["Education","education"]) && <div><b>🎓 Education:</b> {getVal(popup,["Education","education"])}</div>}
+              {getVal(popup,["District","district"]) && <div><b>📍 District:</b> {getVal(popup,["District","district"])}</div>}
+              {getVal(popup,["Experience","experience"]) && <div><b>⏳ Experience:</b> {getVal(popup,["Experience","experience"])}</div>}
+              {getVal(popup,["Interest","interest"]) && <div><b>⭐ Interest:</b> {getVal(popup,["Interest","interest"])}</div>}
+              {getVal(popup,["Message","Messages","message","messages"]) && <div style={{background:'#f8fafc', padding:'12px', borderRadius:'10px'}}><b>💬 Message:</b><br/>{getVal(popup,["Message","Messages","message","messages"])}</div>}
+            </div>
+
+            <button onClick={()=>openInNewPage(popup)} style={{width:'100%', marginTop:'14px', background:'#facc15', color:'#000', border:'none', padding:'13px', borderRadius:'10px', fontWeight:900, cursor:'pointer'}}>↗ Open in New Page</button>
+
+            <div style={{display:'flex', gap:'8px', flexWrap:'wrap', marginTop:'10px'}}>
+              <a href={`tel:${getVal(popup,["Phone","phone"])}`} style={{...btn(NAVY), flex:1}}>📞 Call</a>
+              <a href={waLink(popup)} target="_blank" rel="noreferrer" style={{...btn('#25D366'), flex:1}}>💬 WhatsApp</a>
+              <a href={`mailto:${getVal(popup,["Email","email"])}`} style={{...btn('#0ea5e9'), flex:1}}>📧 Email</a>
+              <button onClick={()=>handleDelete(popup)} style={{...btn('#dc2626'), flex:1}}>🗑️ Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
