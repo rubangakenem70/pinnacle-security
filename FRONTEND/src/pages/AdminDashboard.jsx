@@ -108,20 +108,20 @@ const AdminDashboard = () => {
         </div>
         {/* SMALL BUTTONS - NOT LONG */}
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px',marginTop:'10px'}}>
-          <button onClick={()=>goToList('contacts')} style={viewBtn}>View Contacts →</button>
-          <button onClick={()=>goToList('applicants')} style={viewBtn}>View Applicants →</button>
+          <button onClick={()=>goToList('contacts')} style={viewBtn}>View Contacts </button>
+          <button onClick={()=>goToList('applicants')} style={viewBtn}>View Applicants </button>
           <button onClick={()=>{goToList('contacts'); setTimeout(()=>setShowAdd(true),100);}} style={{...viewBtn,background:'#059669'}}>+ Add New</button>
-          <button onClick={()=>openInNewPage('contacts')} style={{...viewBtn,background:'#fff',color:NAVY,border:'1px solid #ddd'}}>↗ New Page</button>
+          <button onClick={()=>openInNewPage('contacts')} style={{...viewBtn,background:'#fff',color:NAVY,border:'1px solid #ddd'}}>New Page</button>
         </div>
         {/* WELCOME CARD - SMALL */}
         <div style={{background:'#fff',borderRadius:'10px',padding:'14px',marginTop:'10px'}}>
           <h3 style={{fontSize:'14px',fontWeight:900,color:NAVY}}>Welcome to Pinnacle Security Website</h3>
-          <p style={{fontSize:'13px',lineHeight:'1.6',color:'#334155',marginTop:'6px'}}>Same as your App - everything works here. Tick ✓ to select many, then Delete. Trash keeps them until you Restore or Permanent Delete.</p>
+          <p style={{fontSize:'13px',lineHeight:'1.6',color:'#334155',marginTop:'6px'}}> Tick ✓ to select many, then Delete. Trash keeps them until you Restore or Permanent Delete.</p>
           <div style={{display:'flex',gap:'6px',flexWrap:'wrap',marginTop:'10px'}}>
             <button onClick={()=>setDark(!dark)} style={smallBtn}>{dark?'☀️ Light':'🌙 Dark'}</button>
             <button onClick={()=>setShowAuto(true)} style={smallBtn}>🤖 Auto {autoSettings.emailOn?'ON':'OFF'}</button>
             <button onClick={load} style={smallBtn}>🔄 Refresh</button>
-            <a href="/" style={{...smallBtn,textDecoration:'none'}}>🏠 Home</a>
+            <a href="/" style={{...smallBtn,textDecoration:'none'}}>🏠 Website</a>
             <button onClick={logout} style={{...smallBtn,background:'#fee2e2',color:'#dc2626'}}>Logout</button>
             <button onClick={()=>exportPDF(list)} style={{...smallBtn,background:'#dc2626',color:'#fff'}}>📄 PDF</button>
           </div>
