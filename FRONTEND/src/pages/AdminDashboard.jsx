@@ -346,7 +346,7 @@ export default function AdminDashboard() {
       {toast && <div style={{position:'fixed', top:'16px', right:'16px', background:'#000', color:'#fff', padding:'10px 14px', borderRadius:'20px', fontWeight:800, zIndex:10000, fontSize:'13px'}}>{toast}</div>}
       {/* TOP BAR WITH ICONS */}
       <div style={{background:NAVY, color:'#fff', padding:'12px 14px', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-        <b style={{fontSize:'13px', letterSpacing:'0.2px'}}>PINNACLE SECURITY LTD</b>
+        <b style={{fontSize:'13px', letterSpacing:'0.2px'}}>PINNACLE SECURITY LIMITED</b>
         <div style={{display:'flex', gap:'6px', alignItems:'center'}}>
           <a href="/" style={{...iconBtn, background:'transparent', border:'none', color:'#fff', textDecoration:'none', fontSize:'18px'}} title="Home - Go to Website">🏠</a>
           <button onClick={()=>openList("all")} style={{...iconBtn, background:'transparent', border:'none', color:'#fff'}} title="All Boxes">📦</button>
