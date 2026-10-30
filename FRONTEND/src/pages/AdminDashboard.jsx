@@ -11,7 +11,6 @@ function safeParse(str, fallback){
 function hasVal(v){ return v && String(v).trim()!=="" && String(v).trim()!=="-"; }
 
 export default function AdminDashboard() {
-  // STAY LOGGED IN - read from localStorage, so Ctrl+Shift+R still inside
   const [auth, setAuth] = useState(function(){ try{ return localStorage.getItem("psl_auth")==="1"; }catch(e){ return false; } });
   const [pass, setPass] = useState("");
   const [data, setData] = useState([]);
@@ -28,6 +27,8 @@ export default function AdminDashboard() {
   const [selectedIds, setSelectedIds] = useState([]);
   const [autoNotify, setAutoNotify] = useState(true);
   const [notifyInfo, setNotifyInfo] = useState(null);
+  // THEME - saved, stays after refresh
+  const [theme, setTheme] = useState(function(){ try{ return localStorage.getItem("psl_theme")||"light"; }catch(e){ return "light"; } });
   const [statusMap, setStatusMap] = useState(function(){ return safeParse(localStorage.getItem("psl_status")||"{}", {}); });
   const [edits, setEdits] = useState(function(){ return safeParse(localStorage.getItem("psl_edits")||"{}", {}); });
   const [trash, setTrash] = useState(function(){ return safeParse(localStorage.getItem("psl_trash")||"[]", []); });
@@ -37,13 +38,30 @@ export default function AdminDashboard() {
   const showToast = function(m){ setToast(m); setTimeout(function(){ setToast(""); }, 2500); };
   const username = "Mose Rubangakene";
 
-  // Save page so refresh stays on same page if already logged in
+  // THEME COLORS
+  const isDark = theme==="dark";
+  const mainBg = isDark ? "#0B1220" : "#f0f4ff";
+  const cardBg = isDark ? "#1e293b" : "#ffffff";
+  const cardBorder = isDark ? "#334155" : "#ddd";
+  const mainTxt = isDark ? "#ffffff" : NAVY;
+  const subTxt = isDark ? "#cbd5e1" : "#666";
+  const inputBg = isDark ? "#0f172a" : "#ffffff";
+  const inputTxt = isDark ? "#ffffff" : "#000000";
+  const rowBg = isDark ? "#1e293b" : "#ffffff";
+
+  const toggleTheme = function(){
+    const next = isDark ? "light" : "dark";
+    setTheme(next);
+    try{ localStorage.setItem("psl_theme", next); }catch(e){}
+    showToast(next==="dark" ? "🌙 Dark Theme" : "☀️ Light Theme");
+  };
+
   useEffect(function(){ try{ if(auth) localStorage.setItem("psl_page", page); }catch(e){} },[page, auth]);
 
   const login = function(){
     if(pass.trim()===PASSWORD){
       setAuth(true);
-      setPage("home"); // AFTER LOGIN -> 4 BOXES
+      setPage("home");
       try{ localStorage.setItem("psl_auth","1"); localStorage.setItem("psl_page","home"); window.history.replaceState({}, "", "/admin"); }catch(e){}
     } else alert("Wrong Password!");
   };
@@ -134,12 +152,13 @@ export default function AdminDashboard() {
 
   if(!auth){
     return (
-      <div style={{minHeight:'100vh', background:'linear-gradient(135deg,#0A1931 0%,#1e3a8a 60%,#f59e0b 130%)', display:'flex', justifyContent:'center', alignItems:'center', fontFamily:'Arial'}}>
-        <div style={{background:'#fff', padding:'28px', borderRadius:'16px', width:'92%', maxWidth:'360px', textAlign:'center', boxShadow:'0 20px 40px rgba(0,0,0,0.3)'}}>
+      <div style={{minHeight:'100vh', background: isDark ? '#0B1220' : 'linear-gradient(135deg,#0A1931 0%,#1e3a8a 60%,#f59e0b 130%)', display:'flex', justifyContent:'center', alignItems:'center', fontFamily:'Arial'}}>
+        <div style={{background: cardBg, padding:'28px', borderRadius:'16px', width:'92%', maxWidth:'360px', textAlign:'center', boxShadow:'0 20px 40px rgba(0,0,0,0.3)'}}>
+          <div style={{display:'flex', justifyContent:'flex-end'}}><button onClick={toggleTheme} style={{border:'none', background:'#facc15', borderRadius:'50%', width:'36px', height:'36px', cursor:'pointer', fontSize:'17px'}}>{isDark ? "☀️" : "🌙"}</button></div>
           <div style={{width:'56px', height:'56px', background:'linear-gradient(135deg,#0A1931,#2563eb)', borderRadius:'16px', margin:'0 auto 10px', display:'grid', placeItems:'center', color:'#fff', fontWeight:900, fontSize:'26px'}}>P</div>
-          <h2 style={{color:NAVY, margin:0, fontSize:'19px'}}>PINNACLE ADMIN</h2>
+          <h2 style={{color: isDark ? '#fff' : NAVY, margin:0, fontSize:'19px'}}>PINNACLE ADMIN</h2>
           <p style={{color:'#888', fontSize:'12px', margin:'6px 0 0'}}>Welcome back, Mose Rubangakene</p>
-          <input type="password" value={pass} onChange={function(e){setPass(e.target.value);}} onKeyDown={function(e){if(e.key==='Enter') login();}} placeholder="Password" style={{width:'100%', padding:'12px', borderRadius:'10px', marginTop:'14px', border:'1px solid #ddd', boxSizing:'border-box'}} />
+          <input type="password" value={pass} onChange={function(e){setPass(e.target.value);}} onKeyDown={function(e){if(e.key==='Enter') login();}} placeholder="Password" style={{width:'100%', padding:'12px', borderRadius:'10px', marginTop:'14px', border:'1px solid #ddd', boxSizing:'border-box', background: inputBg, color: inputTxt}} />
           <button onClick={login} style={{width:'100%', marginTop:'10px', background:'linear-gradient(90deg,#0A1931,#2563eb)', color:'#fff', padding:'13px', border:'none', borderRadius:'10px', fontWeight:800, cursor:'pointer'}}>UNLOCK</button>
           <a href="/" style={{display:'block', marginTop:'14px', color:'#2563eb', fontWeight:800, fontSize:'12px', textDecoration:'none'}}>🌐 Back to Website</a>
         </div>
@@ -385,13 +404,15 @@ export default function AdminDashboard() {
   };
 
   const th = {background:NAVY, color:'#fff', padding:'10px 8px', fontSize:'12px', textAlign:'center', whiteSpace:'nowrap', borderRight:'1px solid #334155'};
-  const tdBase = {padding:'10px 8px', fontSize:'12px', borderBottom:'1px solid #e5e7eb', borderRight:'1px solid #e5e7eb', verticalAlign:'top', textAlign:'center'};
+  const tdBase = {padding:'10px 8px', fontSize:'12px', borderBottom: isDark ? '1px solid #334155' : '1px solid #e5e7eb', borderRight: isDark ? '1px solid #334155' : '1px solid #e5e7eb', verticalAlign:'top', textAlign:'center', color: mainTxt, background: rowBg};
   const iconBtn = {border:'none', padding:'6px', borderRadius:'8px', cursor:'pointer', fontSize:'13px', height:'32px', width:'100%', display:'flex', alignItems:'center', justifyContent:'center'};
-  const inputStyle = {width:'100%', padding:'9px 10px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'13px', boxSizing:'border-box', outline:'none'};
+  const inputStyle = {width:'100%', padding:'9px 10px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'13px', boxSizing:'border-box', outline:'none', background: inputBg, color: inputTxt};
 
+  // TOP CORNER - WITH THEME BUTTON HERE
   const TopIcons = function(){
     return (
       <div style={{display:'flex', gap:'6px', alignItems:'center', background:'rgba(255,255,255,0.18)', backdropFilter:'blur(6px)', padding:'5px', borderRadius:'999px', boxShadow:'0 4px 14px rgba(0,0,0,0.2)', border:'1px solid rgba(255,255,255,0.25)'}}>
+        <button onClick={toggleTheme} title={isDark ? "Switch to Light Theme" : "Switch to Dark Theme"} style={{width:'36px', height:'36px', borderRadius:'50%', background: isDark ? '#facc15' : '#0A1931', color:'#fff', border:'none', cursor:'pointer', fontSize:'17px', boxShadow:'0 2px 6px rgba(0,0,0,0.15)'}}>{isDark ? "☀️" : "🌙"}</button>
         <button onClick={doRefresh} title="Refresh - Reload new data" style={{width:'36px', height:'36px', borderRadius:'50%', background:'#facc15', border:'none', cursor:'pointer', fontSize:'17px', boxShadow:'0 2px 6px rgba(0,0,0,0.15)', transform: refreshing ? 'rotate(180deg)' : 'none', transition:'transform 0.5s'}}>🔄</button>
         <a href="/" title="Back to Website" style={{width:'36px', height:'36px', borderRadius:'50%', background:'#fff', color:NAVY, display:'grid', placeItems:'center', textDecoration:'none', fontSize:'17px', boxShadow:'0 2px 6px rgba(0,0,0,0.15)'}}>🌐</a>
         <button onClick={function(){openList("all");}} title="All" style={{width:'36px', height:'36px', borderRadius:'50%', background:'#fff', border:'none', cursor:'pointer', fontSize:'17px', boxShadow:'0 2px 6px rgba(0,0,0,0.15)'}}>📦</button>
@@ -412,22 +433,22 @@ export default function AdminDashboard() {
     const message = getVal(d,["Message","Messages","message","messages"]);
     const infoForThis = {name: getVal(d,["FullName","fullName"]), status: getStatus(d), msg: messageForStatus(d, getStatus(d)), email: email, phone: phone, d: d};
     return (
-      <div style={{position:'fixed', inset:0, background:'#f0f4ff', zIndex:9999, display:'flex', alignItems:'flex-start', justifyContent:'center', padding:'14px', overflowY:'auto'}} onClick={function(){setExpanded(null); setEditing(false);}}>
-        <div onClick={function(e){e.stopPropagation();}} style={{background:'#fff', borderRadius:'12px', padding:'14px', boxShadow:'0 10px 30px rgba(0,0,0,0.15)', width:'100%', maxWidth:'440px', marginTop:'10px'}}>
+      <div style={{position:'fixed', inset:0, background: mainBg, zIndex:9999, display:'flex', alignItems:'flex-start', justifyContent:'center', padding:'14px', overflowY:'auto'}} onClick={function(){setExpanded(null); setEditing(false);}}>
+        <div onClick={function(e){e.stopPropagation();}} style={{background: cardBg, borderRadius:'12px', padding:'14px', boxShadow:'0 10px 30px rgba(0,0,0,0.15)', width:'100%', maxWidth:'440px', marginTop:'10px', color: mainTxt}}>
           <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-            <b style={{color:NAVY, fontSize:'14px'}}>{editing ? "✏️ " : "👁️ "}{getVal(d,["FullName","fullName"])}</b>
+            <b style={{color: mainTxt, fontSize:'14px'}}>{editing ? "✏️ " : "👁️ "}{getVal(d,["FullName","fullName"])}</b>
             <button onClick={function(){setExpanded(null); setEditing(false);}} style={{border:'none', background:'#f1f5f9', borderRadius:'50%', width:'26px', height:'26px', cursor:'pointer', fontWeight:900, fontSize:'12px'}}>✕</button>
           </div>
           {!editing ? (
             <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px', fontSize:'12px', marginTop:'10px'}}>
-              {hasVal(phone) ? <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Phone</b><br/>{phone}</div> : null}
-              {hasVal(email) ? <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Email</b><br/>{email}</div> : null}
-              {hasVal(service) ? <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Service / Position</b><br/>{service}</div> : null}
-              {hasVal(district) ? <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>District</b><br/>{district}</div> : null}
-              {hasVal(education) ? <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Education</b><br/>{education}</div> : null}
-              {hasVal(experience) ? <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Experience</b><br/>{experience}</div> : null}
-              {!applicant && hasVal(message) ? <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px', gridColumn:'span 2'}}><b>Message</b><br/>{message}</div> : null}
-              <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Status</b><br/><select value={getStatus(d)} onChange={function(e){changeStatus(d,e.target.value);}} style={{padding:'6px', borderRadius:'20px', fontWeight:800, fontSize:'11px', background:statusColor(getStatus(d)), border:'1px solid #ddd'}}>{statusOptions(d).map(function(s){ return <option key={s} value={s}>{s}</option>; })}</select></div>
+              {hasVal(phone) ? <div style={{background: isDark ? '#0f172a' : '#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Phone</b><br/>{phone}</div> : null}
+              {hasVal(email) ? <div style={{background: isDark ? '#0f172a' : '#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Email</b><br/>{email}</div> : null}
+              {hasVal(service) ? <div style={{background: isDark ? '#0f172a' : '#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Service / Position</b><br/>{service}</div> : null}
+              {hasVal(district) ? <div style={{background: isDark ? '#0f172a' : '#f8fafc', padding:'8px', borderRadius:'8px'}}><b>District</b><br/>{district}</div> : null}
+              {hasVal(education) ? <div style={{background: isDark ? '#0f172a' : '#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Education</b><br/>{education}</div> : null}
+              {hasVal(experience) ? <div style={{background: isDark ? '#0f172a' : '#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Experience</b><br/>{experience}</div> : null}
+              {!applicant && hasVal(message) ? <div style={{background: isDark ? '#0f172a' : '#f8fafc', padding:'8px', borderRadius:'8px', gridColumn:'span 2'}}><b>Message</b><br/>{message}</div> : null}
+              <div style={{background: isDark ? '#0f172a' : '#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Status</b><br/><select value={getStatus(d)} onChange={function(e){changeStatus(d,e.target.value);}} style={{padding:'6px', borderRadius:'20px', fontWeight:800, fontSize:'11px', background:statusColor(getStatus(d)), border:'1px solid #ddd'}}>{statusOptions(d).map(function(s){ return <option key={s} value={s}>{s}</option>; })}</select></div>
             </div>
           ) : (
             <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px', marginTop:'10px'}}>
@@ -459,7 +480,7 @@ export default function AdminDashboard() {
             <button title="Send SMS - works if NOT on WhatsApp" onClick={function(){sendSMS(infoForThis);}} style={{background:'#0ea5e9', color:'#fff', border:'none', padding:'8px', borderRadius:'8px', fontWeight:800, fontSize:'11px', cursor:'pointer'}}>📱 SMS</button>
             <button title="Send Email" onClick={function(){sendEmail(infoForThis);}} style={{background:'#2563eb', color:'#fff', border:'none', padding:'8px', borderRadius:'8px', fontWeight:800, fontSize:'11px', cursor:'pointer'}}>📧 Email</button>
           </div>
-          <p style={{fontSize:'10px', color:'#666', textAlign:'center', margin:'6px 0 0'}}>If number NOT on WhatsApp, tap 📱 SMS or 📧 Email</p>
+          <p style={{fontSize:'10px', color: subTxt, textAlign:'center', margin:'6px 0 0'}}>If number NOT on WhatsApp, tap 📱 SMS or 📧 Email</p>
         </div>
       </div>
     );
@@ -468,7 +489,7 @@ export default function AdminDashboard() {
   if(page!=="home"){
     const expandedData = expanded ? paged.find(function(x){ return x._id===expanded; }) || data.find(function(x){ return x._id===expanded; }) || trash.find(function(x){ return x._id===expanded; }) : null;
     return (
-      <div style={{background:'#f0f4ff', minHeight:'100vh', fontFamily:'Arial'}}>
+      <div style={{background: mainBg, minHeight:'100vh', fontFamily:'Arial'}}>
         {toast ? <div style={{position:'fixed', top:'16px', right:'16px', background:'#000', color:'#fff', padding:'10px 14px', borderRadius:'20px', fontWeight:800, zIndex:10000, fontSize:'13px'}}>{toast}</div> : null}
         <div style={{background:'linear-gradient(90deg,#0A1931,#1e3a8a,#2563eb)', color:'#fff', padding:'10px 14px', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
           <b style={{fontSize:'13px'}}>PINNACLE SECURITY LTD</b>
@@ -498,20 +519,20 @@ export default function AdminDashboard() {
         <div style={{maxWidth:'1400px', margin:'0 auto', padding:'14px', visibility: expanded ? 'hidden' : 'visible', height: expanded ? '0' : 'auto', overflow: expanded ? 'hidden' : 'visible'}}>
           <div style={{display:'flex', justifyContent:'center', alignItems:'center', flexWrap:'wrap', gap:'10px', textAlign:'center'}}>
             <button onClick={backHome} style={{background:NAVY, color:'#fff', border:'none', padding:'9px 14px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>Back</button>
-            <h2 style={{margin:0, color:NAVY, fontSize:'18px'}}>{title} <span style={{fontSize:'13px', color:'#666'}}>({filtered.length})</span></h2>
+            <h2 style={{margin:0, color: mainTxt, fontSize:'18px'}}>{title} <span style={{fontSize:'13px', color: subTxt}}>({filtered.length})</span></h2>
             <button onClick={exportCSV} style={{background:'#2563eb', color:'#fff', border:'none', padding:'9px 14px', borderRadius:'8px', fontWeight:800, fontSize:'11px', cursor:'pointer'}}>CSV</button>
             <button onClick={printAllDetails} style={{background:'#facc15', color:'#000', border:'none', padding:'9px 14px', borderRadius:'8px', fontWeight:800, fontSize:'11px', cursor:'pointer'}}>🖨️ PDF</button>
-            <label style={{fontSize:'11px', fontWeight:800, color:NAVY, background:'#fff', padding:'8px 10px', borderRadius:'8px', border:'1px solid #ddd', cursor:'pointer', display:'flex', alignItems:'center', gap:'5px'}}>
+            <label style={{fontSize:'11px', fontWeight:800, color: mainTxt, background: cardBg, padding:'8px 10px', borderRadius:'8px', border:'1px solid '+cardBorder, cursor:'pointer', display:'flex', alignItems:'center', gap:'5px'}}>
               <input type="checkbox" checked={autoNotify} onChange={function(e){setAutoNotify(e.target.checked);}} /> Auto Email / SMS ON
             </label>
           </div>
 
           <div style={{display:'flex', flexDirection:'column', alignItems:'center', marginTop:'14px'}}>
             <div style={{display:'flex', gap:'8px', flexWrap:'wrap', justifyContent:'center', alignItems:'center'}}>
-              <input value={search} onChange={function(e){setSearch(e.target.value); setCurrentPage(1);}} placeholder="Search name, phone, email, service, message, district..." title="Searches EVERYTHING: Name, Phone, Email, Service, Position, District, Education, Experience, Message, Status" style={{width:'360px', maxWidth:'92vw', padding:'9px 14px', borderRadius:'20px', border:'1px solid #ddd', fontSize:'13px', outline:'none', background:'#fff', textAlign:'center'}} />
-              <select value={sort} onChange={function(e){setSort(e.target.value);}} style={{padding:'9px 8px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'12px', background:'#fff', fontWeight:700}}><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="az">A-Z</option></select>
-              <select value={filterStatus} onChange={function(e){setFilterStatus(e.target.value); setCurrentPage(1);}} style={{padding:'9px 8px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'12px', background:'#fff', fontWeight:700}}><option value="All">All Status</option><option value="New">New</option><option value="Contacted">Contacted</option><option value="Rejected">Rejected</option><option value="Resolved">Resolved</option><option value="Hired">Hired</option></select>
-              <select value={filterService} onChange={function(e){setFilterService(e.target.value); setCurrentPage(1);}} style={{padding:'9px 8px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'12px', background:'#fff', fontWeight:700}}>{services.map(function(s){ return <option key={s} value={s}>{s==="All"?"All Service":s}</option>; })}</select>
+              <input value={search} onChange={function(e){setSearch(e.target.value); setCurrentPage(1);}} placeholder="Search name, phone, email, service, message, district..." title="Searches EVERYTHING: Name, Phone, Email, Service, Position, District, Education, Experience, Message, Status" style={{width:'360px', maxWidth:'92vw', padding:'9px 14px', borderRadius:'20px', border:'1px solid #ddd', fontSize:'13px', outline:'none', background: inputBg, color: inputTxt, textAlign:'center'}} />
+              <select value={sort} onChange={function(e){setSort(e.target.value);}} style={{padding:'9px 8px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'12px', background: inputBg, color: inputTxt, fontWeight:700}}><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="az">A-Z</option></select>
+              <select value={filterStatus} onChange={function(e){setFilterStatus(e.target.value); setCurrentPage(1);}} style={{padding:'9px 8px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'12px', background: inputBg, color: inputTxt, fontWeight:700}}><option value="All">All Status</option><option value="New">New</option><option value="Contacted">Contacted</option><option value="Rejected">Rejected</option><option value="Resolved">Resolved</option><option value="Hired">Hired</option></select>
+              <select value={filterService} onChange={function(e){setFilterService(e.target.value); setCurrentPage(1);}} style={{padding:'9px 8px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'12px', background: inputBg, color: inputTxt, fontWeight:700}}>{services.map(function(s){ return <option key={s} value={s}>{s==="All"?"All Service":s}</option>; })}</select>
             </div>
           </div>
 
@@ -525,7 +546,7 @@ export default function AdminDashboard() {
             </div>
           ) : null}
 
-          <div style={{background:'#fff', borderRadius:'12px', overflow:'hidden', marginTop:'14px', border:'1px solid #ddd', boxShadow:'0 2px 10px rgba(0,0,0,0.05)'}}>
+          <div style={{background: cardBg, borderRadius:'12px', overflow:'hidden', marginTop:'14px', border:'1px solid '+cardBorder, boxShadow:'0 2px 10px rgba(0,0,0,0.05)'}}>
             <div style={{overflowX:'auto'}}>
               <table style={{width:'100%', borderCollapse:'collapse', minWidth:'1050px'}}>
                 <thead><tr>
@@ -541,9 +562,9 @@ export default function AdminDashboard() {
                 <tbody>
                   {paged.map(function(d){
                     return (
-                      <tr key={d._id} style={{background:'#fff'}}>
+                      <tr key={d._id} style={{background: rowBg}}>
                         <td style={tdBase}><input type="checkbox" checked={selectedIds.indexOf(d._id)!==-1} onChange={function(e){e.stopPropagation(); toggleSelect(d._id);}} onClick={function(e){e.stopPropagation();}} /></td>
-                        <td onClick={function(){ setExpanded(d._id); setEditing(false); }} style={{...tdBase, fontWeight:800, color:NAVY, cursor:'pointer', whiteSpace:'nowrap', minWidth:'140px'}}>{getVal(d,["FullName","fullName"])}</td>
+                        <td onClick={function(){ setExpanded(d._id); setEditing(false); }} style={{...tdBase, fontWeight:800, color: isDark ? '#fff' : NAVY, cursor:'pointer', whiteSpace:'nowrap', minWidth:'140px'}}>{getVal(d,["FullName","fullName"])}</td>
                         <td onClick={function(){ setExpanded(d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', whiteSpace:'nowrap'}}>{getVal(d,["Phone","phone"])}</td>
                         <td onClick={function(){ setExpanded(d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', minWidth:'160px', maxWidth:'200px', wordBreak:'break-word'}}>{getVal(d,["Email","email"])||"-"}</td>
                         {page==="contacts" ? <React.Fragment>
@@ -573,17 +594,16 @@ export default function AdminDashboard() {
                 </tbody>
               </table>
             </div>
-            {paged.length===0 && !loading ? <p style={{textAlign:'center', color:'#888', padding:'18px'}}>No {title} yet</p> : null}
-            {loading ? <p style={{textAlign:'center', padding:'14px'}}>Loading...</p> : null}
+            {paged.length===0 && !loading ? <p style={{textAlign:'center', color: subTxt, padding:'18px'}}>No {title} yet</p> : null}
+            {loading ? <p style={{textAlign:'center', padding:'14px', color: subTxt}}>Loading...</p> : null}
           </div>
           <div style={{display:'flex', justifyContent:'center', alignItems:'center', gap:'8px', marginTop:'12px'}}>
             <button disabled={safePage<=1} onClick={function(){setCurrentPage(safePage-1);}} style={{background: safePage<=1?'#e5e7eb':NAVY, color: safePage<=1?'#999':'#fff', border:'none', padding:'9px 14px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>Prev</button>
-            <span style={{fontSize:'13px', fontWeight:800, color:NAVY}}>Page {safePage} / {totalPages}</span>
+            <span style={{fontSize:'13px', fontWeight:800, color: mainTxt}}>Page {safePage} / {totalPages}</span>
             <button disabled={safePage>=totalPages} onClick={function(){setCurrentPage(safePage+1);}} style={{background: safePage>=totalPages?'#e5e7eb':NAVY, color: safePage>=totalPages?'#999':'#fff', border:'none', padding:'9px 14px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>Next</button>
           </div>
-          {/* BACK TO WEBSITE - also on list pages */}
           <div style={{display:'flex', justifyContent:'center', marginTop:'18px'}}>
-            <a href="/" style={{background:'#fff', color:NAVY, border:'2px solid '+NAVY, padding:'12px 22px', borderRadius:'999px', fontWeight:900, fontSize:'13px', textDecoration:'none', boxShadow:'0 4px 12px rgba(0,0,0,0.08)'}}>🌐 Back to Website</a>
+            <a href="/" style={{background: cardBg, color: mainTxt, border:'2px solid '+NAVY, padding:'12px 22px', borderRadius:'999px', fontWeight:900, fontSize:'13px', textDecoration:'none', boxShadow:'0 4px 12px rgba(0,0,0,0.08)'}}>🌐 Back to Website</a>
           </div>
         </div>
       </div>
@@ -592,14 +612,13 @@ export default function AdminDashboard() {
 
   const boxStyle = function(grad){ return {background:grad, borderRadius:'16px', padding:'22px 10px 18px', cursor:'pointer', textAlign:'center', color:'#fff', boxShadow:'0 8px 20px rgba(0,0,0,0.12)'}; };
   return (
-    <div style={{background:'#f0f4ff', minHeight:'100vh', fontFamily:'Arial', padding:'0'}}>
+    <div style={{background: mainBg, minHeight:'100vh', fontFamily:'Arial', padding:'0'}}>
       {toast ? <div style={{position:'fixed', top:'16px', right:'16px', background:'#000', color:'#fff', padding:'10px 14px', borderRadius:'20px', fontWeight:800, zIndex:10000, fontSize:'13px'}}>{toast}</div> : null}
       <div style={{background:'linear-gradient(90deg,#0A1931,#1e3a8a,#2563eb)', color:'#fff', padding:'10px 14px', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
         <b style={{fontSize:'13px'}}>PINNACLE SECURITY LTD</b>
         <TopIcons />
       </div>
       <div style={{maxWidth:'520px', margin:'0 auto', padding:'18px 14px 20px'}}>
-        {/* ONE LINE WELCOME */}
         <div style={{background:'linear-gradient(135deg,#0A1931 0%,#2563eb 60%,#f59e0b 130%)', borderRadius:'16px', padding:'20px', color:'#fff', marginBottom:'16px'}}>
           <h2 style={{margin:0, fontSize:'22px', fontWeight:900, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>Welcome, {username} 👋</h2>
           <p style={{margin:'8px 0 0', fontSize:'12px', opacity:0.9}}>Pinnacle Security Ltd • {data.length} total • {contacts.length} Contacts • {applicants.length} Applicants</p>
@@ -626,10 +645,9 @@ export default function AdminDashboard() {
             <div style={{fontSize:'13px', marginTop:'6px', color:'#000'}}>Trash</div>
           </div>
         </div>
-        <p style={{fontSize:'12px', color:'#888', textAlign:'center', marginTop:'16px'}}>Tap any box to open table • Tap row to expand</p>
-        {loading ? <p style={{textAlign:'center', fontSize:'12px', color:'#888'}}>Loading...</p> : null}
-        {/* BACK TO WEBSITE - BIG BUTTON AT BOTTOM LIKE YOUR RED BOX */}
-        <a href="/" style={{display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', marginTop:'28px', background:'#fff', color:NAVY, border:'2px solid '+NAVY, padding:'16px', borderRadius:'14px', fontWeight:900, fontSize:'16px', textDecoration:'none', boxShadow:'0 6px 16px rgba(0,0,0,0.08)'}}>🌐 Back to Website</a>
+        <p style={{fontSize:'12px', color: subTxt, textAlign:'center', marginTop:'16px'}}>Tap any box to open table • Tap row to expand</p>
+        {loading ? <p style={{textAlign:'center', fontSize:'12px', color: subTxt}}>Loading...</p> : null}
+        <a href="/" style={{display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', marginTop:'28px', background: cardBg, color: mainTxt, border:'2px solid '+NAVY, padding:'16px', borderRadius:'14px', fontWeight:900, fontSize:'16px', textDecoration:'none', boxShadow:'0 6px 16px rgba(0,0,0,0.08)'}}>🌐 Back to Website</a>
       </div>
     </div>
   );
