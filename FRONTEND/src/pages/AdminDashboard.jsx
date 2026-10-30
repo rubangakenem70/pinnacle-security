@@ -31,19 +31,24 @@ export default function AdminDashboard() {
   const [edits, setEdits] = useState(function(){ return safeParse(localStorage.getItem("psl_edits")||"{}", {}); });
   const [trash, setTrash] = useState(function(){ return safeParse(localStorage.getItem("psl_trash")||"[]", []); });
   const [toast, setToast] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
 
   const showToast = function(m){ setToast(m); setTimeout(function(){ setToast(""); }, 2500); };
   const username = "Admin";
 
+  // REMOVED: auto ?view=contacts redirect - ALWAYS start on 4 boxes (Home)
   useEffect(function(){
-    try{
-      const p = new URLSearchParams(window.location.search);
-      const v = p.get("view");
-      if(v==="contacts"||v==="applicants"||v==="all"||v==="trash") setPage(v);
-    }catch(e){}
+    try{ window.history.replaceState({}, "", "/admin"); }catch(e){}
+    setPage("home");
   },[]);
 
-  const login = function(){ if(pass.trim()===PASSWORD) setAuth(true); else alert("Wrong Password!"); };
+  const login = function(){
+    if(pass.trim()===PASSWORD){
+      setAuth(true);
+      setPage("home"); // AFTER LOGIN -> 4 BOXES, NOT CONTACTS
+      try{ window.history.replaceState({}, "", "/admin"); }catch(e){}
+    } else alert("Wrong Password!");
+  };
 
   const getValRaw = function(o, keys){
     if(!o) return "";
@@ -92,6 +97,7 @@ export default function AdminDashboard() {
 
   const load = function(){
     setLoading(true);
+    setRefreshing(true);
     const cb = "psl_cb_" + Date.now();
     const old = document.getElementById("psl_jsonp"); if(old) old.remove();
     window[cb] = function(d){
@@ -103,14 +109,22 @@ export default function AdminDashboard() {
         setData(clean.filter(function(r){ return !trashIds[r._id]; }));
       }catch(e){ console.log(e); }
       setLoading(false);
+      setRefreshing(false);
       try{ delete window[cb]; }catch(e){}
       const s = document.getElementById("psl_jsonp"); if(s) s.remove();
     };
     const s = document.createElement("script");
     s.id = "psl_jsonp";
     s.src = WEBHOOK + "?callback=" + cb + "&cache=" + Date.now();
-    s.onerror = function(){ setLoading(false); showToast("Load failed"); };
+    s.onerror = function(){ setLoading(false); setRefreshing(false); showToast("Load failed"); };
     document.body.appendChild(s);
+  };
+
+  // REFRESH BUTTON - top corner
+  const doRefresh = function(){
+    showToast("🔄 Refreshing...");
+    load();
+    setTimeout(function(){ showToast("✅ Refreshed"); }, 800);
   };
 
   useEffect(function(){ if(auth) load(); },[auth]);
@@ -152,7 +166,6 @@ export default function AdminDashboard() {
     return waLinkFor(d, text);
   };
 
-  // ===== AUTO MESSAGE BY STATUS =====
   const messageForStatus = function(d, status){
     const name = getVal(d,["FullName","fullName"]);
     const service = getVal(d,["Service","service"])||getVal(d,["Position","position"])||"our service";
@@ -163,7 +176,6 @@ export default function AdminDashboard() {
     return "Hello " + name + ", this is Pinnacle Security Ltd, Muyenga. Thank you for contacting us.";
   };
 
-  // 3 SEPARATE CHANNELS - WHATSAPP / SMS / EMAIL
   const sendWhatsApp = function(info){
     if(!info) return;
     window.open(waLinkFor(info.d, info.msg), "_blank");
@@ -171,7 +183,6 @@ export default function AdminDashboard() {
   };
   const sendSMS = function(info){
     if(!info) return;
-    // Real SMS - opens phone SMS app, works even if NOT on WhatsApp
     window.location.href = "sms:" + localPhone(info.d) + "?body=" + encodeURIComponent(info.msg);
     showToast("SMS opened to " + localPhone(info.d));
   };
@@ -186,7 +197,6 @@ export default function AdminDashboard() {
     if(!autoNotify) return;
     if(newStatus!=="Contacted" && newStatus!=="Hired" && newStatus!=="Rejected") return;
     const msg = messageForStatus(d, newStatus);
-    // DO NOT auto-open WhatsApp anymore - show chooser so user can pick SMS/Email if not on WhatsApp
     setNotifyInfo({name: getVal(d,["FullName","fullName"]), status: newStatus, msg: msg, email: getVal(d,["Email","email"]), phone: getVal(d,["Phone","phone"]), d: d});
     showToast("Message ready - Choose WhatsApp / SMS / Email");
     window.scrollTo({top:0, behavior:'smooth'});
@@ -375,9 +385,11 @@ export default function AdminDashboard() {
   const iconBtn = {border:'none', padding:'6px', borderRadius:'8px', cursor:'pointer', fontSize:'13px', height:'32px', width:'100%', display:'flex', alignItems:'center', justifyContent:'center'};
   const inputStyle = {width:'100%', padding:'9px 10px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'13px', boxSizing:'border-box', outline:'none'};
 
+  // TOP CORNER - WITH REFRESH BUTTON
   const TopIcons = function(){
     return (
       <div style={{display:'flex', gap:'6px', alignItems:'center', background:'rgba(255,255,255,0.18)', backdropFilter:'blur(6px)', padding:'5px', borderRadius:'999px', boxShadow:'0 4px 14px rgba(0,0,0,0.2)', border:'1px solid rgba(255,255,255,0.25)'}}>
+        <button onClick={doRefresh} title="Refresh - Reload new data" style={{width:'36px', height:'36px', borderRadius:'50%', background:'#facc15', border:'none', cursor:'pointer', fontSize:'17px', boxShadow:'0 2px 6px rgba(0,0,0,0.15)', transform: refreshing ? 'rotate(180deg)' : 'none', transition:'transform 0.5s'}}>🔄</button>
         <a href="/" title="Home - Website" style={{width:'36px', height:'36px', borderRadius:'50%', background:'#fff', color:NAVY, display:'grid', placeItems:'center', textDecoration:'none', fontSize:'17px', boxShadow:'0 2px 6px rgba(0,0,0,0.15)'}}>🏠</a>
         <button onClick={function(){openList("all");}} title="All" style={{width:'36px', height:'36px', borderRadius:'50%', background:'#fff', border:'none', cursor:'pointer', fontSize:'17px', boxShadow:'0 2px 6px rgba(0,0,0,0.15)'}}>📦</button>
         <button onClick={function(){openList("trash");}} title="Trash" style={{position:'relative', width:'36px', height:'36px', borderRadius:'50%', background:'#fff', border:'none', cursor:'pointer', fontSize:'17px', boxShadow:'0 2px 6px rgba(0,0,0,0.15)'}}>🗑️{trash.length>0 ? <span style={{position:'absolute', top:'-4px', right:'-4px', minWidth:'18px', height:'18px', borderRadius:'999px', background:'#dc2626', color:'#fff', fontSize:'10px', fontWeight:900, display:'grid', placeItems:'center', padding:'0 4px', border:'2px solid #fff'}}>{trash.length}</span> : null}</button>
@@ -429,7 +441,6 @@ export default function AdminDashboard() {
               <button onClick={function(){setEditing(false);}} style={{background:'#e5e7eb', border:'none', padding:'10px', borderRadius:'8px', fontWeight:800, cursor:'pointer', fontSize:'12px'}}>Cancel</button>
             </div>
           )}
-          {/* ROW 1: VIEW / EDIT / DELETE / PERMANENT / CALL / WHATSAPP / EMAIL / PRINT */}
           <div style={{display:'grid', gridTemplateColumns:'repeat(8, 1fr)', gap:'5px', marginTop:'12px'}}>
             <button title="View" onClick={function(){setEditing(false);}} style={{...iconBtn, background:'#e0e7ff'}}>👁️</button>
             <button title="Edit" onClick={function(){startEdit(d);}} style={{...iconBtn, background:'#fef9c3'}}>✏️</button>
@@ -440,7 +451,6 @@ export default function AdminDashboard() {
             <a title="Email" href={"mailto:"+getVal(d,["Email","email"])} style={{...iconBtn, background:'#2563eb', textDecoration:'none'}}>📧</a>
             <button title="Print" onClick={function(){printSingle(d);}} style={{...iconBtn, background:'#facc15'}}>🖨️</button>
           </div>
-          {/* ROW 2: SMS FALLBACK - IF NOT ON WHATSAPP */}
           <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'5px', marginTop:'6px'}}>
             <button title="Send WhatsApp" onClick={function(){sendWhatsApp(infoForThis);}} style={{background:'#25D366', color:'#fff', border:'none', padding:'8px', borderRadius:'8px', fontWeight:800, fontSize:'11px', cursor:'pointer'}}>💬 WhatsApp</button>
             <button title="Send SMS - works if NOT on WhatsApp" onClick={function(){sendSMS(infoForThis);}} style={{background:'#0ea5e9', color:'#fff', border:'none', padding:'8px', borderRadius:'8px', fontWeight:800, fontSize:'11px', cursor:'pointer'}}>📱 SMS</button>
@@ -464,7 +474,6 @@ export default function AdminDashboard() {
 
         {expanded && expandedData ? renderSmallForm(expandedData) : null}
 
-        {/* AUTO NOTIFY - 3 SEPARATE FALLBACKS */}
         {notifyInfo ? (
           <div style={{maxWidth:'900px', margin:'12px auto 0', padding:'0 14px'}}>
             <div style={{background:'#dcfce7', border:'1px solid #86efac', borderRadius:'12px', padding:'12px', fontSize:'13px'}}>
@@ -585,7 +594,8 @@ export default function AdminDashboard() {
       <div style={{maxWidth:'520px', margin:'0 auto', padding:'18px 14px 20px'}}>
         <div style={{background:'linear-gradient(135deg,#0A1931 0%,#2563eb 60%,#f59e0b 130%)', borderRadius:'16px', padding:'20px', color:'#fff', marginBottom:'16px'}}>
           <p style={{margin:0, fontSize:'13px', opacity:0.9}}>Welcome,</p>
-          <h2 style={{margin:'4px 0 0', fontSize:'26px', fontWeight:900}}>{username} </h2>
+          <h2 style={{margin:'4px 0 0', fontSize:'26px', fontWeight:900}}>{username} 👋</h2>
+          <p style={{margin:'8px 0 0', fontSize:'12px', opacity:0.9}}>Pinnacle Security Ltd • {data.length} total • {contacts.length} Contacts • {applicants.length} Applicants</p>
         </div>
         <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px'}}>
           <div onClick={function(){openList("contacts");}} style={boxStyle('linear-gradient(135deg,#2563eb,#0ea5e9)')}>
