@@ -1,3 +1,4 @@
+import AdminDashboard from './pages/AdminDashboard.jsx';
 import React, { useState, useEffect } from 'react'
 
 const ADMIN_PASSWORD = "Pinnacle2026!Secure123";
@@ -11,132 +12,7 @@ const getFullDateTime24 = () => {
   return kampala.getDate().toString().padStart(2,'0') + '/' + (kampala.getMonth()+1).toString().padStart(2,'0') + '/' + kampala.getFullYear() + ' ' + kampala.getHours().toString().padStart(2,'0') + ':' + kampala.getMinutes().toString().padStart(2,'0') + ':' + kampala.getSeconds().toString().padStart(2,'0') + '.' + kampala.getMilliseconds() + '-' + Math.floor(Math.random()*900+100);
 };
 
-/* ================= ADMIN - YOUR CODE UNCHANGED, ONLY dark KEPT ================= */
-const AdminDashboard = () => {
-  const [auth, setAuth] = useState(false);
-  const [pass, setPass] = useState("");
-  const [data, setData] = useState([]);
-  const [search, setSearch] = useState("");
-  const [tab, setTab] = useState("contacts");
-  const [loading, setLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(30);
-  const [selected, setSelected] = useState([]);
-  const [editRow, setEditRow] = useState(null);
-  const [form, setForm] = useState({});
-  const [showAdd, setShowAdd] = useState(false);
-  const [showFilters, setShowFilters] = useState(true);
-  const [filters, setFilters] = useState({ service: "", position: "", district: "", education: "", experience: "", interest: "", dateFrom: "", dateTo: "" });
-  const [detailRow, setDetailRow] = useState(null);
-  const [trash, setTrash] = useState(()=>JSON.parse(localStorage.getItem('psl_trash')||'[]'));
-  const [showTrash, setShowTrash] = useState(false);
-  const [live, setLive] = useState(true);
-  const [dark, setDark] = useState(true);
-  const [toast, setToast] = useState("");
-  const showToast = (m)=>{ setToast(m); setTimeout(()=>setToast(""),3000); }
-  const login = () => pass === ADMIN_PASSWORD ? setAuth(true) : alert("Wrong Password!");
-  const load = () => {
-    setLoading(true);
-    const cbName = "psl_cb_" + Date.now();
-    const old = document.getElementById("psl_jsonp");
-    if(old) old.remove();
-    window[cbName] = (d) => {
-      try {
-        let arr = Array.isArray(d) ? d : (d.data || []);
-        const withId = arr.map((row,i)=>{
-          const ts = (row.Timestamp || row.timestamp || "")+"";
-          if(!ts || ts.trim()==="" || ts==="undefined") return null;
-          return Object.assign({}, row, {Timestamp:ts, timestamp:ts, _uid: ts + "_" + i});
-        }).filter(Boolean);
-        setData(withId.sort((a,b)=> new Date(b.timestamp||0)-new Date(a.timestamp||0)));
-      } catch(e) { console.log(e); }
-      setLoading(false); delete window[cbName];
-      const sc = document.getElementById("psl_jsonp"); if(sc) sc.remove();
-    };
-    const s = document.createElement("script"); s.id = "psl_jsonp";
-    s.src = GOOGLE_SHEET_WEBHOOK + "?callback=" + cbName + "&cache=" + Date.now();
-    s.onerror = () => { setLoading(false); delete window[cbName]; const sc = document.getElementById("psl_jsonp"); if(sc) sc.remove(); showToast("Load failed - check Apps Script Anyone"); };
-    document.body.appendChild(s);
-  };
-  useEffect(()=>{ if(auth) load(); },[auth]);
-  useEffect(()=>{ if(!auth||!live) return; const id=setInterval(load,30000); return ()=>clearInterval(id); },[auth,live]);
-  useEffect(()=>{ setCurrentPage(1); },[filters,search,tab,rowsPerPage]);
-  const getVal = (obj, keys) => { for(let k of keys) if(obj[k]!==undefined && obj[k]!==null && obj[k]!=='') return obj[k]; return ''; }
-  const formatDate = (t) => { if(!t) return '-'; try { const d=new Date(t); if(isNaN(d.getTime())) return t; return d.toLocaleString('en-GB',{timeZone:'Africa/Kampala',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}); } catch { return t; } }
-  const handleDelete = async (row) => {
-    const ts=getVal(row,['Timestamp','timestamp']);
-    const newTrash=[Object.assign({}, row, {deletedAt:new Date().toISOString()})].concat(trash).slice(0,200);
-    setTrash(newTrash); localStorage.setItem('psl_trash',JSON.stringify(newTrash));
-    setData(prev=>prev.filter(r=>getVal(r,['Timestamp','timestamp'])!==ts));
-    setSelected(prev=>prev.filter(id=>id!==ts));
-    if(detailRow && getVal(detailRow,['Timestamp','timestamp'])===ts) setDetailRow(null);
-    showToast("Moved to Trash");
-    await fetch(GOOGLE_SHEET_WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'delete',timestamps:[ts]})});
-  };
-  const handleBulkDelete = async () => {
-    if(selected.length===0) return;
-    const newTrash=data.filter(r=>selected.includes(getVal(r,['Timestamp','timestamp']))).map(r=>Object.assign({}, r, {deletedAt:new Date().toISOString()})).concat(trash).slice(0,200);
-    setTrash(newTrash); localStorage.setItem('psl_trash',JSON.stringify(newTrash));
-    setData(prev=>prev.filter(r=>!selected.includes(getVal(r,['Timestamp','timestamp']))));
-    setSelected([]); setDetailRow(null); showToast(selected.length+" Moved");
-    await fetch(GOOGLE_SHEET_WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'bulkDelete',timestamps:selected})});
-  };
-  const clearDuplicates = () => {
-    const seen=new Set(); const dups=[]; const keep=[];
-    data.forEach(r=>{ const key=getVal(r,['Phone','phone'])+"_"+getVal(r,['FullName','fullName']); if(seen.has(key)) dups.push(r); else { seen.add(key); keep.push(r); } });
-    if(dups.length===0){ showToast('No duplicates'); return; }
-    if(!confirm("Found "+dups.length+" duplicates? Move to Trash?")) return;
-    setTrash(prev=>{ const nt=dups.concat(prev).slice(0,200); localStorage.setItem('psl_trash',JSON.stringify(nt)); return nt; });
-    setData(keep); showToast(dups.length+" moved");
-  };
-  const toggleSelect = (ts) => setSelected(prev => prev.includes(ts) ? prev.filter(id=>id!==ts) : prev.concat([ts]));
-  const handleEdit = (row) => { const ts = getVal(row,['Timestamp','timestamp']); setEditRow(ts); setForm({ timestamp:ts, FullName:getVal(row,['FullName','fullName']), Phone:getVal(row,['Phone','phone']), Email:getVal(row,['Email','email']), Service:getVal(row,['Service','service']), Messages:getVal(row,['Messages','message']), Position:getVal(row,['Position','position']), Education:getVal(row,['Education','education']), District:getVal(row,['District','district']), Experience:getVal(row,['Experience','experience']), Interest:getVal(row,['Interest','interest']), type:tab }); };
-  const handleSave = async () => { const payload = Object.assign({ action:'update' }, form, { timestamp:editRow, type:tab }); setData(prev => prev.map(r => getVal(r,['Timestamp','timestamp'])===editRow?Object.assign({}, r, form, {Timestamp:editRow,timestamp:editRow}):r)); setEditRow(null); if(detailRow && getVal(detailRow,['Timestamp','timestamp'])===editRow) setDetailRow(prev=>Object.assign({}, prev, form, {Timestamp:editRow,timestamp:editRow})); showToast("Updated"); await fetch(GOOGLE_SHEET_WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)}); };
-  const handleAddNew = async () => { const ts = getFullDateTime24(); const payload = Object.assign({}, form, { timestamp:ts, Timestamp:ts, type:tab==='contacts'?'contact':'applicant' }); setData(prev=>[payload].concat(prev)); setShowAdd(false); setForm({}); showToast("Added"); await fetch(GOOGLE_SHEET_WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)}); };
-  const unique = (keyArr) => { const arr = []; const set = new Set(); data.forEach(d=>{ const v=getVal(d,keyArr); if(v && !set.has(v)){ set.add(v); arr.push(v); } }); return arr.sort(); };
-  const serviceOptions = unique(['Service','service']); const positionOptions = unique(['Position','position']); const districtOptions = unique(['District','district']); const educationOptions = unique(['Education','education']); const experienceOptions = unique(['Experience','experience']); const interestOptions = unique(['Interest','interest']);
-  const clearFilters = () => { setFilters({service:"",position:"",district:"",education:"",experience:"",interest:"",dateFrom:"",dateTo:""}); setCurrentPage(1); };
-  const exportCSV = (rows, filename) => { if(!rows.length) return; const headers = tab==='contacts'?["Timestamp","FullName","Phone","Email","Service","Messages"]:["Timestamp","FullName","Phone","Email","Position","Education","District","Experience","Interest"]; let csv = headers.join(",")+"\n"; rows.forEach(r=>{ const line = headers.map(h=>'"'+String(getVal(r,[h,h.toLowerCase()])||'').replace(/"/g,'""')+'"').join(","); csv+=line+"\n"; }); const blob = new Blob([csv],{type:"text/csv"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=filename; a.click(); showToast("Exported"); };
-  if(!auth){ return ( <div style={{minHeight:'100vh',background:dark?'#0f172a':'#f1f5f9',display:'flex',justifyContent:'center',alignItems:'center',fontFamily:'Arial'}}><div style={{background:'#fff',padding:'36px',borderRadius:'24px',width:'92%',maxWidth:'400px',textAlign:'center'}}><div style={{width:'56px',height:'56px',background:'#0a1931',borderRadius:'14px',margin:'0 auto 14px',display:'grid',placeItems:'center',color:'#ffcc00',fontSize:'22px',fontWeight:900}}>P</div><h2 style={{fontWeight:900,color:'#0a1931'}}>PINNACLE ADMIN</h2><input type="password" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()} placeholder="Admin Password" style={{width:'100%',padding:'14px 16px',borderRadius:'12px',marginTop:'20px',border:'2px solid #0a1931'}}/><button onClick={login} style={{width:'100%',marginTop:'14px',background:'#ffcc00',padding:'14px',borderRadius:'12px',fontWeight:900,border:'none',cursor:'pointer'}}>UNLOCK</button></div></div> ) }
-  const applicants = data.filter(d => (d.type==='applicant' || d.Type==='applicant' || getVal(d,['Position','position']))); 
-  const contacts = data.filter(d => (d.type==='contact' || d.Type==='contact' || getVal(d,['Service','service']) || (!getVal(d,['Position','position']) && getVal(d,['FullName','fullName'])) ));
-  const applyFilters = (list) => list.filter(d=>{ const s = (getVal(d,['FullName','fullName'])+" "+getVal(d,['Phone','phone'])+" "+getVal(d,['Email','email'])+" "+getVal(d,['Service','service'])+" "+getVal(d,['Position','position'])+" "+getVal(d,['District','district'])).toLowerCase(); if(search && s.indexOf(search.toLowerCase())===-1) return false; if(filters.service && getVal(d,['Service','service']).toLowerCase() !== filters.service.toLowerCase()) return false; if(filters.position && getVal(d,['Position','position']).toLowerCase() !== filters.position.toLowerCase()) return false; if(filters.district && getVal(d,['District','district']).toLowerCase() !== filters.district.toLowerCase()) return false; if(filters.dateFrom){ const ts=new Date(getVal(d,['Timestamp','timestamp'])); if(ts < new Date(filters.dateFrom)) return false; } if(filters.dateTo){ const ts=new Date(getVal(d,['Timestamp','timestamp'])); if(ts > new Date(filters.dateTo + 'T23:59:59')) return false; } return true; });
-  const filteredContacts = applyFilters(contacts); const filteredApplicants = applyFilters(applicants); const list = tab==='contacts'?filteredContacts:filteredApplicants; const totalPages = Math.ceil(list.length / rowsPerPage) || 1; const paginatedList = list.slice((currentPage-1)*rowsPerPage, currentPage*rowsPerPage); const allPageIds = paginatedList.map(r=>getVal(r,['Timestamp','timestamp'])); const isAllSelected = allPageIds.length>0 && allPageIds.every(id=>selected.includes(id)); const activeFilterCount = Object.values(filters).filter(v=>v).length;
-  const theme = dark ? {bgMain:'#0f172a', bgCard:'#1e293b', text:'#f1f5f9', border:'#334155', sidebar:'#1e293b', input:'#0f172a'} : {bgMain:'#f8fafc', bgCard:'#ffffff', text:'#0f172a', border:'#e2e8f0', sidebar:'#ffffff', input:'#f1f5f9'};
-  const cellHead = {padding:'12px 14px', border:'1px solid '+theme.border};
-  const menuItem = (active) => ({padding:'11px 14px',borderRadius:'12px',fontSize:'13px',fontWeight:active?900:700,cursor:'pointer',background:active?'#facc15':'transparent',color:active?'#0f172a':theme.text,border:'1px solid '+theme.border,width:'100%',display:'flex',justifyContent:'space-between',textAlign:'left'});
-  return (
-    <div style={{background:theme.bgMain,minHeight:'100vh',fontFamily:'Arial',color:theme.text,display:'flex'}}>
-      {toast && <div style={{position:'fixed',top:'20px',right:'20px',background:'#0f172a',color:'#facc15',padding:'12px 18px',borderRadius:'20px',fontWeight:800,zIndex:9999,border:'1px solid #facc15'}}>{toast}</div>}
-      <div style={{width:'270px',minWidth:'270px',background:theme.sidebar,borderRight:'3px solid #facc15',padding:'18px 14px',display:'flex',flexDirection:'column',gap:'8px',position:'sticky',top:0,height:'100vh',overflowY:'auto'}}>
-        <div style={{display:'flex',alignItems:'center',gap:'10px',paddingBottom:'14px',borderBottom:'1px solid '+theme.border}}><div style={{width:'42px',height:'42px',background:'#facc15',borderRadius:'12px',display:'grid',placeItems:'center',fontWeight:900,color:'#0f172a'}}>P</div><div><h2 style={{fontWeight:900,fontSize:'13px'}}>Pinnacle Security Ltd</h2><p style={{fontSize:'10px',color:'#eab308',fontWeight:700}}>Admin {data.length} total {contacts.length}c {applicants.length}a</p></div></div>
-        <button onClick={()=>setDark(!dark)} style={menuItem(false)}><span>{dark?'Light Theme':'Dark Theme'}</span><span>{dark?'☀️':'🌙'}</span></button>
-        <button onClick={()=>{setTab('contacts'); setCurrentPage(1)}} style={menuItem(tab==='contacts')}><span>Contact</span><span>{contacts.length}</span></button>
-        <button onClick={()=>{setTab('applicants'); setCurrentPage(1)}} style={menuItem(tab==='applicants')}><span>Applicant</span><span>{applicants.length}</span></button>
-        <button onClick={()=>setLive(!live)} style={menuItem(false)}><span>{live?'Live':'Paused'}</span></button>
-        <button onClick={()=>exportCSV(list, tab+".csv")} style={menuItem(false)}><span>Backup CSV</span></button>
-        <button onClick={clearDuplicates} style={menuItem(false)}><span>Dup Clean</span></button>
-        <button onClick={()=>setShowTrash(!showTrash)} style={menuItem(showTrash)}><span>Trash {trash.length}</span></button>
-        <a href="/" style={Object.assign({}, menuItem(false), {textDecoration:'none'})}><span>Home</span></a>
-        <button onClick={load} style={menuItem(false)}><span>{loading?'Loading':'Refresh'}</span></button>
-      </div>
-      <div style={{flex:1,padding:'20px',overflowX:'hidden'}}>
-        <div style={{background:theme.bgCard,padding:'14px 18px',borderRadius:'16px',display:'flex',gap:'10px',alignItems:'center',flexWrap:'wrap',border:'1px solid '+theme.border,marginBottom:'14px'}}>
-          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search..." style={{flex:1,minWidth:'200px',background:theme.input,border:'1px solid '+theme.border,padding:'11px 14px',borderRadius:'20px',color:theme.text}}/>
-          <button onClick={()=>setShowFilters(!showFilters)} style={{background:activeFilterCount?'#ffcc00':'#fff',color:'#0a1931',border:'none',padding:'8px 14px',borderRadius:'20px',fontWeight:800,fontSize:'12px',cursor:'pointer'}}>{showFilters?'X Filters':'Filters '+(activeFilterCount? '('+activeFilterCount+')':'')}</button>
-          {selected.length>0 && <button onClick={handleBulkDelete} style={{background:'#dc2626',color:'#fff',border:'none',padding:'8px 14px',borderRadius:'20px',fontWeight:800,fontSize:'12px',cursor:'pointer'}}>Delete {selected.length}</button>}
-          <select value={rowsPerPage} onChange={e=>setRowsPerPage(Number(e.target.value))} style={{padding:'8px 12px',borderRadius:'10px',border:'1px solid '+theme.border,background:theme.bgCard,color:theme.text}}><option value={10}>10</option><option value={30}>30</option><option value={50}>50</option><option value={100}>100</option></select>
-        </div>
-        {showTrash && <div style={{background:theme.bgCard,padding:'12px',borderRadius:'12px',border:'2px dashed #facc15',marginBottom:'12px'}}><b>Trash {trash.length}</b> <button onClick={()=>{setTrash([]); localStorage.setItem('psl_trash','[]')}} style={{marginLeft:'10px',background:'#7f1d1d',color:'#fff',border:'none',padding:'4px 10px',borderRadius:'10px',fontSize:'11px'}}>EMPTY</button></div>}
-        <div style={{background:theme.bgCard,borderRadius:'16px',overflow:'hidden',border:'1px solid '+theme.border}}>
-          <div style={{padding:'14px 18px',display:'flex',justifyContent:'space-between',background:'#0f172a',color:'#facc15',fontWeight:900,fontSize:'12px'}}><span>{tab==='contacts'?'CONTACTS':'APPLICANTS'} {list.length} rows Theme {dark?'DARK':'LIGHT'}</span><span>{loading?'Loading...':'Ready'}</span></div>
-          <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:'12px',minWidth:'900px'}}><thead><tr style={{background:theme.bgMain}}><th style={cellHead}><input type="checkbox" checked={isAllSelected} onChange={()=>{ if(isAllSelected) setSelected(prev=>prev.filter(id=>allPageIds.indexOf(id)===-1)); else setSelected(prev=>{ const ns={}; prev.forEach(id=>ns[id]=true); allPageIds.forEach(id=>ns[id]=true); return Object.keys(ns); }); }}/></th><th style={cellHead}>DATE</th><th style={cellHead}>NAME</th><th style={cellHead}>PHONE</th><th style={cellHead}>EMAIL</th><th style={cellHead}>{tab==='contacts'?'SERVICE':'POSITION'}</th><th style={cellHead}>ACTIONS</th></tr></thead><tbody>{paginatedList.length===0 ? <tr><td colSpan={7} style={{padding:'30px',textAlign:'center',color:'#999'}}>{loading?'Loading...':'No data - Ready for new submissions'}</td></tr> : paginatedList.map((d,i)=>{ const ts=getVal(d,['Timestamp','timestamp']); const isEditing=editRow===ts; const checked=selected.includes(ts); const bg = checked?'#422006':i%2===0?theme.bgCard:theme.bgMain; return (<tr key={i} onClick={()=>{ if(!isEditing) setDetailRow(d); }} style={{background:bg,cursor:'pointer',borderBottom:'1px solid '+theme.border}}><td style={Object.assign({}, cellHead, {background:bg})} onClick={e=>e.stopPropagation()}><input type="checkbox" checked={checked} onChange={()=>toggleSelect(ts)}/></td><td style={Object.assign({}, cellHead, {background:bg,fontSize:'11px',fontWeight:800})}>{formatDate(ts)}</td><td style={Object.assign({}, cellHead, {background:bg,fontWeight:700})}>{isEditing?<input value={form.FullName||''} onChange={e=>setForm(Object.assign({}, form, {FullName:e.target.value}))} style={{padding:'6px',width:'100px'}}/>:getVal(d,['FullName','fullName'])}</td><td style={Object.assign({}, cellHead, {background:bg})}>{getVal(d,['Phone','phone'])}</td><td style={Object.assign({}, cellHead, {background:bg})}>{getVal(d,['Email','email'])}</td><td style={Object.assign({}, cellHead, {background:bg})}>{getVal(d,['Service','service'])||getVal(d,['Position','position'])}</td><td style={Object.assign({}, cellHead, {background:bg})} onClick={e=>e.stopPropagation()}><div style={{display:'flex',gap:'4px'}}>{isEditing?<><button onClick={handleSave} style={{background:'#0f172a',color:'#facc15',border:'none',padding:'6px 10px',borderRadius:'8px',fontWeight:800}}>SAVE</button><button onClick={()=>setEditRow(null)} style={{background:'#eee',border:'none',padding:'6px 8px',borderRadius:'8px'}}>X</button></>:<><button onClick={()=>handleEdit(d)} style={{background:'#facc15',border:'none',padding:'6px 10px',borderRadius:'8px',fontWeight:800}}>EDIT</button><button onClick={()=>handleDelete(d)} style={{background:'#fee2e2',color:'#dc2626',border:'none',padding:'6px 8px',borderRadius:'8px',fontWeight:800}}>DEL</button></>}</div></td></tr>)})}</tbody></table></div>
-          <div style={{padding:'12px 18px',display:'flex',justifyContent:'space-between',borderTop:'1px solid '+theme.border}}><button disabled={currentPage===1} onClick={()=>setCurrentPage(p=>Math.max(1,p-1))} style={{padding:'8px 14px',borderRadius:'10px',border:'1px solid '+theme.border,background:theme.bgCard,color:theme.text}}>Prev</button><span>Page {currentPage}/{totalPages}</span><button disabled={currentPage===totalPages} onClick={()=>setCurrentPage(p=>Math.min(totalPages,p+1))} style={{padding:'8px 14px',borderRadius:'10px',border:'1px solid '+theme.border,background:theme.bgCard,color:theme.text}}>Next</button></div>
-        </div>
-      </div>
-    </div>
-  )
-}
+/* ================= ADMIN - NOW FROM pages/AdminDashboard.jsx ================= */
 
 const Dropdown = ({ title, children, color="#0a1931" }) => {
   const [open, setOpen] = useState(false);
@@ -183,7 +59,6 @@ const Navbar = ({ theme, toggleTheme }) => {
         <a onClick={() => scrollTo('contact')}>Contact</a>
         <a onClick={() => scrollTo('join')} className="btn-yellow">Apply Now</a>
         <a href="/admin" style={{color:'#ffcc00', fontWeight:'900', border:'1px solid #ffcc00', borderRadius:'20px'}}>Admin</a>
-        {/* THEME BUTTON - NEXT TO ADMIN */}
         <button onClick={toggleTheme} style={{background: theme==='dark' ? '#ffcc00' : 'transparent', color: theme==='dark' ? '#0a1931' : '#ffcc00', border:'1px solid #ffcc00', padding:'8px 14px', borderRadius:'20px', fontWeight:900, cursor:'pointer'}}>
           {theme==='dark' ? '☀️ Light' : '🌙 Dark'}
         </button>
@@ -366,7 +241,6 @@ const Contact = () => {
     </div>
   )}
 
-
 /* ================= APP - THEME FIXED AT ONCE ================= */
 export default function App(){
   const [theme, setTheme] = useState(() => localStorage.getItem('pinnacle-theme') || 'light');
@@ -402,7 +276,6 @@ export default function App(){
         .memo-head{background:#0A1931; color:#fff; padding:20px} .memo-head h2{color:#FFD700; text-align:left; font-size:20px}
         .memo-body-dark{padding:20px} .memo-intro{margin-bottom:16px}
         @media(max-width:800px){ .home-grid-3,.mission-grid{grid-template-columns:1fr} .menu-btn{display:block} .links{display:none} .links.show{display:flex; flex-direction:column; align-items:flex-start; margin-top:12px} .hero h1{font-size:24px} }
-        /* ===== DARK THEME OVERRIDES - BOTH LIGHT & DARK WORK ===== */
         [data-theme="dark"] .section h2{color:#fff !important}
         [data-theme="dark"] .section{color:#fff !important}
         [data-theme="dark"] .card, [data-theme="dark"] .about-hero, [data-theme="dark"] .mission-card, [data-theme="dark"] .memo-clean{ background:#16294a !important; color:#fff !important; border-color:#2a3f66 !important; }
