@@ -11,11 +11,12 @@ function safeParse(str, fallback){
 function hasVal(v){ return v && String(v).trim()!=="" && String(v).trim()!=="-"; }
 
 export default function AdminDashboard() {
-  const [auth, setAuth] = useState(false);
+  // STAY LOGGED IN - read from localStorage, so Ctrl+Shift+R still inside
+  const [auth, setAuth] = useState(function(){ try{ return localStorage.getItem("psl_auth")==="1"; }catch(e){ return false; } });
   const [pass, setPass] = useState("");
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState("home");
+  const [page, setPage] = useState(function(){ try{ const p = localStorage.getItem("psl_page"); return (p==="contacts"||p==="applicants"||p==="all"||p==="trash") ? p : "home"; }catch(e){ return "home"; } });
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("newest");
   const [filterStatus, setFilterStatus] = useState("All");
@@ -34,20 +35,23 @@ export default function AdminDashboard() {
   const [refreshing, setRefreshing] = useState(false);
 
   const showToast = function(m){ setToast(m); setTimeout(function(){ setToast(""); }, 2500); };
-  const username = "Admin";
+  const username = "Mose Rubangakene";
 
-  // REMOVED: auto ?view=contacts redirect - ALWAYS start on 4 boxes (Home)
-  useEffect(function(){
-    try{ window.history.replaceState({}, "", "/admin"); }catch(e){}
-    setPage("home");
-  },[]);
+  // Save page so refresh stays on same page if already logged in
+  useEffect(function(){ try{ if(auth) localStorage.setItem("psl_page", page); }catch(e){} },[page, auth]);
 
   const login = function(){
     if(pass.trim()===PASSWORD){
       setAuth(true);
-      setPage("home"); // AFTER LOGIN -> 4 BOXES, NOT CONTACTS
-      try{ window.history.replaceState({}, "", "/admin"); }catch(e){}
+      setPage("home"); // AFTER LOGIN -> 4 BOXES
+      try{ localStorage.setItem("psl_auth","1"); localStorage.setItem("psl_page","home"); window.history.replaceState({}, "", "/admin"); }catch(e){}
     } else alert("Wrong Password!");
+  };
+  const doLogout = function(){
+    setAuth(false);
+    setPass("");
+    setPage("home");
+    try{ localStorage.removeItem("psl_auth"); localStorage.removeItem("psl_page"); }catch(e){}
   };
 
   const getValRaw = function(o, keys){
@@ -120,7 +124,6 @@ export default function AdminDashboard() {
     document.body.appendChild(s);
   };
 
-  // REFRESH BUTTON - top corner
   const doRefresh = function(){
     showToast("🔄 Refreshing...");
     load();
@@ -135,9 +138,10 @@ export default function AdminDashboard() {
         <div style={{background:'#fff', padding:'28px', borderRadius:'16px', width:'92%', maxWidth:'360px', textAlign:'center', boxShadow:'0 20px 40px rgba(0,0,0,0.3)'}}>
           <div style={{width:'56px', height:'56px', background:'linear-gradient(135deg,#0A1931,#2563eb)', borderRadius:'16px', margin:'0 auto 10px', display:'grid', placeItems:'center', color:'#fff', fontWeight:900, fontSize:'26px'}}>P</div>
           <h2 style={{color:NAVY, margin:0, fontSize:'19px'}}>PINNACLE ADMIN</h2>
-          <p style={{color:'#888', fontSize:'12px', margin:'6px 0 0'}}>Welcome back, Admin</p>
+          <p style={{color:'#888', fontSize:'12px', margin:'6px 0 0'}}>Welcome back, Mose Rubangakene</p>
           <input type="password" value={pass} onChange={function(e){setPass(e.target.value);}} onKeyDown={function(e){if(e.key==='Enter') login();}} placeholder="Password" style={{width:'100%', padding:'12px', borderRadius:'10px', marginTop:'14px', border:'1px solid #ddd', boxSizing:'border-box'}} />
           <button onClick={login} style={{width:'100%', marginTop:'10px', background:'linear-gradient(90deg,#0A1931,#2563eb)', color:'#fff', padding:'13px', border:'none', borderRadius:'10px', fontWeight:800, cursor:'pointer'}}>UNLOCK</button>
+          <a href="/" style={{display:'block', marginTop:'14px', color:'#2563eb', fontWeight:800, fontSize:'12px', textDecoration:'none'}}>🌐 Back to Website</a>
         </div>
       </div>
     );
@@ -385,15 +389,14 @@ export default function AdminDashboard() {
   const iconBtn = {border:'none', padding:'6px', borderRadius:'8px', cursor:'pointer', fontSize:'13px', height:'32px', width:'100%', display:'flex', alignItems:'center', justifyContent:'center'};
   const inputStyle = {width:'100%', padding:'9px 10px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'13px', boxSizing:'border-box', outline:'none'};
 
-  // TOP CORNER - WITH REFRESH BUTTON
   const TopIcons = function(){
     return (
       <div style={{display:'flex', gap:'6px', alignItems:'center', background:'rgba(255,255,255,0.18)', backdropFilter:'blur(6px)', padding:'5px', borderRadius:'999px', boxShadow:'0 4px 14px rgba(0,0,0,0.2)', border:'1px solid rgba(255,255,255,0.25)'}}>
         <button onClick={doRefresh} title="Refresh - Reload new data" style={{width:'36px', height:'36px', borderRadius:'50%', background:'#facc15', border:'none', cursor:'pointer', fontSize:'17px', boxShadow:'0 2px 6px rgba(0,0,0,0.15)', transform: refreshing ? 'rotate(180deg)' : 'none', transition:'transform 0.5s'}}>🔄</button>
-        <a href="/" title="Home - Website" style={{width:'36px', height:'36px', borderRadius:'50%', background:'#fff', color:NAVY, display:'grid', placeItems:'center', textDecoration:'none', fontSize:'17px', boxShadow:'0 2px 6px rgba(0,0,0,0.15)'}}>🏠</a>
+        <a href="/" title="Back to Website" style={{width:'36px', height:'36px', borderRadius:'50%', background:'#fff', color:NAVY, display:'grid', placeItems:'center', textDecoration:'none', fontSize:'17px', boxShadow:'0 2px 6px rgba(0,0,0,0.15)'}}>🌐</a>
         <button onClick={function(){openList("all");}} title="All" style={{width:'36px', height:'36px', borderRadius:'50%', background:'#fff', border:'none', cursor:'pointer', fontSize:'17px', boxShadow:'0 2px 6px rgba(0,0,0,0.15)'}}>📦</button>
         <button onClick={function(){openList("trash");}} title="Trash" style={{position:'relative', width:'36px', height:'36px', borderRadius:'50%', background:'#fff', border:'none', cursor:'pointer', fontSize:'17px', boxShadow:'0 2px 6px rgba(0,0,0,0.15)'}}>🗑️{trash.length>0 ? <span style={{position:'absolute', top:'-4px', right:'-4px', minWidth:'18px', height:'18px', borderRadius:'999px', background:'#dc2626', color:'#fff', fontSize:'10px', fontWeight:900, display:'grid', placeItems:'center', padding:'0 4px', border:'2px solid #fff'}}>{trash.length}</span> : null}</button>
-        <button onClick={function(){setAuth(false);}} title="Logout" style={{height:'36px', borderRadius:'999px', background:NAVY, color:'#fff', border:'none', cursor:'pointer', fontSize:'11px', fontWeight:800, padding:'0 12px'}}>LOGOUT</button>
+        <button onClick={doLogout} title="Logout" style={{height:'36px', borderRadius:'999px', background:NAVY, color:'#fff', border:'none', cursor:'pointer', fontSize:'11px', fontWeight:800, padding:'0 12px'}}>LOGOUT</button>
       </div>
     );
   };
@@ -578,6 +581,10 @@ export default function AdminDashboard() {
             <span style={{fontSize:'13px', fontWeight:800, color:NAVY}}>Page {safePage} / {totalPages}</span>
             <button disabled={safePage>=totalPages} onClick={function(){setCurrentPage(safePage+1);}} style={{background: safePage>=totalPages?'#e5e7eb':NAVY, color: safePage>=totalPages?'#999':'#fff', border:'none', padding:'9px 14px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>Next</button>
           </div>
+          {/* BACK TO WEBSITE - also on list pages */}
+          <div style={{display:'flex', justifyContent:'center', marginTop:'18px'}}>
+            <a href="/" style={{background:'#fff', color:NAVY, border:'2px solid '+NAVY, padding:'12px 22px', borderRadius:'999px', fontWeight:900, fontSize:'13px', textDecoration:'none', boxShadow:'0 4px 12px rgba(0,0,0,0.08)'}}>🌐 Back to Website</a>
+          </div>
         </div>
       </div>
     );
@@ -592,9 +599,10 @@ export default function AdminDashboard() {
         <TopIcons />
       </div>
       <div style={{maxWidth:'520px', margin:'0 auto', padding:'18px 14px 20px'}}>
+        {/* ONE LINE WELCOME */}
         <div style={{background:'linear-gradient(135deg,#0A1931 0%,#2563eb 60%,#f59e0b 130%)', borderRadius:'16px', padding:'20px', color:'#fff', marginBottom:'16px'}}>
-          <br><p style={{margin:0, fontSize:'13px', opacity:0.9}}>Welcome,</p></b>
-          <pre style={{margin:'4px 0 0', fontSize:'26px', fontWeight:900}}>{username} </pre>
+          <h2 style={{margin:0, fontSize:'22px', fontWeight:900, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>Welcome, {username} 👋</h2>
+          <p style={{margin:'8px 0 0', fontSize:'12px', opacity:0.9}}>Pinnacle Security Ltd • {data.length} total • {contacts.length} Contacts • {applicants.length} Applicants</p>
         </div>
         <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px'}}>
           <div onClick={function(){openList("contacts");}} style={boxStyle('linear-gradient(135deg,#2563eb,#0ea5e9)')}>
@@ -620,6 +628,8 @@ export default function AdminDashboard() {
         </div>
         <p style={{fontSize:'12px', color:'#888', textAlign:'center', marginTop:'16px'}}>Tap any box to open table • Tap row to expand</p>
         {loading ? <p style={{textAlign:'center', fontSize:'12px', color:'#888'}}>Loading...</p> : null}
+        {/* BACK TO WEBSITE - BIG BUTTON AT BOTTOM LIKE YOUR RED BOX */}
+        <a href="/" style={{display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', marginTop:'28px', background:'#fff', color:NAVY, border:'2px solid '+NAVY, padding:'16px', borderRadius:'14px', fontWeight:900, fontSize:'16px', textDecoration:'none', boxShadow:'0 6px 16px rgba(0,0,0,0.08)'}}>🌐 Back to Website</a>
       </div>
     </div>
   );
