@@ -27,7 +27,6 @@ export default function AdminDashboard() {
   const [selectedIds, setSelectedIds] = useState([]);
   const [autoNotify, setAutoNotify] = useState(true);
   const [notifyInfo, setNotifyInfo] = useState(null);
-  // THEME - saved, stays after refresh
   const [theme, setTheme] = useState(function(){ try{ return localStorage.getItem("psl_theme")||"light"; }catch(e){ return "light"; } });
   const [statusMap, setStatusMap] = useState(function(){ return safeParse(localStorage.getItem("psl_status")||"{}", {}); });
   const [edits, setEdits] = useState(function(){ return safeParse(localStorage.getItem("psl_edits")||"{}", {}); });
@@ -38,7 +37,6 @@ export default function AdminDashboard() {
   const showToast = function(m){ setToast(m); setTimeout(function(){ setToast(""); }, 2500); };
   const username = "Mose Rubangakene";
 
-  // THEME COLORS
   const isDark = theme==="dark";
   const mainBg = isDark ? "#0B1220" : "#f0f4ff";
   const cardBg = isDark ? "#1e293b" : "#ffffff";
@@ -385,6 +383,10 @@ export default function AdminDashboard() {
   const paged = filtered.slice((safePage-1)*PAGE_SIZE, safePage*PAGE_SIZE);
   const title = page==="contacts" ? "Contacts" : page==="applicants" ? "Applicants" : page==="trash" ? "Trash" : "All";
 
+  // === 3. STATUS COUNTS - for quick filter pills ===
+  const countStatus = function(s){ return baseList.filter(function(d){ return getStatus(d)===s; }).length; };
+  const statusPills = ["New","Contacted","Hired","Rejected","Resolved"];
+
   const exportCSV = function(){
     if(!filtered.length) return showToast("No rows");
     let head = ["Name","Phone","Email","Service / Position","District","Education","Experience","Status"];
@@ -408,7 +410,6 @@ export default function AdminDashboard() {
   const iconBtn = {border:'none', padding:'6px', borderRadius:'8px', cursor:'pointer', fontSize:'13px', height:'32px', width:'100%', display:'flex', alignItems:'center', justifyContent:'center'};
   const inputStyle = {width:'100%', padding:'9px 10px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'13px', boxSizing:'border-box', outline:'none', background: inputBg, color: inputTxt};
 
-  // TOP CORNER - WITH THEME BUTTON HERE
   const TopIcons = function(){
     return (
       <div style={{display:'flex', gap:'6px', alignItems:'center', background:'rgba(255,255,255,0.18)', backdropFilter:'blur(6px)', padding:'5px', borderRadius:'999px', boxShadow:'0 4px 14px rgba(0,0,0,0.2)', border:'1px solid rgba(255,255,255,0.25)'}}>
@@ -527,13 +528,28 @@ export default function AdminDashboard() {
             </label>
           </div>
 
+          {/* === 2. SEARCH - BIG + CLEAR + FOUND COUNT === */}
           <div style={{display:'flex', flexDirection:'column', alignItems:'center', marginTop:'14px'}}>
             <div style={{display:'flex', gap:'8px', flexWrap:'wrap', justifyContent:'center', alignItems:'center'}}>
-              <input value={search} onChange={function(e){setSearch(e.target.value); setCurrentPage(1);}} placeholder="Search name, phone, email, service, message, district..." title="Searches EVERYTHING: Name, Phone, Email, Service, Position, District, Education, Experience, Message, Status" style={{width:'360px', maxWidth:'92vw', padding:'9px 14px', borderRadius:'20px', border:'1px solid #ddd', fontSize:'13px', outline:'none', background: inputBg, color: inputTxt, textAlign:'center'}} />
+              <div style={{position:'relative', width:'360px', maxWidth:'92vw'}}>
+                <input value={search} onChange={function(e){setSearch(e.target.value); setCurrentPage(1);}} placeholder="🔍 Search name, phone, email, service, message, district..." title="Searches EVERYTHING: Name, Phone, Email, Service, Position, District, Education, Experience, Message, Status" style={{width:'100%', padding:'10px 38px 10px 14px', borderRadius:'20px', border: search ? '2px solid #2563eb' : '1px solid #ddd', fontSize:'13px', outline:'none', background: inputBg, color: inputTxt, textAlign:'left', boxSizing:'border-box'}} />
+                {search ? <button onClick={function(){setSearch(""); setCurrentPage(1);}} style={{position:'absolute', right:'6px', top:'50%', transform:'translateY(-50%)', border:'none', background:'#eee', borderRadius:'50%', width:'24px', height:'24px', cursor:'pointer', fontWeight:900}}>✕</button> : null}
+              </div>
               <select value={sort} onChange={function(e){setSort(e.target.value);}} style={{padding:'9px 8px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'12px', background: inputBg, color: inputTxt, fontWeight:700}}><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="az">A-Z</option></select>
               <select value={filterStatus} onChange={function(e){setFilterStatus(e.target.value); setCurrentPage(1);}} style={{padding:'9px 8px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'12px', background: inputBg, color: inputTxt, fontWeight:700}}><option value="All">All Status</option><option value="New">New</option><option value="Contacted">Contacted</option><option value="Rejected">Rejected</option><option value="Resolved">Resolved</option><option value="Hired">Hired</option></select>
               <select value={filterService} onChange={function(e){setFilterService(e.target.value); setCurrentPage(1);}} style={{padding:'9px 8px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'12px', background: inputBg, color: inputTxt, fontWeight:700}}>{services.map(function(s){ return <option key={s} value={s}>{s==="All"?"All Service":s}</option>; })}</select>
             </div>
+            {search ? <div style={{marginTop:'8px', fontSize:'12px', fontWeight:800, color: mainTxt, background: cardBg, padding:'6px 12px', borderRadius:'20px', border:'1px solid '+cardBorder}}>Found {filtered.length} for "{search}" <button onClick={function(){setSearch("");}} style={{border:'none', background:'transparent', color:'#dc2626', fontWeight:900, cursor:'pointer', marginLeft:'6px'}}>Clear ✕</button></div> : null}
+          </div>
+
+          {/* === 3. STATUS PILLS - TAP TO FILTER === */}
+          <div style={{display:'flex', gap:'6px', flexWrap:'wrap', justifyContent:'center', marginTop:'12px'}}>
+            <button onClick={function(){setFilterStatus("All"); setCurrentPage(1);}} style={{padding:'7px 12px', borderRadius:'20px', border: filterStatus==="All" ? '2px solid '+NAVY : '1px solid #ddd', background: filterStatus==="All" ? NAVY : cardBg, color: filterStatus==="All" ? '#fff' : mainTxt, fontWeight:800, fontSize:'11px', cursor:'pointer'}}>All ({baseList.length})</button>
+            {statusPills.map(function(s){
+              const c = countStatus(s);
+              const active = filterStatus===s;
+              return <button key={s} onClick={function(){setFilterStatus(active ? "All" : s); setCurrentPage(1);}} style={{padding:'7px 12px', borderRadius:'20px', border: active ? '2px solid '+NAVY : '1px solid #ddd', background: active ? statusColor(s) : cardBg, color: mainTxt, fontWeight:800, fontSize:'11px', cursor:'pointer'}}>{s} ({c})</button>;
+            })}
           </div>
 
           {selectedIds.length>0 ? (
@@ -548,11 +564,12 @@ export default function AdminDashboard() {
 
           <div style={{background: cardBg, borderRadius:'12px', overflow:'hidden', marginTop:'14px', border:'1px solid '+cardBorder, boxShadow:'0 2px 10px rgba(0,0,0,0.05)'}}>
             <div style={{overflowX:'auto'}}>
-              <table style={{width:'100%', borderCollapse:'collapse', minWidth:'1050px'}}>
+              <table style={{width:'100%', borderCollapse:'collapse', minWidth:'1150px'}}>
                 <thead><tr>
                   <th style={th}><input type="checkbox" checked={paged.length>0 && selectedIds.length===paged.length} onChange={toggleSelectAll} /></th>
                   <th style={th}>Name</th>
                   <th style={th}>Phone</th>
+                  <th style={th}>📞 Call / 💬 WhatsApp</th>
                   <th style={th}>Email</th>
                   {page==="contacts" ? <React.Fragment><th style={th}>Service</th><th style={th}>Message</th></React.Fragment> : null}
                   {page==="applicants" ? <React.Fragment><th style={th}>Position</th><th style={th}>District</th><th style={th}>Education</th><th style={th}>Experience</th></React.Fragment> : null}
@@ -566,6 +583,13 @@ export default function AdminDashboard() {
                         <td style={tdBase}><input type="checkbox" checked={selectedIds.indexOf(d._id)!==-1} onChange={function(e){e.stopPropagation(); toggleSelect(d._id);}} onClick={function(e){e.stopPropagation();}} /></td>
                         <td onClick={function(){ setExpanded(d._id); setEditing(false); }} style={{...tdBase, fontWeight:800, color: isDark ? '#fff' : NAVY, cursor:'pointer', whiteSpace:'nowrap', minWidth:'140px'}}>{getVal(d,["FullName","fullName"])}</td>
                         <td onClick={function(){ setExpanded(d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', whiteSpace:'nowrap'}}>{getVal(d,["Phone","phone"])}</td>
+                        {/* === 4. CALL / WHATSAPP DIRECT ON ROW - NO NEED TO OPEN === */}
+                        <td style={{...tdBase, whiteSpace:'nowrap'}} onClick={function(e){e.stopPropagation();}}>
+                          <div style={{display:'flex', gap:'4px', justifyContent:'center'}}>
+                            <a title={"Call " + getVal(d,["FullName","fullName"])} href={"tel:"+getVal(d,["Phone","phone"])} onClick={function(e){e.stopPropagation();}} style={{background:NAVY, color:'#fff', textDecoration:'none', padding:'7px 10px', borderRadius:'20px', fontSize:'13px', fontWeight:800, display:'inline-block'}}>📞 Call</a>
+                            <a title={"WhatsApp " + getVal(d,["FullName","fullName"])} href={waLink(d)} target="_blank" rel="noreferrer" onClick={function(e){e.stopPropagation();}} style={{background:'#25D366', color:'#fff', textDecoration:'none', padding:'7px 10px', borderRadius:'20px', fontSize:'13px', fontWeight:800, display:'inline-block'}}>💬 WA</a>
+                          </div>
+                        </td>
                         <td onClick={function(){ setExpanded(d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', minWidth:'160px', maxWidth:'200px', wordBreak:'break-word'}}>{getVal(d,["Email","email"])||"-"}</td>
                         {page==="contacts" ? <React.Fragment>
                           <td onClick={function(){ setExpanded(d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', minWidth:'130px'}}>{getVal(d,["Service","service"])||"-"}</td>
@@ -594,7 +618,7 @@ export default function AdminDashboard() {
                 </tbody>
               </table>
             </div>
-            {paged.length===0 && !loading ? <p style={{textAlign:'center', color: subTxt, padding:'18px'}}>No {title} yet</p> : null}
+            {paged.length===0 && !loading ? <p style={{textAlign:'center', color: subTxt, padding:'18px'}}>No {title} yet{search ? ' for "'+search+'"' : ''}</p> : null}
             {loading ? <p style={{textAlign:'center', padding:'14px', color: subTxt}}>Loading...</p> : null}
           </div>
           <div style={{display:'flex', justifyContent:'center', alignItems:'center', gap:'8px', marginTop:'12px'}}>
