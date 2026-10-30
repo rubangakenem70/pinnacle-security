@@ -140,15 +140,19 @@ export default function AdminDashboard() {
     if(p.indexOf("0")===0) p = "256"+p.slice(1);
     return p;
   };
-  const waLinkFor = function(d, text){
-    return "https://wa.me/" + cleanPhone(d) + "?text=" + encodeURIComponent(text);
+  const localPhone = function(d){
+    let p = String(getVal(d,["Phone","phone"])||"").replace(/\s/g,"");
+    if(p.indexOf("256")===0) p = "0"+p.slice(3);
+    if(p.indexOf("+256")===0) p = "0"+p.slice(4);
+    return p;
   };
+  const waLinkFor = function(d, text){ return "https://wa.me/" + cleanPhone(d) + "?text=" + encodeURIComponent(text); };
   const waLink = function(d){
     const text = "Hello " + getVal(d,["FullName","fullName"]) + ", this is Pinnacle Security Ltd, Muyenga. Thank you for contacting us. We will call you soon.";
     return waLinkFor(d, text);
   };
 
-  // ===== AUTO EMAIL / SMS MESSAGE BY STATUS =====
+  // ===== AUTO MESSAGE BY STATUS =====
   const messageForStatus = function(d, status){
     const name = getVal(d,["FullName","fullName"]);
     const service = getVal(d,["Service","service"])||getVal(d,["Position","position"])||"our service";
@@ -158,30 +162,34 @@ export default function AdminDashboard() {
     if(status==="Resolved") return "Hello " + name + ", this is Pinnacle Security Ltd, Muyenga. Your request about " + service + " has been RESOLVED. Thank you for choosing Pinnacle. Please contact us anytime you need security services.";
     return "Hello " + name + ", this is Pinnacle Security Ltd, Muyenga. Thank you for contacting us.";
   };
+
+  // 3 SEPARATE CHANNELS - WHATSAPP / SMS / EMAIL
+  const sendWhatsApp = function(info){
+    if(!info) return;
+    window.open(waLinkFor(info.d, info.msg), "_blank");
+    showToast("WhatsApp opened - if number NOT on WhatsApp, tap SMS");
+  };
+  const sendSMS = function(info){
+    if(!info) return;
+    // Real SMS - opens phone SMS app, works even if NOT on WhatsApp
+    window.location.href = "sms:" + localPhone(info.d) + "?body=" + encodeURIComponent(info.msg);
+    showToast("SMS opened to " + localPhone(info.d));
+  };
+  const sendEmail = function(info){
+    if(!info) return;
+    if(!info.email || info.email.indexOf("@")===-1){ showToast("No email for this person - use SMS"); return; }
+    window.location.href = "mailto:" + info.email + "?subject=" + encodeURIComponent("Pinnacle Security Ltd - " + info.status) + "&body=" + encodeURIComponent(info.msg);
+    showToast("Email opened to " + info.email);
+  };
+
   const autoNotifyFor = function(d, newStatus){
     if(!autoNotify) return;
     if(newStatus!=="Contacted" && newStatus!=="Hired" && newStatus!=="Rejected") return;
     const msg = messageForStatus(d, newStatus);
-    const email = getVal(d,["Email","email"]);
-    const subject = "Pinnacle Security Ltd - " + newStatus;
-    // Show auto-notify bar + auto-open WhatsApp (SMS)
-    setNotifyInfo({name: getVal(d,["FullName","fullName"]), status: newStatus, msg: msg, email: email, phone: getVal(d,["Phone","phone"]), d: d});
-    // Auto open WhatsApp after small delay so user sees it is automatic
-    setTimeout(function(){
-      window.open(waLinkFor(d, msg), "_blank");
-    }, 400);
-    showToast("Auto message opened for " + newStatus);
-  };
-  const sendAutoEmail = function(){
-    if(!notifyInfo) return;
-    const subject = "Pinnacle Security Ltd - " + notifyInfo.status;
-    window.location.href = "mailto:" + notifyInfo.email + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(notifyInfo.msg);
-  };
-  const sendAutoSMS = function(){
-    if(!notifyInfo) return;
-    // SMS via phone app + WhatsApp fallback
-    window.open("sms:" + cleanPhone(notifyInfo.d) + "?body=" + encodeURIComponent(notifyInfo.msg), "_blank");
-    setTimeout(function(){ window.open(waLinkFor(notifyInfo.d, notifyInfo.msg), "_blank"); }, 500);
+    // DO NOT auto-open WhatsApp anymore - show chooser so user can pick SMS/Email if not on WhatsApp
+    setNotifyInfo({name: getVal(d,["FullName","fullName"]), status: newStatus, msg: msg, email: getVal(d,["Email","email"]), phone: getVal(d,["Phone","phone"]), d: d});
+    showToast("Message ready - Choose WhatsApp / SMS / Email");
+    window.scrollTo({top:0, behavior:'smooth'});
   };
 
   const changeStatus = function(d, newStatus){
@@ -274,12 +282,11 @@ export default function AdminDashboard() {
   const bulkStatus = function(newStatus){
     if(!selectedIds.length) return showToast("Select first");
     const obj = {}; Object.keys(statusMap).forEach(function(k){ obj[k]=statusMap[k]; });
-    (page==="trash" ? trash : data).forEach(function(d){ if(selectedIds.indexOf(d._id)!==-1){ obj[getId(d)]=newStatus; autoNotifyFor(d, newStatus); } });
+    (page==="trash" ? trash : data).forEach(function(d){ if(selectedIds.indexOf(d._id)!==-1){ obj[getId(d)]=newStatus; } });
     setStatusMap(obj); localStorage.setItem("psl_status", JSON.stringify(obj));
     showToast("Status updated for " + selectedIds.length);
   };
 
-  // PRINT - NO Control footer anymore
   const detailHTML = function(d){
     let rows = "";
     if(hasVal(getVal(d,["Phone","phone"]))) rows += "<tr><td style='border:1px solid #eee;padding:8px'><b>Phone</b></td><td style='border:1px solid #eee;padding:8px'>"+getVal(d,["Phone","phone"])+"</td></tr>";
@@ -327,7 +334,6 @@ export default function AdminDashboard() {
   baseList.forEach(function(d){ const v = getVal(d,["Service","service"])||getVal(d,["Position","position"]); if(v) serviceSet[v]=1; });
   const services = ["All"].concat(Object.keys(serviceSet));
 
-  // SEARCH EVERYTHING
   let filtered = baseList.slice();
   if(search.trim()){
     const s = search.toLowerCase();
@@ -369,7 +375,6 @@ export default function AdminDashboard() {
   const iconBtn = {border:'none', padding:'6px', borderRadius:'8px', cursor:'pointer', fontSize:'13px', height:'32px', width:'100%', display:'flex', alignItems:'center', justifyContent:'center'};
   const inputStyle = {width:'100%', padding:'9px 10px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'13px', boxSizing:'border-box', outline:'none'};
 
-  // TOP-RIGHT ICONS - DESIGNED NICELY
   const TopIcons = function(){
     return (
       <div style={{display:'flex', gap:'6px', alignItems:'center', background:'rgba(255,255,255,0.18)', backdropFilter:'blur(6px)', padding:'5px', borderRadius:'999px', boxShadow:'0 4px 14px rgba(0,0,0,0.2)', border:'1px solid rgba(255,255,255,0.25)'}}>
@@ -390,6 +395,7 @@ export default function AdminDashboard() {
     const education = getVal(d,["Education","education"]);
     const experience = getVal(d,["Experience","experience"]);
     const message = getVal(d,["Message","Messages","message","messages"]);
+    const infoForThis = {name: getVal(d,["FullName","fullName"]), status: getStatus(d), msg: messageForStatus(d, getStatus(d)), email: email, phone: phone, d: d};
     return (
       <div style={{position:'fixed', inset:0, background:'#f0f4ff', zIndex:9999, display:'flex', alignItems:'flex-start', justifyContent:'center', padding:'14px', overflowY:'auto'}} onClick={function(){setExpanded(null); setEditing(false);}}>
         <div onClick={function(e){e.stopPropagation();}} style={{background:'#fff', borderRadius:'12px', padding:'14px', boxShadow:'0 10px 30px rgba(0,0,0,0.15)', width:'100%', maxWidth:'440px', marginTop:'10px'}}>
@@ -423,6 +429,7 @@ export default function AdminDashboard() {
               <button onClick={function(){setEditing(false);}} style={{background:'#e5e7eb', border:'none', padding:'10px', borderRadius:'8px', fontWeight:800, cursor:'pointer', fontSize:'12px'}}>Cancel</button>
             </div>
           )}
+          {/* ROW 1: VIEW / EDIT / DELETE / PERMANENT / CALL / WHATSAPP / EMAIL / PRINT */}
           <div style={{display:'grid', gridTemplateColumns:'repeat(8, 1fr)', gap:'5px', marginTop:'12px'}}>
             <button title="View" onClick={function(){setEditing(false);}} style={{...iconBtn, background:'#e0e7ff'}}>👁️</button>
             <button title="Edit" onClick={function(){startEdit(d);}} style={{...iconBtn, background:'#fef9c3'}}>✏️</button>
@@ -433,6 +440,13 @@ export default function AdminDashboard() {
             <a title="Email" href={"mailto:"+getVal(d,["Email","email"])} style={{...iconBtn, background:'#2563eb', textDecoration:'none'}}>📧</a>
             <button title="Print" onClick={function(){printSingle(d);}} style={{...iconBtn, background:'#facc15'}}>🖨️</button>
           </div>
+          {/* ROW 2: SMS FALLBACK - IF NOT ON WHATSAPP */}
+          <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'5px', marginTop:'6px'}}>
+            <button title="Send WhatsApp" onClick={function(){sendWhatsApp(infoForThis);}} style={{background:'#25D366', color:'#fff', border:'none', padding:'8px', borderRadius:'8px', fontWeight:800, fontSize:'11px', cursor:'pointer'}}>💬 WhatsApp</button>
+            <button title="Send SMS - works if NOT on WhatsApp" onClick={function(){sendSMS(infoForThis);}} style={{background:'#0ea5e9', color:'#fff', border:'none', padding:'8px', borderRadius:'8px', fontWeight:800, fontSize:'11px', cursor:'pointer'}}>📱 SMS</button>
+            <button title="Send Email" onClick={function(){sendEmail(infoForThis);}} style={{background:'#2563eb', color:'#fff', border:'none', padding:'8px', borderRadius:'8px', fontWeight:800, fontSize:'11px', cursor:'pointer'}}>📧 Email</button>
+          </div>
+          <p style={{fontSize:'10px', color:'#666', textAlign:'center', margin:'6px 0 0'}}>If number NOT on WhatsApp, tap 📱 SMS or 📧 Email</p>
         </div>
       </div>
     );
@@ -450,17 +464,20 @@ export default function AdminDashboard() {
 
         {expanded && expandedData ? renderSmallForm(expandedData) : null}
 
-        {/* AUTO NOTIFY BAR - WHEN STATUS = CONTACTED / HIRED / REJECTED */}
+        {/* AUTO NOTIFY - 3 SEPARATE FALLBACKS */}
         {notifyInfo ? (
           <div style={{maxWidth:'900px', margin:'12px auto 0', padding:'0 14px'}}>
             <div style={{background:'#dcfce7', border:'1px solid #86efac', borderRadius:'12px', padding:'12px', fontSize:'13px'}}>
               <b>✉️ Auto message ready for {notifyInfo.name} - {notifyInfo.status}</b>
               <p style={{margin:'6px 0', color:'#166534'}}>{notifyInfo.msg}</p>
-              <p style={{margin:'4px 0', fontSize:'12px', color:'#666'}}>WhatsApp opened automatically. Tap below to also send Email / SMS:</p>
-              <div style={{display:'flex', gap:'8px', flexWrap:'wrap', marginTop:'8px'}}>
-                <button onClick={sendAutoEmail} style={{background:'#2563eb', color:'#fff', border:'none', padding:'9px 12px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>📧 Send Email to {notifyInfo.email||"..."}</button>
-                <button onClick={sendAutoSMS} style={{background:'#25D366', color:'#fff', border:'none', padding:'9px 12px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>💬 Send SMS / WhatsApp to {notifyInfo.phone}</button>
-                <button onClick={function(){setNotifyInfo(null);}} style={{background:'#fff', border:'1px solid #ddd', padding:'9px 12px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>Close</button>
+              <p style={{margin:'4px 0', fontSize:'12px', color:'#666'}}>Try WhatsApp first. If number is <b>NOT on WhatsApp</b>, tap SMS or Email - same message, no typing:</p>
+              <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'8px', marginTop:'10px'}}>
+                <button onClick={function(){sendWhatsApp(notifyInfo);}} style={{background:'#25D366', color:'#fff', border:'none', padding:'11px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>💬 WhatsApp<br/><span style={{fontWeight:400, fontSize:'10px'}}>to {notifyInfo.phone}</span></button>
+                <button onClick={function(){sendSMS(notifyInfo);}} style={{background:'#0ea5e9', color:'#fff', border:'none', padding:'11px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>📱 SMS<br/><span style={{fontWeight:400, fontSize:'10px'}}>Works if NOT on WhatsApp</span></button>
+                <button onClick={function(){sendEmail(notifyInfo);}} style={{background:'#2563eb', color:'#fff', border:'none', padding:'11px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>📧 Email<br/><span style={{fontWeight:400, fontSize:'10px'}}>{notifyInfo.email||"No email"}</span></button>
+              </div>
+              <div style={{display:'flex', justifyContent:'center', marginTop:'10px'}}>
+                <button onClick={function(){setNotifyInfo(null);}} style={{background:'#fff', border:'1px solid #ddd', padding:'8px 16px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>Close</button>
               </div>
             </div>
           </div>
@@ -477,7 +494,6 @@ export default function AdminDashboard() {
             </label>
           </div>
 
-          {/* SEARCH EVERYTHING - CENTERED */}
           <div style={{display:'flex', flexDirection:'column', alignItems:'center', marginTop:'14px'}}>
             <div style={{display:'flex', gap:'8px', flexWrap:'wrap', justifyContent:'center', alignItems:'center'}}>
               <input value={search} onChange={function(e){setSearch(e.target.value); setCurrentPage(1);}} placeholder="Search name, phone, email, service, message, district..." title="Searches EVERYTHING: Name, Phone, Email, Service, Position, District, Education, Experience, Message, Status" style={{width:'360px', maxWidth:'92vw', padding:'9px 14px', borderRadius:'20px', border:'1px solid #ddd', fontSize:'13px', outline:'none', background:'#fff', textAlign:'center'}} />
