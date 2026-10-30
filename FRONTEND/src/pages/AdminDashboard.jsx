@@ -56,7 +56,6 @@ export default function AdminDashboard() {
   };
 
   const getId = function(d){ return String(getVal(d,["Timestamp","timestamp"])||d._id||""); };
-  // STATUS BY TYPE
   const statusOptions = function(d){
     if(isApplicant(d)) return ["New","Contacted","Rejected","Resolved","Hired"];
     return ["New","Contacted","Resolved"];
@@ -127,21 +126,19 @@ export default function AdminDashboard() {
     showToast(getVal(d,["FullName","fullName"]) + " -> " + newStatus);
   };
 
-  // DELETE - NO POPUP, JUST DELETE TO TRASH
   const moveToTrash = function(d){
     const newTrash = trash.concat([d]);
     setTrash(newTrash); localStorage.setItem("psl_trash", JSON.stringify(newTrash));
     setData(data.filter(function(r){ return r._id!==d._id; }));
     setSelectedIds(selectedIds.filter(function(id){ return id!==d._id; }));
+    if(expanded===d._id) setExpanded(null);
     showToast("Moved to Trash");
   };
-
   const restoreFromTrash = function(d){
     const newTrash = trash.filter(function(t){ return t._id!==d._id; });
     setTrash(newTrash); localStorage.setItem("psl_trash", JSON.stringify(newTrash));
     setData(data.concat([d])); showToast("Restored");
   };
-
   const deleteForever = function(d){
     const newTrash = trash.filter(function(t){ return t._id!==d._id; });
     setTrash(newTrash); localStorage.setItem("psl_trash", JSON.stringify(newTrash));
@@ -150,7 +147,6 @@ export default function AdminDashboard() {
     showToast("Deleted forever");
   };
 
-  // BULK
   const toggleSelect = function(id){
     if(selectedIds.indexOf(id)!==-1) setSelectedIds(selectedIds.filter(function(x){ return x!==id; }));
     else setSelectedIds(selectedIds.concat([id]));
@@ -195,15 +191,37 @@ export default function AdminDashboard() {
     showToast("Status updated for " + selectedIds.length);
   };
 
-  const printPDF = function(d){
+  // ===== PRINT - ALL DETAILS =====
+  const detailHTML = function(d){
+    return "<div style='border:1px solid #ddd;border-radius:8px;padding:16px;margin-bottom:14px;page-break-inside:avoid'><h3 style='margin:0;color:#0A1931'>"+getVal(d,["FullName","fullName"])+" - "+(isApplicant(d)?"APPLICANT":"CONTACT")+" - "+getStatus(d)+"</h3>"
+        + "<table style='width:100%;border-collapse:collapse;margin-top:10px'><tr><td style='border:1px solid #eee;padding:8px'><b>Phone</b></td><td style='border:1px solid #eee;padding:8px'>"+getVal(d,["Phone","phone"])+"</td></tr>"
+        + "<tr><td style='border:1px solid #eee;padding:8px'><b>Email</b></td><td style='border:1px solid #eee;padding:8px'>"+(getVal(d,["Email","email"])||"-")+"</td></tr>"
+        + "<tr><td style='border:1px solid #eee;padding:8px'><b>Service</b></td><td style='border:1px solid #eee;padding:8px'>"+(getVal(d,["Service","service"])||"-")+"</td></tr>"
+        + "<tr><td style='border:1px solid #eee;padding:8px'><b>Position</b></td><td style='border:1px solid #eee;padding:8px'>"+(getVal(d,["Position","position"])||"-")+"</td></tr>"
+        + "<tr><td style='border:1px solid #eee;padding:8px'><b>District</b></td><td style='border:1px solid #eee;padding:8px'>"+(getVal(d,["District","district"])||"-")+"</td></tr>"
+        + "<tr><td style='border:1px solid #eee;padding:8px'><b>Education</b></td><td style='border:1px solid #eee;padding:8px'>"+(getVal(d,["Education","education"])||"-")+"</td></tr>"
+        + "<tr><td style='border:1px solid #eee;padding:8px'><b>Experience</b></td><td style='border:1px solid #eee;padding:8px'>"+(getVal(d,["Experience","experience"])||"-")+"</td></tr>"
+        + "<tr><td style='border:1px solid #eee;padding:8px'><b>Status</b></td><td style='border:1px solid #eee;padding:8px'>"+getStatus(d)+"</td></tr>"
+        + "<tr><td style='border:1px solid #eee;padding:8px'><b>Date</b></td><td style='border:1px solid #eee;padding:8px'>"+getVal(d,["Timestamp","timestamp"])+"</td></tr>"
+        + "<tr><td style='border:1px solid #eee;padding:8px'><b>Message</b></td><td style='border:1px solid #eee;padding:8px'>"+(getVal(d,["Message","Messages","message","messages"])||"-")+"</td></tr></table></div>";
+  };
+  const openPrintWindow = function(list, titleText){
     const w = window.open("", "_blank"); if(!w) return;
-    w.document.write("<html><head><title>"+getVal(d,["FullName","fullName"])+"</title><style>body{font-family:Arial;padding:30px}h1{color:#0A1931}table{width:100%;border-collapse:collapse}td{border:1px solid #ddd;padding:10px}</style></head><body><h1>PINNACLE SECURITY LTD</h1><h2>"+getVal(d,["FullName","fullName"])+" - "+(isApplicant(d)?"APPLICANT":"CONTACT")+"</h2><table><tr><td><b>Phone</b></td><td>"+getVal(d,["Phone","phone"])+"</td></tr><tr><td><b>Email</b></td><td>"+(getVal(d,["Email","email"])||"-")+"</td></tr><tr><td><b>Service</b></td><td>"+(getVal(d,["Service","service"])||"-")+"</td></tr><tr><td><b>Position</b></td><td>"+(getVal(d,["Position","position"])||"-")+"</td></tr><tr><td><b>District</b></td><td>"+(getVal(d,["District","district"])||"-")+"</td></tr><tr><td><b>Education</b></td><td>"+(getVal(d,["Education","education"])||"-")+"</td></tr><tr><td><b>Status</b></td><td>"+getStatus(d)+"</td></tr><tr><td><b>Date</b></td><td>"+getVal(d,["Timestamp","timestamp"])+"</td></tr><tr><td><b>Message</b></td><td>"+(getVal(d,["Message","Messages","message","messages"])||"-")+"</td></tr></table><p>Control 24/7: 0776971970 | Muyenga, Kampala</p></body></html>");
-    w.document.close(); setTimeout(function(){ w.print(); }, 400);
+    let body = "";
+    list.forEach(function(d){ body += detailHTML(d); });
+    w.document.write("<html><head><title>"+titleText+"</title><style>body{font-family:Arial;padding:20px}h1{color:#0A1931}</style></head><body><h1>PINNACLE SECURITY LTD - "+titleText+"</h1><p>Total: "+list.length+" | Printed: "+new Date().toLocaleString()+"</p>"+body+"<p>Control 24/7: 0776971970 | Muyenga, Kampala</p></body></html>");
+    w.document.close(); setTimeout(function(){ w.print(); }, 500);
+  };
+  const printSingle = function(d){ openPrintWindow([d], getVal(d,["FullName","fullName"]) + " - Full Details"); };
+  const printAllDetails = function(){ openPrintWindow(filtered, title + " - ALL DETAILS"); };
+  const printSelected = function(){
+    if(!selectedIds.length) return showToast("Select first to print");
+    const list = (page==="trash" ? trash : data).filter(function(d){ return selectedIds.indexOf(d._id)!==-1; });
+    openPrintWindow(list, "Selected - ALL DETAILS");
   };
 
   const statusColor = function(s){ if(s==="New") return "#e0e7ff"; if(s==="Contacted") return "#fef9c3"; if(s==="Rejected") return "#fee2e2"; if(s==="Hired") return "#dcfce7"; return "#dbeafe"; };
 
-  // ===== TABLE DATA =====
   const baseList = page==="contacts" ? contacts : page==="applicants" ? applicants : page==="trash" ? trash : data;
   const serviceSet = {};
   baseList.forEach(function(d){ const v = getVal(d,["Service","service"])||getVal(d,["Position","position"]); if(v) serviceSet[v]=1; });
@@ -244,7 +262,7 @@ export default function AdminDashboard() {
 
   const th = {background:NAVY, color:'#fff', padding:'10px 8px', fontSize:'12px', textAlign:'left', whiteSpace:'nowrap'};
 
-  // ===== EXPANDED DETAIL FORM - INSIDE TABLE, NO POPUP =====
+  // ===== EXPANDED - ONLY ONE AT A TIME, OTHER DETAILS DO NOT APPEAR =====
   const renderExpanded = function(d){
     return (
       <tr key={d._id+"_exp"}>
@@ -275,7 +293,7 @@ export default function AdminDashboard() {
               <a href={"tel:"+getVal(d,["Phone","phone"])} style={{background:NAVY, color:'#fff', padding:'12px', borderRadius:'8px', fontWeight:800, fontSize:'12px', textDecoration:'none', textAlign:'center'}}>CALL</a>
               <a href={waLink(d)} target="_blank" rel="noreferrer" style={{background:'#25D366', color:'#fff', padding:'12px', borderRadius:'8px', fontWeight:800, fontSize:'12px', textDecoration:'none', textAlign:'center'}}>WHATSAPP</a>
               <a href={"mailto:"+getVal(d,["Email","email"])} style={{background:'#2563eb', color:'#fff', padding:'12px', borderRadius:'8px', fontWeight:800, fontSize:'12px', textDecoration:'none', textAlign:'center'}}>EMAIL</a>
-              <button onClick={function(){printPDF(d);}} style={{background:'#facc15', color:'#000', border:'none', padding:'12px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>PDF / PRINT</button>
+              <button onClick={function(){printSingle(d);}} style={{background:'#facc15', color:'#000', border:'none', padding:'12px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>🖨️ PRINT THIS PERSON ONLY</button>
               {page!=="trash" ? <button onClick={function(){moveToTrash(d);}} style={{background:'#dc2626', color:'#fff', border:'none', padding:'12px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer', gridColumn:'span 2'}}>DELETE TO TRASH - No popup</button> : <React.Fragment><button onClick={function(){restoreFromTrash(d);}} style={{background:'#059669', color:'#fff', border:'none', padding:'12px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>RESTORE</button><button onClick={function(){deleteForever(d);}} style={{background:'#dc2626', color:'#fff', border:'none', padding:'12px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>DELETE FOREVER</button></React.Fragment>}
             </div>
           </div>
@@ -284,13 +302,11 @@ export default function AdminDashboard() {
     );
   };
 
-  // ===== TABLE PAGE =====
   if(page!=="home"){
     return (
       <div style={{background:'#f0f4ff', minHeight:'100vh', fontFamily:'Arial'}}>
-        <style>{`@media print{ body *{visibility:hidden} table, table *{visibility:visible} table{position:absolute;left:0;top:0;width:100%} .no-print{display:none !important} }`}</style>
-        {toast ? <div className="no-print" style={{position:'fixed', top:'16px', right:'16px', background:'#000', color:'#fff', padding:'10px 14px', borderRadius:'20px', fontWeight:800, zIndex:10000, fontSize:'13px'}}>{toast}</div> : null}
-        <div className="no-print" style={{background:'linear-gradient(90deg,#0A1931,#1e3a8a,#2563eb)', color:'#fff', padding:'12px 14px', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+        {toast ? <div style={{position:'fixed', top:'16px', right:'16px', background:'#000', color:'#fff', padding:'10px 14px', borderRadius:'20px', fontWeight:800, zIndex:10000, fontSize:'13px'}}>{toast}</div> : null}
+        <div style={{background:'linear-gradient(90deg,#0A1931,#1e3a8a,#2563eb)', color:'#fff', padding:'12px 14px', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
           <b style={{fontSize:'13px'}}>PINNACLE SECURITY LTD</b>
           <div style={{display:'flex', gap:'8px'}}>
             <button onClick={backHome} style={{background:'rgba(255,255,255,0.2)', border:'none', color:'#fff', fontSize:'18px', cursor:'pointer', borderRadius:'8px', width:'36px', height:'36px'}}>🏠</button>
@@ -299,26 +315,23 @@ export default function AdminDashboard() {
           </div>
         </div>
         <div style={{maxWidth:'980px', margin:'0 auto', padding:'14px'}}>
-          <div className="no-print" style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+          <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'8px'}}>
             <button onClick={backHome} style={{background:NAVY, color:'#fff', border:'none', padding:'9px 14px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>← Back</button>
             <h2 style={{margin:0, color:NAVY, fontSize:'18px'}}>{title} <span style={{fontSize:'13px', color:'#666'}}>({filtered.length})</span></h2>
-            <div style={{display:'flex', gap:'6px'}}>
+            <div style={{display:'flex', gap:'6px', flexWrap:'wrap'}}>
               <button onClick={exportCSV} style={{background:'#2563eb', color:'#fff', border:'none', padding:'9px 10px', borderRadius:'8px', fontWeight:800, fontSize:'11px', cursor:'pointer'}}>CSV</button>
-              <button onClick={function(){window.print();}} style={{background:'#facc15', color:'#000', border:'none', padding:'9px 10px', borderRadius:'8px', fontWeight:800, fontSize:'11px', cursor:'pointer'}}>🖨️ Print</button>
+              <button onClick={printAllDetails} style={{background:'#facc15', color:'#000', border:'none', padding:'9px 10px', borderRadius:'8px', fontWeight:800, fontSize:'11px', cursor:'pointer'}}>🖨️ PRINT ALL DETAILS</button>
+              <button onClick={printSelected} style={{background:'#059669', color:'#fff', border:'none', padding:'9px 10px', borderRadius:'8px', fontWeight:800, fontSize:'11px', cursor:'pointer'}}>🖨️ PRINT SELECTED</button>
             </div>
           </div>
-
-          {/* SEARCH + SORT + FILTER IN ONE LINE */}
-          <div className="no-print" style={{display:'flex', gap:'6px', marginTop:'12px', flexWrap:'wrap'}}>
+          <div style={{display:'flex', gap:'6px', marginTop:'12px', flexWrap:'wrap'}}>
             <input value={search} onChange={function(e){setSearch(e.target.value); setCurrentPage(1);}} placeholder="🔍 Search name, phone..." style={{flex:'1 1 160px', padding:'10px 12px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'13px', outline:'none', background:'#fff'}} />
             <select value={sort} onChange={function(e){setSort(e.target.value);}} style={{padding:'10px 8px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'12px', background:'#fff', fontWeight:700}}><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="az">A-Z</option></select>
             <select value={filterStatus} onChange={function(e){setFilterStatus(e.target.value); setCurrentPage(1);}} style={{padding:'10px 8px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'12px', background:'#fff', fontWeight:700}}><option value="All">All Status</option><option value="New">New</option><option value="Contacted">Contacted</option><option value="Rejected">Rejected</option><option value="Resolved">Resolved</option><option value="Hired">Hired</option></select>
             <select value={filterService} onChange={function(e){setFilterService(e.target.value); setCurrentPage(1);}} style={{padding:'10px 8px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'12px', background:'#fff', fontWeight:700, maxWidth:'130px'}}>{services.map(function(s){ return <option key={s} value={s}>{s==="All"?"All Service":s}</option>; })}</select>
           </div>
-
-          {/* BULK BAR */}
           {selectedIds.length>0 ? (
-            <div className="no-print" style={{background:'#0A1931', color:'#fff', padding:'10px 12px', borderRadius:'8px', marginTop:'12px', display:'flex', gap:'6px', flexWrap:'wrap', alignItems:'center'}}>
+            <div style={{background:'#0A1931', color:'#fff', padding:'10px 12px', borderRadius:'8px', marginTop:'12px', display:'flex', gap:'6px', flexWrap:'wrap', alignItems:'center'}}>
               <b style={{fontSize:'12px'}}>{selectedIds.length} selected</b>
               <button onClick={bulkEmail} style={{background:'#2563eb', color:'#fff', border:'none', padding:'7px 10px', borderRadius:'6px', fontWeight:800, fontSize:'11px', cursor:'pointer'}}>📧 BULK EMAIL</button>
               {page!=="trash" ? <button onClick={bulkDelete} style={{background:'#dc2626', color:'#fff', border:'none', padding:'7px 10px', borderRadius:'6px', fontWeight:800, fontSize:'11px', cursor:'pointer'}}>🗑️ DELETE SELECTED</button> : <React.Fragment><button onClick={bulkRestore} style={{background:'#059669', color:'#fff', border:'none', padding:'7px 10px', borderRadius:'6px', fontWeight:800, fontSize:'11px', cursor:'pointer'}}>♻️ RESTORE</button><button onClick={bulkDeleteForever} style={{background:'#dc2626', color:'#fff', border:'none', padding:'7px 10px', borderRadius:'6px', fontWeight:800, fontSize:'11px', cursor:'pointer'}}>DELETE FOREVER</button></React.Fragment>}
@@ -326,12 +339,11 @@ export default function AdminDashboard() {
               <button onClick={function(){setSelectedIds([]);}} style={{background:'#fff', color:'#000', border:'none', padding:'7px 10px', borderRadius:'6px', fontWeight:800, fontSize:'11px', cursor:'pointer'}}>Clear</button>
             </div>
           ) : null}
-
           <div style={{background:'#fff', borderRadius:'12px', overflow:'hidden', marginTop:'12px', border:'1px solid #eee', boxShadow:'0 2px 10px rgba(0,0,0,0.05)'}}>
             <div style={{overflowX:'auto'}}>
               <table style={{width:'100%', borderCollapse:'collapse', minWidth:'720px'}}>
                 <thead><tr>
-                  <th style={th} className="no-print"><input type="checkbox" checked={paged.length>0 && selectedIds.length===paged.length} onChange={toggleSelectAll} /></th>
+                  <th style={th}><input type="checkbox" checked={paged.length>0 && selectedIds.length===paged.length} onChange={toggleSelectAll} /></th>
                   <th style={th}>Name</th><th style={th}>Phone</th>
                   {page==="contacts" ? <React.Fragment><th style={th}>Service</th></React.Fragment> : null}
                   {page==="applicants" ? <React.Fragment><th style={th}>Position</th><th style={th}>District</th></React.Fragment> : null}
@@ -339,16 +351,16 @@ export default function AdminDashboard() {
                   {page==="trash" ? <React.Fragment><th style={th}>Type</th></React.Fragment> : null}
                   <th style={th}>Status ↓ Dropdown</th>
                   <th style={th}>Date</th>
-                  <th style={th} className="no-print"></th>
-                  <th style={th} className="no-print">🗑️</th>
+                  <th style={th}></th>
+                  <th style={th}>🗑️</th>
                 </tr></thead>
                 <tbody>
                   {paged.map(function(d){
                     const isOpen = expanded===d._id;
-                    const row = (
+                    return (
                       <React.Fragment key={d._id}>
                         <tr style={{background: isOpen?'#eff6ff':'#fff'}}>
-                          <td className="no-print" style={{padding:'10px 8px', borderBottom:'1px solid #eee'}}><input type="checkbox" checked={selectedIds.indexOf(d._id)!==-1} onChange={function(e){e.stopPropagation(); toggleSelect(d._id);}} onClick={function(e){e.stopPropagation();}} /></td>
+                          <td style={{padding:'10px 8px', borderBottom:'1px solid #eee'}}><input type="checkbox" checked={selectedIds.indexOf(d._id)!==-1} onChange={function(e){e.stopPropagation(); toggleSelect(d._id);}} onClick={function(e){e.stopPropagation();}} /></td>
                           <td onClick={function(){setExpanded(isOpen?null:d._id);}} style={{padding:'10px 8px', fontSize:'13px', borderBottom:'1px solid #eee', fontWeight:800, color:NAVY, cursor:'pointer', whiteSpace:'nowrap'}}>{getVal(d,["FullName","fullName"])}</td>
                           <td onClick={function(){setExpanded(isOpen?null:d._id);}} style={{padding:'10px 8px', fontSize:'13px', borderBottom:'1px solid #eee', cursor:'pointer', whiteSpace:'nowrap'}}>{getVal(d,["Phone","phone"])}</td>
                           {page==="contacts" ? <td onClick={function(){setExpanded(isOpen?null:d._id);}} style={{padding:'10px 8px', fontSize:'13px', borderBottom:'1px solid #eee', cursor:'pointer'}}>{getVal(d,["Service","service"])||"-"}</td> : null}
@@ -361,15 +373,14 @@ export default function AdminDashboard() {
                             </select>
                           </td>
                           <td onClick={function(){setExpanded(isOpen?null:d._id);}} style={{padding:'10px 8px', fontSize:'13px', borderBottom:'1px solid #eee', cursor:'pointer', whiteSpace:'nowrap'}}>{shortDate(getVal(d,["Timestamp","timestamp"]))}</td>
-                          <td className="no-print" onClick={function(){setExpanded(isOpen?null:d._id);}} style={{padding:'10px 8px', borderBottom:'1px solid #eee', color:NAVY, fontWeight:900, cursor:'pointer'}}>{isOpen?"▲":"›"}</td>
-                          <td className="no-print" style={{padding:'10px 8px', borderBottom:'1px solid #eee'}}>
+                          <td onClick={function(){setExpanded(isOpen?null:d._id);}} style={{padding:'10px 8px', borderBottom:'1px solid #eee', color:NAVY, fontWeight:900, cursor:'pointer'}}>{isOpen?"▲":"›"}</td>
+                          <td style={{padding:'10px 8px', borderBottom:'1px solid #eee'}}>
                             {page!=="trash" ? <button onClick={function(){moveToTrash(d);}} style={{background:'#fee2e2', border:'none', padding:'6px 9px', borderRadius:'6px', cursor:'pointer', fontSize:'14px'}}>🗑️</button> : <button onClick={function(){deleteForever(d);}} style={{background:'#fee2e2', border:'none', padding:'6px 9px', borderRadius:'6px', cursor:'pointer', fontSize:'11px', fontWeight:800, color:'#dc2626'}}>DEL</button>}
                           </td>
                         </tr>
                         {isOpen ? renderExpanded(d) : null}
                       </React.Fragment>
                     );
-                    return row;
                   })}
                 </tbody>
               </table>
@@ -377,18 +388,17 @@ export default function AdminDashboard() {
             {paged.length===0 && !loading ? <p style={{textAlign:'center', color:'#888', padding:'18px'}}>No {title} yet</p> : null}
             {loading ? <p style={{textAlign:'center', padding:'14px'}}>Loading...</p> : null}
           </div>
-          <div className="no-print" style={{display:'flex', justifyContent:'center', alignItems:'center', gap:'8px', marginTop:'14px'}}>
+          <div style={{display:'flex', justifyContent:'center', alignItems:'center', gap:'8px', marginTop:'14px'}}>
             <button disabled={safePage<=1} onClick={function(){setCurrentPage(safePage-1);}} style={{background: safePage<=1?'#e5e7eb':NAVY, color: safePage<=1?'#999':'#fff', border:'none', padding:'9px 14px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>Prev</button>
             <span style={{fontSize:'13px', fontWeight:800, color:NAVY}}>Page {safePage} / {totalPages}</span>
             <button disabled={safePage>=totalPages} onClick={function(){setCurrentPage(safePage+1);}} style={{background: safePage>=totalPages?'#e5e7eb':NAVY, color: safePage>=totalPages?'#999':'#fff', border:'none', padding:'9px 14px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>Next</button>
           </div>
-          <p className="no-print" style={{fontSize:'12px', color:'#888', textAlign:'center', marginTop:'8px'}}>Tap any row to expand full details • Tap › to expand • Status dropdown in table</p>
+          <p style={{fontSize:'12px', color:'#888', textAlign:'center', marginTop:'8px'}}>Tap one row = only that detail opens, others stay closed • Print buttons print full details in new window</p>
         </div>
       </div>
     );
   }
 
-  // ===== HOME - NICE COLOR + WELCOME, {username} =====
   const boxStyle = function(grad){ return {background:grad, borderRadius:'16px', padding:'22px 10px 18px', cursor:'pointer', textAlign:'center', color:'#fff', boxShadow:'0 8px 20px rgba(0,0,0,0.12)'}; };
   return (
     <div style={{background:'#f0f4ff', minHeight:'100vh', fontFamily:'Arial', padding:'0'}}>
@@ -403,7 +413,6 @@ export default function AdminDashboard() {
         </div>
       </div>
       <div style={{maxWidth:'520px', margin:'0 auto', padding:'18px 14px 20px'}}>
-        {/* WELCOME, {username} WITH NICE COLOR */}
         <div style={{background:'linear-gradient(135deg,#0A1931 0%,#2563eb 60%,#f59e0b 130%)', borderRadius:'16px', padding:'20px', color:'#fff', marginBottom:'16px'}}>
           <p style={{margin:0, fontSize:'13px', opacity:0.9}}>Welcome,</p>
           <h2 style={{margin:'4px 0 0', fontSize:'26px', fontWeight:900}}>{username} 👋</h2>
