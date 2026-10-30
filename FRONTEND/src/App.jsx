@@ -318,7 +318,7 @@ const Join = () => {
   )
 }
 
-cconst Contact = () => {
+const Contact = () => {
   const [form, setForm] = useState({ FullName:'', Phone:'', Email:'', Service:'Security Guard Service', Messages:'' });
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
