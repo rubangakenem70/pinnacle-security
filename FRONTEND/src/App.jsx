@@ -318,11 +318,54 @@ const Join = () => {
   )
 }
 
-const Contact = () => (
-  <div className="section" id="contact">
-    <h2>Contact Us</h2>
-    <div className="card" style={{textAlign:'center'}}><p><b>Plot 442 & 443 Massionatees, Muyenga Hill, Kampala</b></p><p>Control 24/7: <b>0776971970</b> | Email: <b>hr@pinnaclegroup.co.ug</b></p><p>Interview: Monday - Saturday, 8am, Muyenga HQ. Bring ID + CV + Papers + 2 Photos. No Fees.</p></div>
-  </div>
+cconst Contact = () => {
+  const [form, setForm] = useState({ FullName:'', Phone:'', Email:'', Service:'Security Guard Service', Messages:'' });
+  const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const submit = async (e) => {
+    e.preventDefault();
+    if(!form.FullName || !form.Phone || !form.Messages){ alert("Fill Name, Phone and Message"); return; }
+    setSending(true);
+    const ts = getFullDateTime24();
+    const payload = Object.assign({}, form, { timestamp:ts, Timestamp:ts, type:'contact', Type:'contact' });
+    try { await fetch(GOOGLE_SHEET_WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)}); } catch(err){}
+    setSending(false); setSent(true);
+  };
+  const inp = { padding:'12px 14px', borderRadius:'10px', border:'1px solid #ccc', width:'100%', fontSize:'15px', background:'#fff', color:'#0a1931' };
+  return (
+    <div className="section" id="contact">
+      <h2>Contact Us - Free Site Survey</h2>
+      <p style={{textAlign:'center', marginBottom:'18px'}}>Tell us what you need. We call you back same day. No fees for survey.</p>
+      <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px'}} className="contact-grid">
+        <div className="card">
+          <h3>📍 Visit / Call Us</h3>
+          <p><b>Plot 442 & 443 Massionatees, Muyenga Hill, Kampala</b></p>
+          <p>Control 24/7: <b>0776971970</b> | Email: <b>hr@pinnaclegroup.co.ug</b></p>
+          <p>Interview: Monday - Saturday, 8am, Muyenga HQ. Bring ID + CV + Papers + 2 Photos. No Fees.</p>
+          <p style={{marginTop:'12px'}}><b>After you send:</b><br/>1. Message goes to Admin as CONTACT<br/>2. HR calls you back same day<br/>3. We visit FREE & give fair price</p>
+          <a href="tel:0776971970" className="btn-yellow big" style={{display:'block', textAlign:'center', marginTop:'14px'}}>📞 Call 0776971970 Now</a>
+          <a href="https://wa.me/256776971970" target="_blank" rel="noreferrer" className="btn-yellow big" style={{display:'block', textAlign:'center', marginTop:'10px', background:'#25D366', color:'#fff'}}>💬 WhatsApp Us</a>
+        </div>
+        <div className="card">
+          <h3>✉️ Send Us A Message</h3>
+          {sent ? (
+            <div style={{textAlign:'center', padding:'20px'}}><div style={{fontSize:'48px'}}>✅</div><h3>Message Sent!</h3><p>Thank you {form.FullName}. We received your message about <b>{form.Service}</b>.</p><p>HR will call you on <b>{form.Phone}</b> soon.</p><button onClick={()=>{setSent(false); setForm({FullName:'',Phone:'',Email:'',Service:'Security Guard Service',Messages:''})}} className="btn-yellow big" style={{marginTop:'12px', cursor:'pointer'}}>Send Another Message</button></div>
+          ) : (
+            <form onSubmit={submit} style={{display:'flex', flexDirection:'column', gap:'10px'}}>
+              <label><b>Full Name *</b><input required placeholder="e.g John Kato" value={form.FullName} onChange={e=>setForm({...form, FullName:e.target.value})} style={inp} /></label>
+              <label><b>Phone *</b><input required placeholder="e.g 0776971970" value={form.Phone} onChange={e=>setForm({...form, Phone:e.target.value})} style={inp} /></label>
+              <label><b>Email (optional)</b><input placeholder="e.g john@gmail.com" value={form.Email} onChange={e=>setForm({...form, Email:e.target.value})} style={inp} /></label>
+              <label><b>Service You Need *</b><select value={form.Service} onChange={e=>setForm({...form, Service:e.target.value})} style={inp}><option>Security Guard Service</option><option>Site Incharge & Supervisor</option><option>Construction Site Security</option><option>CCTV Installation</option><option>Mobile Patrol</option><option>Event Security</option><option>Alarm System</option><option>Hotel & Corporate Security</option><option>Escort & VIP Protection</option><option>Job Application / Other</option></select></label>
+              <label><b>Message *</b><textarea required rows={4} placeholder="e.g I need 2 guards day and night for my home in Muyenga. Please visit for free survey." value={form.Messages} onChange={e=>setForm({...form, Messages:e.target.value})} style={{...inp, minHeight:'90px'}} /></label>
+              <button type="submit" disabled={sending} className="btn-yellow big" style={{cursor:'pointer', opacity:sending?0.6:1}}>{sending?'Sending...':'Send Message →'}</button>
+              <p style={{fontSize:'12px', textAlign:'center', color:'#777'}}>Goes directly to Admin Dashboard. No fees.</p>
+            </form>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
 )
 
 /* ================= APP - THEME FIXED AT ONCE ================= */
