@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-const ADMIN_PASSWORD = "Pinnacle2026!Secure123";
+const ADMIN_PASSWORD = "Rubangakene";
 const GOOGLE_SHEET_WEBHOOK = "https://script.google.com/macros/s/AKfycbz0Fx9gSfPwPXZdi8pivw9IdQ_fzj707fPk22GBECuGYhGzwePtEPZV47TyXk8TN8bggQ/exec";
 const FONT = "'Inter','Segoe UI','Poppins',system-ui,sans-serif";
 const NAVY = '#0A1931';
@@ -28,7 +28,7 @@ const AdminDashboard = () => {
   const [autoReplied,setAutoReplied]=useState(()=>{try{return JSON.parse(localStorage.getItem('psl_auto_replied')||'[]')}catch{return[]}});
   const prevTimestampsRef=useRef(new Set()); const autoSettingsRef=useRef(autoSettings); useEffect(()=>{autoSettingsRef.current=autoSettings},[autoSettings]);
   const showToast=(msg)=>{setToast(msg); if(toastTimer.current)clearTimeout(toastTimer.current); toastTimer.current=setTimeout(()=>setToast(""),3500);};
-  const login=()=>String(pass||'').trim()===String(ADMIN_PASSWORD||'').trim()?setAuth(true):alert("Wrong Password!");
+  const login=()=>{ const p=String(pass||'').trim(); if(p==="Rubangakene"){setAuth(true)} else {alert("Wrong Password! You typed: "+p)} };
   const logout=()=>{setAuth(false); setPass(""); setSelected([]); showToast("Logged Out");};
   const saveAutoSettings=(next)=>{setAutoSettings(next); localStorage.setItem('psl_auto_settings',JSON.stringify(next)); showToast('Auto Reply Settings Saved');};
   const toggleAuto=(key)=>{const next={...autoSettingsRef.current,[key]:!autoSettingsRef.current[key]}; saveAutoSettings(next);};
