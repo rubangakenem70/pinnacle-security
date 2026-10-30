@@ -501,7 +501,6 @@ export default function AdminDashboard() {
               <select value={filterStatus} onChange={function(e){setFilterStatus(e.target.value); setCurrentPage(1);}} style={{padding:'9px 8px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'12px', background:'#fff', fontWeight:700}}><option value="All">All Status</option><option value="New">New</option><option value="Contacted">Contacted</option><option value="Rejected">Rejected</option><option value="Resolved">Resolved</option><option value="Hired">Hired</option></select>
               <select value={filterService} onChange={function(e){setFilterService(e.target.value); setCurrentPage(1);}} style={{padding:'9px 8px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'12px', background:'#fff', fontWeight:700}}>{services.map(function(s){ return <option key={s} value={s}>{s==="All"?"All Service":s}</option>; })}</select>
             </div>
-            <p style={{fontSize:'11px', color:'#666', margin:'6px 0 0', textAlign:'center'}}>Searches EVERYTHING: Name • Phone • Email • Service • Position • District • Education • Experience • Message • Status</p>
           </div>
 
           {selectedIds.length>0 ? (
@@ -586,8 +585,7 @@ export default function AdminDashboard() {
       <div style={{maxWidth:'520px', margin:'0 auto', padding:'18px 14px 20px'}}>
         <div style={{background:'linear-gradient(135deg,#0A1931 0%,#2563eb 60%,#f59e0b 130%)', borderRadius:'16px', padding:'20px', color:'#fff', marginBottom:'16px'}}>
           <p style={{margin:0, fontSize:'13px', opacity:0.9}}>Welcome,</p>
-          <h2 style={{margin:'4px 0 0', fontSize:'26px', fontWeight:900}}>{username} 👋</h2>
-          <p style={{margin:'8px 0 0', fontSize:'12px', opacity:0.9}}>Pinnacle Security Ltd • {data.length} total • {contacts.length} Contacts • {applicants.length} Applicants</p>
+          <h2 style={{margin:'4px 0 0', fontSize:'26px', fontWeight:900}}>{username} </h2>
         </div>
         <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px'}}>
           <div onClick={function(){openList("contacts");}} style={boxStyle('linear-gradient(135deg,#2563eb,#0ea5e9)')}>
