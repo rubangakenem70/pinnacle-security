@@ -38,7 +38,7 @@ const Navbar = ({ theme, toggleTheme }) => {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [hover, setHover] = useState(null);
-  const scrollTo = (id) => { setOpen(false); setHover(null); const el = document.getElementById(id); if (el) { const offset = 75; const top = el.getBoundingClientRect().top + window.scrollY - offset; window.scrollTo({ top, behavior: 'smooth' }); } };
+  const scrollTo = (id) => { setOpen(false); setHover(null); const el = document.getElementById(id); if (el) { const offset = 78; const top = el.getBoundingClientRect().top + window.scrollY - offset; window.scrollTo({ top, behavior: 'smooth' }); } };
   const dropWrap = {position:'relative'};
   const dropBtn = (active) => ({color: active ? '#ffcc00' : '#fff', textDecoration:'none', fontSize:'13.5px', fontWeight:700, padding:'8px 6px', cursor:'pointer', display:'inline-block', whiteSpace:'nowrap'});
   const mega = {position:'absolute', top:'100%', right:'0', width:'860px', maxWidth:'92vw', background:'#fff', borderRadius:'14px', boxShadow:'0 14px 35px rgba(0,0,0,0.25)', padding:'22px', display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'20px', zIndex:10000, textAlign:'left'};
@@ -49,7 +49,7 @@ const Navbar = ({ theme, toggleTheme }) => {
   const mobileLink = {display:'block', width:'100%', color:'#fff', fontSize:'16px', fontWeight:700, padding:'14px', cursor:'pointer', background:'transparent', textAlign:'left', border:'none', borderBottom:'1px solid rgba(255,255,255,0.12)'};
 
   return (
-    <nav style={{background:'#0A1931', position:'sticky', top:0, zIndex:9999, width:'100%'}}>
+    <nav style={{background:'#0A1931', position:'fixed', top:0, left:0, right:0, zIndex:9999, width:'100%', boxShadow:'0 4px 16px rgba(0,0,0,0.35)', borderBottom:'2px solid #FFD700'}}>
       <div style={{maxWidth:'1440px', margin:'0 auto', padding: isMobile ? '10px 12px' : '10px 14px', display:'flex', justifyContent:'space-between', alignItems:'center', gap:'8px', flexWrap:'nowrap'}}>
         <span onClick={()=>scrollTo('home')} style={{color:'#FFD700', fontWeight:900, fontSize: isMobile ? '14px' : '17px', lineHeight:'1.15', whiteSpace:'nowrap', cursor:'pointer', flexShrink:0}}>PINNACLE<br/>SECURITY LTD</span>
 
@@ -94,7 +94,7 @@ const Navbar = ({ theme, toggleTheme }) => {
       </div>
 
       {isMobile && open && (
-        <div style={{background:'#0A1931', borderTop:'1px solid rgba(255,255,255,0.15)', padding:'6px 0 10px', display:'flex', flexDirection:'column'}}>
+        <div style={{background:'#0A1931', borderTop:'1px solid rgba(255,255,255,0.15)', padding:'6px 0 10px', display:'flex', flexDirection:'column', maxHeight:'70vh', overflowY:'auto'}}>
           <button style={mobileLink} onClick={() => scrollTo('home')}>🏠 Home</button>
           <button style={mobileLink} onClick={() => scrollTo('about')}>ℹ️ About Pinnacle</button>
           <button style={mobileLink} onClick={() => scrollTo('services')}>🛡️ Services - Guard, CCTV, Patrol</button>
@@ -320,6 +320,8 @@ export default function App(){
     <div style={{background: t.bg, minHeight:'100vh', color: t.text, fontFamily:'Arial', overflowX:'hidden'}}>
       <style>{`* {box-sizing:border-box} body{margin:0} html{scroll-behavior:smooth} img{max-width:100%}`}</style>
       <Navbar theme={theme} toggleTheme={toggleTheme} />
+      {/* SPACER FOR FIXED NAVBAR - SO HERO IS NOT HIDDEN */}
+      <div style={{height:'64px'}}></div>
       <div id="home"><Home t={t} /></div>
       <div id="about"><About t={t} /></div>
       <div id="services"><Services t={t} /></div>
