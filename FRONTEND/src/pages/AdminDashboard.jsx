@@ -9,18 +9,20 @@ export default function AdminDashboard() {
   const [pass, setPass] = useState("");
   const [data, setData] = useState([]);
   const [search, setSearch] = useState("");
-  const [tab, setTab] = useState("all");
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState("home"); // home | contacts | applicants | all | detail
   const [detailId, setDetailId] = useState("");
+  const [prevPage, setPrevPage] = useState("home");
   const [toast, setToast] = useState("");
 
   const showToast = (m) => { setToast(m); setTimeout(()=>setToast(""), 3000); };
 
-  // If link is /admin?detail=... open that person directly
   useEffect(()=>{
     const p = new URLSearchParams(window.location.search);
     const d = p.get("detail");
-    if(d) setDetailId(decodeURIComponent(d));
+    if(d){ setDetailId(decodeURIComponent(d)); setPage("detail"); }
+    const v = p.get("view");
+    if(v==="contacts"||v==="applicants"||v==="all") setPage(v);
   },[]);
 
   const login = () => {
@@ -83,27 +85,36 @@ export default function AdminDashboard() {
 
   const contacts = data.filter(d=>!isApplicant(d));
   const applicants = data.filter(d=>isApplicant(d));
-  const base = tab==="contacts" ? contacts : tab==="applicants" ? applicants : data;
 
-  const filtered = base.filter(d=>{
-    const s = `${getVal(d,["FullName","fullName"])} ${getVal(d,["Phone","phone"])} ${getVal(d,["Email","email"])} ${getVal(d,["Service","service"])} ${getVal(d,["Position","position"])} ${getVal(d,["District","district"])}`.toLowerCase();
-    return s.includes(search.toLowerCase());
-  }).reverse();
+  const openList = (view) => {
+    setPage(view);
+    setSearch("");
+    window.history.pushState({}, "", "/admin?view=" + view);
+    window.scrollTo(0,0);
+  };
 
-  const detailRow = detailId ? data.find(d => String(getVal(d,["Timestamp","timestamp"])) === String(detailId) || d._id === detailId) : null;
+  const backHome = () => {
+    setPage("home");
+    setSearch("");
+    window.history.pushState({}, "", "/admin");
+  };
 
   const openDetail = (d) => {
     const ts = getVal(d,["Timestamp","timestamp"]);
-    // OPEN NEW PAGE - same tab becomes detail page, back button returns
+    setPrevPage(page);
     setDetailId(ts);
+    setPage("detail");
     window.history.pushState({}, "", "/admin?detail=" + encodeURIComponent(ts));
     window.scrollTo(0,0);
   };
 
   const backToList = () => {
+    setPage(prevPage);
     setDetailId("");
-    window.history.pushState({}, "", "/admin");
+    window.history.pushState({}, "", "/admin?view=" + prevPage);
   };
+
+  const detailRow = detailId ? data.find(d => String(getVal(d,["Timestamp","timestamp"])) === String(detailId) || d._id === detailId) : null;
 
   const waLink = (d) => {
     let p = String(getVal(d,["Phone","phone"])||"").replace(/\s/g,"").replace(/^\+/,"");
@@ -116,36 +127,21 @@ export default function AdminDashboard() {
     if(!confirm("Delete " + getVal(row,["FullName","fullName"]) + "?")) return;
     const ts = getVal(row,["Timestamp","timestamp"]);
     setData(prev=>prev.filter(r=>r._id!==row._id));
-    backToList();
+    setPage(prevPage);
+    setDetailId("");
     showToast("Deleted");
     await fetch(WEBHOOK,{method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({action:'delete', timestamps:[ts], Timestamp: ts})});
   };
 
-  const exportCSV = () => {
-    if(!filtered.length) return showToast("No rows");
-    const head = ["Timestamp","FullName","Phone","Email","Service","Position","District","Education","Experience","Message","Type"];
-    const csv = "\uFEFF" + [head.join(",")].concat(filtered.map(r=> head.map(h=>{
-      let v = "";
-      if(h==="Timestamp") v = getVal(r,["Timestamp","timestamp"]);
-      else if(h==="Message") v = getVal(r,["Message","Messages","message","messages"]);
-      else v = getVal(r,[h,h.toLowerCase()]);
-      return `"${String(v||"").replace(/"/g,'""')}"`;
-    }).join(","))).join("\n");
-    const blob = new Blob([csv],{type:"text/csv"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href=url; a.download=`pinnacle_${tab}.csv`; a.click();
-    URL.revokeObjectURL(url);
-  };
-
   const btn = (bg) => ({background:bg, color:'#fff', border:'none', padding:'12px 14px', borderRadius:'20px', fontWeight:800, cursor:'pointer', fontSize:'13px', textDecoration:'none', display:'inline-block', textAlign:'center'});
-  const tabBtn = (active) => ({background: active?NAVY:'#eef2f7', color: active?'#fff':'#000', border:'none', padding:'10px 12px', borderRadius:'20px', fontWeight:800, cursor:'pointer', fontSize:'12px', flex:1});
+  const searchStyle = {width:'100%', padding:'14px 16px', borderRadius:'20px', border:'1px solid #ddd', fontSize:'15px', boxSizing:'border-box', outline:'none'};
 
-  // ========== NEW PAGE - DETAIL ONLY ==========
-  if(detailId){
+  // ========== DETAIL PAGE ==========
+  if(page==="detail"){
     return (
       <div style={{background:'#f8fafc', minHeight:'100vh', fontFamily:'Arial', padding:'16px'}}>
         <div style={{maxWidth:'600px', margin:'0 auto'}}>
-          <button onClick={backToList} style={{...btn(NAVY)}}>⬅ Back to List</button>
+          <button onClick={backToList} style={{...btn(NAVY)}}>⬅ Back</button>
           {loading && <p>Loading...</p>}
           {!loading && !detailRow && <div style={{background:'#fff', padding:'20px', borderRadius:'12px', marginTop:'14px'}}><h3>Not found</h3><button onClick={load} style={btn(NAVY)}>🔄 Refresh</button></div>}
           {detailRow && (
@@ -175,7 +171,57 @@ export default function AdminDashboard() {
     );
   }
 
-  // ========== MAIN LIST - ONLY NAME ==========
+  // ========== LIST PAGE - SEPARATE PAGE FOR CONTACTS / APPLICANTS / ALL ==========
+  if(page==="contacts" || page==="applicants" || page==="all"){
+    const base = page==="contacts" ? contacts : page==="applicants" ? applicants : data;
+    const filtered = base.filter(d=>{
+      const s = `${getVal(d,["FullName","fullName"])} ${getVal(d,["Phone","phone"])}`.toLowerCase();
+      return s.includes(search.toLowerCase());
+    }).reverse();
+    const title = page==="contacts" ? "Contacts" : page==="applicants" ? "Applicants" : "All";
+    const exportCSV = () => {
+      if(!filtered.length) return showToast("No rows");
+      const head = ["Timestamp","FullName","Phone","Email","Service","Position","District","Education","Experience","Message","Type"];
+      const csv = "\uFEFF" + [head.join(",")].concat(filtered.map(r=> head.map(h=>{
+        let v = "";
+        if(h==="Timestamp") v = getVal(r,["Timestamp","timestamp"]);
+        else if(h==="Message") v = getVal(r,["Message","Messages","message","messages"]);
+        else v = getVal(r,[h,h.toLowerCase()]);
+        return `"${String(v||"").replace(/"/g,'""')}"`;
+      }).join(","))).join("\n");
+      const blob = new Blob([csv],{type:"text/csv"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href=url; a.download=`pinnacle_${page}.csv`; a.click();
+      URL.revokeObjectURL(url);
+    };
+    return (
+      <div style={{background:'#f8fafc', minHeight:'100vh', fontFamily:'Arial', padding:'16px'}}>
+        <div style={{maxWidth:'600px', margin:'0 auto'}}>
+          <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+            <button onClick={backHome} style={{...btn(NAVY)}}>⬅ Back</button>
+            <h2 style={{margin:0, color:NAVY}}>{title}</h2>
+            <button onClick={exportCSV} style={btn('#2563eb')}>CSV</button>
+          </div>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={`🔍 Search ${title.toLowerCase()}...`} style={{...searchStyle, marginTop:'14px'}} />
+          <div style={{display:'flex', flexDirection:'column', gap:'10px', marginTop:'14px'}}>
+            {filtered.map(d=>(
+              <div key={d._id} onClick={()=>openDetail(d)} style={{background:'#fff', borderRadius:'12px', padding:'16px', border:'1px solid #eee', cursor:'pointer', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                <b style={{fontSize:'16px', color:NAVY}}>{getVal(d,["FullName","fullName"]) || "No Name"}</b>
+                <div style={{display:'flex', alignItems:'center', gap:'8px'}}>
+                  <span style={{fontSize:'11px', background: isApplicant(d)?'#fee2e2':'#dcfce7', padding:'5px 10px', borderRadius:'20px', fontWeight:800, whiteSpace:'nowrap'}}>{isApplicant(d)?"APPLICANT":"CONTACT"}</span>
+                  <span style={{fontSize:'18px', color:NAVY, fontWeight:900}}>›</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          {filtered.length===0 && !loading && <p style={{textAlign:'center', color:'#888', marginTop:'30px'}}>No {title} yet</p>}
+          {loading && <p style={{textAlign:'center'}}>Loading...</p>}
+        </div>
+      </div>
+    );
+  }
+
+  // ========== HOME PAGE - ONLY SEARCH + 3 BOXES, NO LIST ==========
   return (
     <div style={{background:'#f8fafc', minHeight:'100vh', fontFamily:'Arial', padding:'16px'}}>
       {toast && <div style={{position:'fixed', top:'20px', right:'20px', background:'#000', color:'#fff', padding:'12px 18px', borderRadius:'20px', fontWeight:800, zIndex:9999}}>{toast}</div>}
@@ -185,41 +231,34 @@ export default function AdminDashboard() {
           <button onClick={()=>setAuth(false)} style={btn('#64748b')}>Logout</button>
         </div>
 
-        <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'10px', marginTop:'14px'}}>
-          <div onClick={()=>setTab("contacts")} style={{background:'#fff', padding:'16px', borderRadius:'12px', textAlign:'center', cursor:'pointer'}}><div style={{fontSize:'22px', fontWeight:900}}>{contacts.length}</div><div style={{fontSize:'12px', color:'#666'}}>Contacts</div></div>
-          <div onClick={()=>setTab("applicants")} style={{background:'#fff', padding:'16px', borderRadius:'12px', textAlign:'center', cursor:'pointer'}}><div style={{fontSize:'22px', fontWeight:900, color:'#dc2626'}}>{applicants.length}</div><div style={{fontSize:'12px', color:'#666'}}>Applicants</div></div>
-          <div onClick={()=>setTab("all")} style={{background:'#fff', padding:'16px', borderRadius:'12px', textAlign:'center', cursor:'pointer'}}><div style={{fontSize:'22px', fontWeight:900, color:'#2563eb'}}>{data.length}</div><div style={{fontSize:'12px', color:'#666'}}>Total</div></div>
+        {/* SEARCH ON TOP */}
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search name..." style={{...searchStyle, marginTop:'16px'}} />
+        <div style={{display:'flex', gap:'8px', marginTop:'10px'}}>
+          <button onClick={load} style={{...btn(NAVY), flex:1}}>🔄 Refresh</button>
+          <button onClick={()=>{ if(search.trim()){ // search from home -> go to All page with search
+            setPage("all"); window.history.pushState({}, "", "/admin?view=all");
+          }}} style={{...btn('#2563eb'), flex:1}}>🔍 Search</button>
         </div>
 
-        <div style={{display:'flex', gap:'8px', marginTop:'12px'}}>
-          <button onClick={()=>setTab("all")} style={tabBtn(tab==="all")}>All</button>
-          <button onClick={()=>setTab("contacts")} style={tabBtn(tab==="contacts")}>Contacts</button>
-          <button onClick={()=>setTab("applicants")} style={tabBtn(tab==="applicants")}>Applicants</button>
+        {/* ONLY 3 BOXES - NO LIST, NO TABS */}
+        <div style={{display:'flex', flexDirection:'column', gap:'12px', marginTop:'16px'}}>
+          <div onClick={()=>openList("contacts")} style={{background:'#fff', borderRadius:'16px', padding:'22px', cursor:'pointer', display:'flex', justifyContent:'space-between', alignItems:'center', border:'1px solid #eee'}}>
+            <div><div style={{fontSize:'28px', fontWeight:900, color:NAVY}}>{contacts.length}</div><div style={{fontSize:'14px', color:'#666'}}>Contacts</div><div style={{fontSize:'12px', color:NAVY, fontWeight:800, marginTop:'4px'}}>Tap to open →</div></div>
+            <span style={{fontSize:'32px'}}>📩</span>
+          </div>
+
+          <div onClick={()=>openList("applicants")} style={{background:'#fff', borderRadius:'16px', padding:'22px', cursor:'pointer', display:'flex', justifyContent:'space-between', alignItems:'center', border:'1px solid #eee'}}>
+            <div><div style={{fontSize:'28px', fontWeight:900, color:'#dc2626'}}>{applicants.length}</div><div style={{fontSize:'14px', color:'#666'}}>Applicants</div><div style={{fontSize:'12px', color:'#dc2626', fontWeight:800, marginTop:'4px'}}>Tap to open →</div></div>
+            <span style={{fontSize:'32px'}}>👤</span>
+          </div>
+
+          <div onClick={()=>openList("all")} style={{background:'#fff', borderRadius:'16px', padding:'22px', cursor:'pointer', display:'flex', justifyContent:'space-between', alignItems:'center', border:'1px solid #eee'}}>
+            <div><div style={{fontSize:'28px', fontWeight:900, color:'#2563eb'}}>{data.length}</div><div style={{fontSize:'14px', color:'#666'}}>All</div><div style={{fontSize:'12px', color:'#2563eb', fontWeight:800, marginTop:'4px'}}>Tap to open →</div></div>
+            <span style={{fontSize:'32px'}}>📋</span>
+          </div>
         </div>
 
-        <div style={{display:'flex', gap:'8px', marginTop:'12px'}}>
-          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search name..." style={{flex:1, padding:'12px', borderRadius:'20px', border:'1px solid #ddd'}} />
-          <button onClick={load} style={btn(NAVY)}>🔄 Refresh</button>
-          <button onClick={exportCSV} style={btn('#2563eb')}>CSV</button>
-        </div>
-
-        {/* NO "13 found" HERE - REMOVED */}
-
-        {/* 1 COLUMN - ONLY NAME */}
-        <div style={{display:'flex', flexDirection:'column', gap:'10px', marginTop:'14px'}}>
-          {filtered.map(d=>(
-            <div key={d._id} onClick={()=>openDetail(d)} style={{background:'#fff', borderRadius:'12px', padding:'16px', border:'1px solid #eee', cursor:'pointer', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-              <b style={{fontSize:'16px', color:NAVY}}>{getVal(d,["FullName","fullName"]) || "No Name"}</b>
-              <div style={{display:'flex', alignItems:'center', gap:'8px'}}>
-                <span style={{fontSize:'11px', background: isApplicant(d)?'#fee2e2':'#dcfce7', padding:'5px 10px', borderRadius:'20px', fontWeight:800, whiteSpace:'nowrap'}}>{isApplicant(d)?"APPLICANT":"CONTACT"}</span>
-                <span style={{fontSize:'18px', color:NAVY, fontWeight:900}}>›</span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {filtered.length===0 && !loading && <p style={{textAlign:'center', color:'#888', marginTop:'30px'}}>No data yet</p>}
-        <a href="/" style={{display:'block', textAlign:'center', marginTop:'20px', color:NAVY, fontWeight:800}}>🏠 Back to Home</a>
+        <a href="/" style={{display:'block', textAlign:'center', marginTop:'22px', color:NAVY, fontWeight:800}}>🏠 Back to Home</a>
       </div>
     </div>
   );
