@@ -51,13 +51,11 @@ export default function AdminDashboard() {
     return "";
   };
   const getId = function(d){ return String(getValRaw(d,["Timestamp","timestamp"])||d._id||""); };
-  // EDITED VALUE FIRST, THEN SHEET VALUE
   const getVal = function(o, keys){
     const id = getId(o);
     const e = edits[id];
     if(e){
       for(let i=0;i<keys.length;i++){ if(e[keys[i]]!==undefined && e[keys[i]]!=="") return e[keys[i]]; }
-      // map common keys
       if(keys.indexOf("FullName")!==-1 && e.FullName) return e.FullName;
       if(keys.indexOf("Phone")!==-1 && e.Phone) return e.Phone;
       if(keys.indexOf("Email")!==-1 && e.Email) return e.Email;
@@ -170,7 +168,6 @@ export default function AdminDashboard() {
     showToast("❌ Deleted Forever");
   };
 
-  // EDIT - SAVE
   const startEdit = function(d){
     setEditing(true);
     setEditForm({
@@ -235,18 +232,17 @@ export default function AdminDashboard() {
     showToast("Status updated for " + selectedIds.length);
   };
 
-  // PRINT - ALL COLUMNS (NO Type, NO Date, NO Action in print)
   const detailHTML = function(d){
     return "<div style='border:1px solid #ddd;border-radius:8px;padding:16px;margin-bottom:14px;page-break-inside:avoid'><h3 style='margin:0;color:#0A1931'>"+getVal(d,["FullName","fullName"])+" - "+getStatus(d)+"</h3>"
-        + "<table style='width:100%;border-collapse:collapse;margin-top:10px'><tr><td style='border:1px solid #eee;padding:8px'><b>Phone</b></td><td style='border:1px solid #eee;padding:8px'>"+getVal(d,["Phone","phone"])+"</td></tr>"
-        + "<tr><td style='border:1px solid #eee;padding:8px'><b>Email</b></td><td style='border:1px solid #eee;padding:8px'>"+(getVal(d,["Email","email"])||"-")+"</td></tr>"
-        + "<tr><td style='border:1px solid #eee;padding:8px'><b>Service</b></td><td style='border:1px solid #eee;padding:8px'>"+(getVal(d,["Service","service"])||"-")+"</td></tr>"
-        + "<tr><td style='border:1px solid #eee;padding:8px'><b>Position</b></td><td style='border:1px solid #eee;padding:8px'>"+(getVal(d,["Position","position"])||"-")+"</td></tr>"
-        + "<tr><td style='border:1px solid #eee;padding:8px'><b>District</b></td><td style='border:1px solid #eee;padding:8px'>"+(getVal(d,["District","district"])||"-")+"</td></tr>"
-        + "<tr><td style='border:1px solid #eee;padding:8px'><b>Education</b></td><td style='border:1px solid #eee;padding:8px'>"+(getVal(d,["Education","education"])||"-")+"</td></tr>"
-        + "<tr><td style='border:1px solid #eee;padding:8px'><b>Experience</b></td><td style='border:1px solid #eee;padding:8px'>"+(getVal(d,["Experience","experience"])||"-")+"</td></tr>"
-        + "<tr><td style='border:1px solid #eee;padding:8px'><b>Status</b></td><td style='border:1px solid #eee;padding:8px'>"+getStatus(d)+"</td></tr>"
-        + "<tr><td style='border:1px solid #eee;padding:8px'><b>Message</b></td><td style='border:1px solid #eee;padding:8px'>"+(getVal(d,["Message","Messages","message","messages"])||"-")+"</td></tr></table></div>";
+    + "<table style='width:100%;border-collapse:collapse;margin-top:10px'><tr><td style='border:1px solid #eee;padding:8px'><b>Phone</b></td><td style='border:1px solid #eee;padding:8px'>"+getVal(d,["Phone","phone"])+"</td></tr>"
+    + "<tr><td style='border:1px solid #eee;padding:8px'><b>Email</b></td><td style='border:1px solid #eee;padding:8px'>"+(getVal(d,["Email","email"])||"-")+"</td></tr>"
+    + "<tr><td style='border:1px solid #eee;padding:8px'><b>Service</b></td><td style='border:1px solid #eee;padding:8px'>"+(getVal(d,["Service","service"])||"-")+"</td></tr>"
+    + "<tr><td style='border:1px solid #eee;padding:8px'><b>Position</b></td><td style='border:1px solid #eee;padding:8px'>"+(getVal(d,["Position","position"])||"-")+"</td></tr>"
+    + "<tr><td style='border:1px solid #eee;padding:8px'><b>District</b></td><td style='border:1px solid #eee;padding:8px'>"+(getVal(d,["District","district"])||"-")+"</td></tr>"
+    + "<tr><td style='border:1px solid #eee;padding:8px'><b>Education</b></td><td style='border:1px solid #eee;padding:8px'>"+(getVal(d,["Education","education"])||"-")+"</td></tr>"
+    + "<tr><td style='border:1px solid #eee;padding:8px'><b>Experience</b></td><td style='border:1px solid #eee;padding:8px'>"+(getVal(d,["Experience","experience"])||"-")+"</td></tr>"
+    + "<tr><td style='border:1px solid #eee;padding:8px'><b>Status</b></td><td style='border:1px solid #eee;padding:8px'>"+getStatus(d)+"</td></tr>"
+    + "<tr><td style='border:1px solid #eee;padding:8px'><b>Message</b></td><td style='border:1px solid #eee;padding:8px'>"+(getVal(d,["Message","Messages","message","messages"])||"-")+"</td></tr></table></div>";
   };
   const printTableHTML = function(list, titleText){
     let head = "";
@@ -322,70 +318,67 @@ export default function AdminDashboard() {
 
   const th = {background:NAVY, color:'#fff', padding:'10px 8px', fontSize:'12px', textAlign:'left', whiteSpace:'nowrap'};
   const tdBase = {padding:'10px 8px', fontSize:'12px', borderBottom:'1px solid #eee', verticalAlign:'top'};
-  const iconBtn = {border:'none', padding:'10px', borderRadius:'10px', cursor:'pointer', fontSize:'18px', display:'flex', alignItems:'center', justifyContent:'center'};
+  // SMALL ICONS - NO LABELS
+  const iconBtn = {border:'none', padding:'6px', borderRadius:'8px', cursor:'pointer', fontSize:'13px', height:'32px', width:'100%', display:'flex', alignItems:'center', justifyContent:'center'};
   const inputStyle = {width:'100%', padding:'9px 10px', borderRadius:'8px', border:'1px solid #ddd', fontSize:'13px', boxSizing:'border-box', outline:'none'};
 
-  // ===== SMALL FORM - TAP DETAIL - ICONS ONLY =====
+  // ===== SMALL FORM - NO LABELS UNDER ICONS, SMALL ICONS, OTHER DETAILS INVISIBLE =====
   const renderSmallForm = function(d){
     return (
-      <tr key={d._id+"_exp"}>
-        <td colSpan="20" style={{background:'#eef2ff', padding:'10px'}}>
-          <div style={{background:'#fff', borderRadius:'12px', padding:'14px', boxShadow:'0 4px 12px rgba(0,0,0,0.08)', maxWidth:'560px', margin:'0 auto'}}>
-            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-              <b style={{color:NAVY, fontSize:'15px'}}>{editing ? "✏️ Edit - " : "👁️ View - "}{getVal(d,["FullName","fullName"])}</b>
-              <button onClick={function(){setExpanded(null); setEditing(false);}} style={{border:'none', background:'#f1f5f9', borderRadius:'50%', width:'28px', height:'28px', cursor:'pointer', fontWeight:900}}>✕</button>
-            </div>
-
-            {!editing ? (
-              <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px', fontSize:'12px', marginTop:'10px'}}>
-                <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Phone</b><br/>{getVal(d,["Phone","phone"])}</div>
-                <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Email</b><br/>{getVal(d,["Email","email"])||"-"}</div>
-                <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Service / Position</b><br/>{getVal(d,["Service","service"])||getVal(d,["Position","position"])||"-"}</div>
-                <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>District</b><br/>{getVal(d,["District","district"])||"-"}</div>
-                <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Education</b><br/>{getVal(d,["Education","education"])||"-"}</div>
-                <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Experience</b><br/>{getVal(d,["Experience","experience"])||"-"}</div>
-                <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px', gridColumn:'span 2'}}><b>Message</b><br/>{getVal(d,["Message","Messages","message","messages"])||"-"}</div>
-                <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Status</b><br/><select value={getStatus(d)} onChange={function(e){changeStatus(d,e.target.value);}} style={{padding:'6px', borderRadius:'20px', fontWeight:800, fontSize:'11px', background:statusColor(getStatus(d)), border:'1px solid #ddd'}}>{statusOptions(d).map(function(s){ return <option key={s} value={s}>{s}</option>; })}</select></div>
-                <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Type</b><br/>{isApplicant(d)?"APPLICANT":"CONTACT"}</div>
-              </div>
-            ) : (
-              <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px', marginTop:'10px'}}>
-                <input value={editForm.FullName||""} onChange={function(e){setEditForm({...editForm, FullName:e.target.value});}} placeholder="Full Name" style={inputStyle} />
-                <input value={editForm.Phone||""} onChange={function(e){setEditForm({...editForm, Phone:e.target.value});}} placeholder="Phone" style={inputStyle} />
-                <input value={editForm.Email||""} onChange={function(e){setEditForm({...editForm, Email:e.target.value});}} placeholder="Email" style={{...inputStyle, gridColumn:'span 2'}} />
-                <input value={editForm.Service||""} onChange={function(e){setEditForm({...editForm, Service:e.target.value});}} placeholder="Service" style={inputStyle} />
-                <input value={editForm.Position||""} onChange={function(e){setEditForm({...editForm, Position:e.target.value});}} placeholder="Position" style={inputStyle} />
-                <input value={editForm.District||""} onChange={function(e){setEditForm({...editForm, District:e.target.value});}} placeholder="District" style={inputStyle} />
-                <input value={editForm.Education||""} onChange={function(e){setEditForm({...editForm, Education:e.target.value});}} placeholder="Education" style={inputStyle} />
-                <input value={editForm.Experience||""} onChange={function(e){setEditForm({...editForm, Experience:e.target.value});}} placeholder="Experience" style={inputStyle} />
-                <textarea value={editForm.Message||""} onChange={function(e){setEditForm({...editForm, Message:e.target.value});}} placeholder="Message" style={{...inputStyle, gridColumn:'span 2', minHeight:'60px'}} />
-                <button onClick={function(){saveEdit(d);}} style={{background:'#059669', color:'#fff', border:'none', padding:'11px', borderRadius:'8px', fontWeight:800, cursor:'pointer'}}>✅ SAVE</button>
-                <button onClick={function(){setEditing(false);}} style={{background:'#e5e7eb', border:'none', padding:'11px', borderRadius:'8px', fontWeight:800, cursor:'pointer'}}>Cancel</button>
-              </div>
-            )}
-
-            {/* ICONS ONLY - VIEW / EDIT / DELETE / PERMANENT / CALL / WA / EMAIL / PRINT */}
-            <div style={{display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'8px', marginTop:'12px'}}>
-              <button title="View" onClick={function(){setEditing(false);}} style={{...iconBtn, background:'#e0e7ff'}}>👁️</button>
-              <button title="Edit" onClick={function(){startEdit(d);}} style={{...iconBtn, background:'#fef9c3'}}>✏️</button>
-              <button title="Delete to Trash" onClick={function(){ if(page!=="trash") moveToTrash(d); else restoreFromTrash(d); }} style={{...iconBtn, background:'#fee2e2'}}>{page!=="trash" ? "🗑️" : "♻️"}</button>
-              <button title="Delete Permanent" onClick={function(){deleteForever(d);}} style={{...iconBtn, background:'#dc2626', color:'#fff'}}>❌</button>
-              <a title="Call" href={"tel:"+getVal(d,["Phone","phone"])} style={{...iconBtn, background:NAVY, color:'#fff', textDecoration:'none'}}>📞</a>
-              <a title="WhatsApp" href={waLink(d)} target="_blank" rel="noreferrer" style={{...iconBtn, background:'#25D366', color:'#fff', textDecoration:'none'}}>💬</a>
-              <a title="Email" href={"mailto:"+getVal(d,["Email","email"])} style={{...iconBtn, background:'#2563eb', color:'#fff', textDecoration:'none'}}>📧</a>
-              <button title="Print" onClick={function(){printSingle(d);}} style={{...iconBtn, background:'#facc15'}}>🖨️</button>
-            </div>
-            <div style={{display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'8px', marginTop:'4px', fontSize:'10px', textAlign:'center', color:'#666', fontWeight:700}}>
-              <span>View</span><span>Edit</span><span>{page!=="trash" ? "Delete" : "Restore"}</span><span>Perm. Del</span>
-              <span>Call</span><span>WhatsApp</span><span>Email</span><span>Print</span>
-            </div>
+      <div style={{position:'fixed', inset:0, background:'#f0f4ff', zIndex:9999, display:'flex', alignItems:'flex-start', justifyContent:'center', padding:'14px', overflowY:'auto'}} onClick={function(){setExpanded(null); setEditing(false);}}>
+        <div onClick={function(e){e.stopPropagation();}} style={{background:'#fff', borderRadius:'12px', padding:'14px', boxShadow:'0 10px 30px rgba(0,0,0,0.15)', width:'100%', maxWidth:'440px', marginTop:'10px'}}>
+          <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+            <b style={{color:NAVY, fontSize:'14px'}}>{editing ? "✏️ " : "👁️ "}{getVal(d,["FullName","fullName"])}</b>
+            <button onClick={function(){setExpanded(null); setEditing(false);}} style={{border:'none', background:'#f1f5f9', borderRadius:'50%', width:'26px', height:'26px', cursor:'pointer', fontWeight:900, fontSize:'12px'}}>✕</button>
           </div>
-        </td>
-      </tr>
+
+          {!editing ? (
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px', fontSize:'12px', marginTop:'10px'}}>
+              <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Phone</b><br/>{getVal(d,["Phone","phone"])}</div>
+              <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Email</b><br/>{getVal(d,["Email","email"])||"-"}</div>
+              <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Service / Position</b><br/>{getVal(d,["Service","service"])||getVal(d,["Position","position"])||"-"}</div>
+              <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>District</b><br/>{getVal(d,["District","district"])||"-"}</div>
+              <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Education</b><br/>{getVal(d,["Education","education"])||"-"}</div>
+              <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Experience</b><br/>{getVal(d,["Experience","experience"])||"-"}</div>
+              <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px', gridColumn:'span 2'}}><b>Message</b><br/>{getVal(d,["Message","Messages","message","messages"])||"-"}</div>
+              <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Status</b><br/><select value={getStatus(d)} onChange={function(e){changeStatus(d,e.target.value);}} style={{padding:'6px', borderRadius:'20px', fontWeight:800, fontSize:'11px', background:statusColor(getStatus(d)), border:'1px solid #ddd'}}>{statusOptions(d).map(function(s){ return <option key={s} value={s}>{s}</option>; })}</select></div>
+              <div style={{background:'#f8fafc', padding:'8px', borderRadius:'8px'}}><b>Type</b><br/>{isApplicant(d)?"APPLICANT":"CONTACT"}</div>
+            </div>
+          ) : (
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px', marginTop:'10px'}}>
+              <input value={editForm.FullName||""} onChange={function(e){setEditForm({...editForm, FullName:e.target.value});}} placeholder="Full Name" style={inputStyle} />
+              <input value={editForm.Phone||""} onChange={function(e){setEditForm({...editForm, Phone:e.target.value});}} placeholder="Phone" style={inputStyle} />
+              <input value={editForm.Email||""} onChange={function(e){setEditForm({...editForm, Email:e.target.value});}} placeholder="Email" style={{...inputStyle, gridColumn:'span 2'}} />
+              <input value={editForm.Service||""} onChange={function(e){setEditForm({...editForm, Service:e.target.value});}} placeholder="Service" style={inputStyle} />
+              <input value={editForm.Position||""} onChange={function(e){setEditForm({...editForm, Position:e.target.value});}} placeholder="Position" style={inputStyle} />
+              <input value={editForm.District||""} onChange={function(e){setEditForm({...editForm, District:e.target.value});}} placeholder="District" style={inputStyle} />
+              <input value={editForm.Education||""} onChange={function(e){setEditForm({...editForm, Education:e.target.value});}} placeholder="Education" style={inputStyle} />
+              <input value={editForm.Experience||""} onChange={function(e){setEditForm({...editForm, Experience:e.target.value});}} placeholder="Experience" style={inputStyle} />
+              <textarea value={editForm.Message||""} onChange={function(e){setEditForm({...editForm, Message:e.target.value});}} placeholder="Message" style={{...inputStyle, gridColumn:'span 2', minHeight:'60px'}} />
+              <button onClick={function(){saveEdit(d);}} style={{background:'#059669', color:'#fff', border:'none', padding:'10px', borderRadius:'8px', fontWeight:800, cursor:'pointer', fontSize:'12px'}}>✅ SAVE</button>
+              <button onClick={function(){setEditing(false);}} style={{background:'#e5e7eb', border:'none', padding:'10px', borderRadius:'8px', fontWeight:800, cursor:'pointer', fontSize:'12px'}}>Cancel</button>
+            </div>
+          )}
+
+          {/* ICONS ONLY - SMALL, NO TEXT LABELS */}
+          <div style={{display:'grid', gridTemplateColumns:'repeat(8, 1fr)', gap:'5px', marginTop:'12px'}}>
+            <button title="View" onClick={function(){setEditing(false);}} style={{...iconBtn, background:'#e0e7ff'}}>👁️</button>
+            <button title="Edit" onClick={function(){startEdit(d);}} style={{...iconBtn, background:'#fef9c3'}}>✏️</button>
+            <button title="Delete" onClick={function(){ if(page!=="trash") moveToTrash(d); else restoreFromTrash(d); }} style={{...iconBtn, background:'#fee2e2'}}>{page!=="trash" ? "🗑️" : "♻️"}</button>
+            <button title="Delete Permanent" onClick={function(){deleteForever(d);}} style={{...iconBtn, background:'#dc2626'}}>❌</button>
+            <a title="Call" href={"tel:"+getVal(d,["Phone","phone"])} style={{...iconBtn, background:NAVY, color:'#fff', textDecoration:'none'}}>📞</a>
+            <a title="WhatsApp" href={waLink(d)} target="_blank" rel="noreferrer" style={{...iconBtn, background:'#25D366', textDecoration:'none'}}>💬</a>
+            <a title="Email" href={"mailto:"+getVal(d,["Email","email"])} style={{...iconBtn, background:'#2563eb', textDecoration:'none'}}>📧</a>
+            <button title="Print" onClick={function(){printSingle(d);}} style={{...iconBtn, background:'#facc15'}}>🖨️</button>
+          </div>
+          {/* NO LABEL ROW - REMOVED */}
+        </div>
+      </div>
     );
   };
 
   if(page!=="home"){
+    const expandedData = expanded ? paged.find(function(x){ return x._id===expanded; }) || data.find(function(x){ return x._id===expanded; }) || trash.find(function(x){ return x._id===expanded; }) : null;
     return (
       <div style={{background:'#f0f4ff', minHeight:'100vh', fontFamily:'Arial'}}>
         {toast ? <div style={{position:'fixed', top:'16px', right:'16px', background:'#000', color:'#fff', padding:'10px 14px', borderRadius:'20px', fontWeight:800, zIndex:10000, fontSize:'13px'}}>{toast}</div> : null}
@@ -397,7 +390,11 @@ export default function AdminDashboard() {
             <button onClick={function(){openList("trash");}} style={{background:'rgba(255,255,255,0.2)', border:'none', color:'#fff', fontSize:'16px', cursor:'pointer', borderRadius:'8px', padding:'0 10px'}}>🗑️ {trash.length}</button>
           </div>
         </div>
-        <div style={{maxWidth:'1400px', margin:'0 auto', padding:'14px'}}>
+
+        {/* WHEN FORM OPEN, OTHER DETAILS ARE INVISIBLE - ONLY FORM SHOWS */}
+        {expanded && expandedData ? renderSmallForm(expandedData) : null}
+
+        <div style={{maxWidth:'1400px', margin:'0 auto', padding:'14px', visibility: expanded ? 'hidden' : 'visible', height: expanded ? '0' : 'auto', overflow: expanded ? 'hidden' : 'visible'}}>
           <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'8px'}}>
             <button onClick={backHome} style={{background:NAVY, color:'#fff', border:'none', padding:'9px 14px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>← Back</button>
             <h2 style={{margin:0, color:NAVY, fontSize:'18px'}}>{title} <span style={{fontSize:'13px', color:'#666'}}>({filtered.length}) - ALL DETAILS VISIBLE</span></h2>
@@ -422,8 +419,6 @@ export default function AdminDashboard() {
               <button onClick={function(){setSelectedIds([]);}} style={{background:'#fff', color:'#000', border:'none', padding:'7px 10px', borderRadius:'6px', fontWeight:800, fontSize:'11px', cursor:'pointer'}}>Clear</button>
             </div>
           ) : null}
-
-          {/* ===== TABLE - NO TYPE, NO DATE, NO ACTION ===== */}
           <div style={{background:'#fff', borderRadius:'12px', overflow:'hidden', marginTop:'12px', border:'1px solid #eee', boxShadow:'0 2px 10px rgba(0,0,0,0.05)'}}>
             <div style={{overflowX:'auto'}}>
               <table style={{width:'100%', borderCollapse:'collapse', minWidth:'1150px'}}>
@@ -439,40 +434,36 @@ export default function AdminDashboard() {
                 </tr></thead>
                 <tbody>
                   {paged.map(function(d){
-                    const isOpen = expanded===d._id;
                     return (
-                      <React.Fragment key={d._id}>
-                        <tr style={{background: isOpen?'#eff6ff':'#fff'}}>
-                          <td style={{...tdBase, whiteSpace:'nowrap'}}><input type="checkbox" checked={selectedIds.indexOf(d._id)!==-1} onChange={function(e){e.stopPropagation(); toggleSelect(d._id);}} onClick={function(e){e.stopPropagation();}} /></td>
-                          <td onClick={function(){ setExpanded(isOpen?null:d._id); setEditing(false); }} style={{...tdBase, fontWeight:800, color:NAVY, cursor:'pointer', whiteSpace:'nowrap', minWidth:'140px'}}>{getVal(d,["FullName","fullName"])}</td>
-                          <td onClick={function(){ setExpanded(isOpen?null:d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', whiteSpace:'nowrap'}}>{getVal(d,["Phone","phone"])}</td>
-                          <td onClick={function(){ setExpanded(isOpen?null:d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', minWidth:'160px', maxWidth:'200px', wordBreak:'break-word'}}>{getVal(d,["Email","email"])||"-"}</td>
-                          {page==="contacts" ? <React.Fragment>
-                            <td onClick={function(){ setExpanded(isOpen?null:d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', minWidth:'130px'}}>{getVal(d,["Service","service"])||"-"}</td>
-                            <td onClick={function(){ setExpanded(isOpen?null:d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', minWidth:'180px', maxWidth:'260px', whiteSpace:'normal'}}>{getVal(d,["Message","Messages","message","messages"])||"-"}</td>
-                          </React.Fragment> : null}
-                          {page==="applicants" ? <React.Fragment>
-                            <td onClick={function(){ setExpanded(isOpen?null:d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', minWidth:'120px'}}>{getVal(d,["Position","position"])||"-"}</td>
-                            <td onClick={function(){ setExpanded(isOpen?null:d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer'}}>{getVal(d,["District","district"])||"-"}</td>
-                            <td onClick={function(){ setExpanded(isOpen?null:d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer'}}>{getVal(d,["Education","education"])||"-"}</td>
-                            <td onClick={function(){ setExpanded(isOpen?null:d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', minWidth:'80px'}}>{getVal(d,["Experience","experience"])||"-"}</td>
-                            <td onClick={function(){ setExpanded(isOpen?null:d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', minWidth:'180px', maxWidth:'260px', whiteSpace:'normal'}}>{getVal(d,["Message","Messages","message","messages"])||"-"}</td>
-                          </React.Fragment> : null}
-                          {page==="all" || page==="trash" ? <React.Fragment>
-                            <td onClick={function(){ setExpanded(isOpen?null:d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', minWidth:'130px'}}>{getVal(d,["Service","service"])||getVal(d,["Position","position"])||"-"}</td>
-                            <td onClick={function(){ setExpanded(isOpen?null:d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer'}}>{getVal(d,["District","district"])||"-"}</td>
-                            <td onClick={function(){ setExpanded(isOpen?null:d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer'}}>{getVal(d,["Education","education"])||"-"}</td>
-                            <td onClick={function(){ setExpanded(isOpen?null:d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', minWidth:'80px'}}>{getVal(d,["Experience","experience"])||"-"}</td>
-                            <td onClick={function(){ setExpanded(isOpen?null:d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', minWidth:'180px', maxWidth:'260px', whiteSpace:'normal'}}>{getVal(d,["Message","Messages","message","messages"])||"-"}</td>
-                          </React.Fragment> : null}
-                          <td style={{...tdBase, whiteSpace:'nowrap'}} onClick={function(e){e.stopPropagation();}}>
-                            <select value={getStatus(d)} onChange={function(e){changeStatus(d,e.target.value);}} style={{padding:'7px 8px', borderRadius:'20px', border:'1px solid #ddd', fontWeight:800, fontSize:'11px', background:statusColor(getStatus(d)), cursor:'pointer'}}>
-                              {statusOptions(d).map(function(s){ return <option key={s} value={s}>{s}</option>; })}
-                            </select>
-                          </td>
-                        </tr>
-                        {isOpen ? renderSmallForm(d) : null}
-                      </React.Fragment>
+                      <tr key={d._id} style={{background:'#fff'}}>
+                        <td style={{...tdBase, whiteSpace:'nowrap'}}><input type="checkbox" checked={selectedIds.indexOf(d._id)!==-1} onChange={function(e){e.stopPropagation(); toggleSelect(d._id);}} onClick={function(e){e.stopPropagation();}} /></td>
+                        <td onClick={function(){ setExpanded(d._id); setEditing(false); }} style={{...tdBase, fontWeight:800, color:NAVY, cursor:'pointer', whiteSpace:'nowrap', minWidth:'140px'}}>{getVal(d,["FullName","fullName"])}</td>
+                        <td onClick={function(){ setExpanded(d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', whiteSpace:'nowrap'}}>{getVal(d,["Phone","phone"])}</td>
+                        <td onClick={function(){ setExpanded(d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', minWidth:'160px', maxWidth:'200px', wordBreak:'break-word'}}>{getVal(d,["Email","email"])||"-"}</td>
+                        {page==="contacts" ? <React.Fragment>
+                          <td onClick={function(){ setExpanded(d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', minWidth:'130px'}}>{getVal(d,["Service","service"])||"-"}</td>
+                          <td onClick={function(){ setExpanded(d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', minWidth:'180px', maxWidth:'260px', whiteSpace:'normal'}}>{getVal(d,["Message","Messages","message","messages"])||"-"}</td>
+                        </React.Fragment> : null}
+                        {page==="applicants" ? <React.Fragment>
+                          <td onClick={function(){ setExpanded(d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', minWidth:'120px'}}>{getVal(d,["Position","position"])||"-"}</td>
+                          <td onClick={function(){ setExpanded(d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer'}}>{getVal(d,["District","district"])||"-"}</td>
+                          <td onClick={function(){ setExpanded(d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer'}}>{getVal(d,["Education","education"])||"-"}</td>
+                          <td onClick={function(){ setExpanded(d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', minWidth:'80px'}}>{getVal(d,["Experience","experience"])||"-"}</td>
+                          <td onClick={function(){ setExpanded(d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', minWidth:'180px', maxWidth:'260px', whiteSpace:'normal'}}>{getVal(d,["Message","Messages","message","messages"])||"-"}</td>
+                        </React.Fragment> : null}
+                        {page==="all" || page==="trash" ? <React.Fragment>
+                          <td onClick={function(){ setExpanded(d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', minWidth:'130px'}}>{getVal(d,["Service","service"])||getVal(d,["Position","position"])||"-"}</td>
+                          <td onClick={function(){ setExpanded(d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer'}}>{getVal(d,["District","district"])||"-"}</td>
+                          <td onClick={function(){ setExpanded(d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer'}}>{getVal(d,["Education","education"])||"-"}</td>
+                          <td onClick={function(){ setExpanded(d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', minWidth:'80px'}}>{getVal(d,["Experience","experience"])||"-"}</td>
+                          <td onClick={function(){ setExpanded(d._id); setEditing(false); }} style={{...tdBase, cursor:'pointer', minWidth:'180px', maxWidth:'260px', whiteSpace:'normal'}}>{getVal(d,["Message","Messages","message","messages"])||"-"}</td>
+                        </React.Fragment> : null}
+                        <td style={{...tdBase, whiteSpace:'nowrap'}} onClick={function(e){e.stopPropagation();}}>
+                          <select value={getStatus(d)} onChange={function(e){changeStatus(d,e.target.value);}} style={{padding:'7px 8px', borderRadius:'20px', border:'1px solid #ddd', fontWeight:800, fontSize:'11px', background:statusColor(getStatus(d)), cursor:'pointer'}}>
+                            {statusOptions(d).map(function(s){ return <option key={s} value={s}>{s}</option>; })}
+                          </select>
+                        </td>
+                      </tr>
                     );
                   })}
                 </tbody>
@@ -481,7 +472,6 @@ export default function AdminDashboard() {
             {paged.length===0 && !loading ? <p style={{textAlign:'center', color:'#888', padding:'18px'}}>No {title} yet</p> : null}
             {loading ? <p style={{textAlign:'center', padding:'14px'}}>Loading...</p> : null}
           </div>
-          <p style={{fontSize:'12px', color:'#666', textAlign:'center', marginTop:'8px'}}>No Type, No Date, No Action column • Tap row = small form opens • Icons: 👁️ View ✏️ Edit 🗑️ Delete ❌ Permanent 📞 💬 📧 🖨️</p>
           <div style={{display:'flex', justifyContent:'center', alignItems:'center', gap:'8px', marginTop:'10px'}}>
             <button disabled={safePage<=1} onClick={function(){setCurrentPage(safePage-1);}} style={{background: safePage<=1?'#e5e7eb':NAVY, color: safePage<=1?'#999':'#fff', border:'none', padding:'9px 14px', borderRadius:'8px', fontWeight:800, fontSize:'12px', cursor:'pointer'}}>Prev</button>
             <span style={{fontSize:'13px', fontWeight:800, color:NAVY}}>Page {safePage} / {totalPages}</span>
