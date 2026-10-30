@@ -239,7 +239,8 @@ const Contact = () => {
         </div>
       </div>
     </div>
-  )}
+  )
+}
 
 /* ================= APP - THEME FIXED AT ONCE ================= */
 export default function App(){
@@ -261,7 +262,7 @@ export default function App(){
         .btn-yellow{background:#FFD700; color:#0A1931; padding:10px 18px; border-radius:20px; font-weight:900; border:none; text-decoration:none}
         .btn-yellow.big{padding:12px 24px; font-size:16px}
         .section{max-width:1200px; margin:0 auto; padding:20px}
-        .section h2{text-align:center; color:#0A1931; font-size:28px; margin-bottom:18px}
+        .section h2{text-align:center; color:#0A1931; font-size:28px; margin-bottom:'18px}
         .hero{background:#1a2f7a; color:#fff; border-radius:16px; padding:36px 20px; text-align:center}
         .hero h1{color:#FFD700; font-size:32px} .hero p{font-size:18px}
         .dots{display:flex; gap:8px; justify-content:center; margin-top:14px} .dot{width:10px; height:10px; border-radius:50%; background:#fff; opacity:.5; cursor:pointer} .dot.on{opacity:1; background:#FFD700}

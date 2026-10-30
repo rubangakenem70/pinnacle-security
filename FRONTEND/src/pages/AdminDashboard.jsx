@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-const ADMIN_PASSWORD = "Mose";
+const ADMIN_PASSWORD = "Pinnacle2026!Secure123";
 const GOOGLE_SHEET_WEBHOOK = "https://script.google.com/macros/s/AKfycbz0Fx9gSfPwPXZdi8pivw9IdQ_fzj707fPk22GBECuGYhGzwePtEPZV47TyXk8TN8bggQ/exec";
 const FONT = "'Inter','Segoe UI','Poppins',system-ui,sans-serif";
 const NAVY = '#0A1931';
@@ -84,7 +84,6 @@ const AdminDashboard = () => {
   const modalInput={padding:'10px',borderRadius:'8px',border:`1px solid ${theme.border}`,fontFamily:FONT,background:theme.input,color:theme.text,width:'100%'};
   const iconBtn=(bg)=>({background:bg,color:'#fff',border:'none',padding:'8px 12px',borderRadius:'20px',fontWeight:900,cursor:'pointer',fontSize:'12px',fontFamily:FONT});
   const navBtn=(active)=>({background:active?NAVY:'#eef2f7',color:active?'#fff':'#0f172a',border:'none',padding:'8px 12px',borderRadius:'8px',fontWeight:800,cursor:'pointer',fontSize:'12px',fontFamily:FONT,whiteSpace:'nowrap'});
-  // SMALL BOXES LIKE YOUR PHOTO - WHITE, SHORT, LIKE 2 / 8 / 4 / 14
   const statBox={background:'#ffffff',border:'1px solid #f1f5f9',borderRadius:'4px',padding:'18px 6px 16px',textAlign:'center',cursor:'pointer',color:'#0f172a',minHeight:'70px',display:'flex',flexDirection:'column',justifyContent:'center',boxShadow:'0 1px 3px rgba(0,0,0,0.06)'};
   const statNum={fontSize:'19px',fontWeight:700,lineHeight:1};
   const statLabel={fontSize:'12px',color:'#6b7280',marginTop:'6px',fontWeight:400};
@@ -95,20 +94,16 @@ const AdminDashboard = () => {
   return (
     <div style={{background:theme.page,minHeight:'100vh',color:theme.text,fontFamily:FONT}}>
       {toast&&<div style={{position:'fixed',top:'80px',right:'20px',background:'#fff',color:'#000',padding:'12px 18px',borderRadius:'20px',fontWeight:800,zIndex:9999,border:'3px solid #0f172a',fontFamily:FONT}}>{toast}</div>}
-      {/* TOP HEADER REMOVED - LIKE PHOTO HAS ONLY WELCOME BELOW */}
-
       <div style={{maxWidth:'480px',margin:'0 auto',padding:'18px 16px 40px'}}>
       {view==='dashboard' ? (
       <>
         <h2 style={{fontSize:'18px',fontWeight:700,marginBottom:'14px',color:'#1e293b',letterSpacing:'-0.2px'}}>Welcome, Admin</h2>
-        {/* SMALL WHITE 2x2 BOXES - EXACTLY LIKE PHOTO: 2 Guards / 8 Incidents */}
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'14px'}}>
           <div onClick={()=>goToList('contacts')} style={statBox}><div style={{...statNum,color:'#0f172a'}}>{contacts.length}</div><div style={statLabel}>Contacts</div></div>
           <div onClick={()=>goToList('applicants')} style={statBox}><div style={{...statNum,color:'#dc2626'}}>{applicants.length}</div><div style={statLabel}>Applicants</div></div>
           <div onClick={()=>goToList('contacts')} style={statBox}><div style={{...statNum,color:'#2563eb'}}>{data.length}</div><div style={statLabel}>Total</div></div>
           <div onClick={()=>{setView('list'); setShowTrash(true);}} style={statBox}><div style={{...statNum,color:'#f59e0b'}}>{trash.length}</div><div style={statLabel}>Trash</div></div>
         </div>
-        {/* BUTTONS LIKE PHOTO - 2 COLUMNS, SMALL HEIGHT, GAP */}
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'14px',marginTop:'22px'}}>
           <button onClick={()=>goToList('contacts')} style={{...viewBtn,background:'#0A1931'}}>👮 MANAGE CONTACTS</button>
           <button onClick={()=>goToList('applicants')} style={{...viewBtn,background:'#dc2626'}}>🚨 VIEW APPLICANTS</button>
@@ -122,7 +117,6 @@ const AdminDashboard = () => {
           <button onClick={load} style={{...viewBtn,background:'#eef2f7',color:'#0f172a',fontWeight:600}}>🔄 REFRESH</button>
         </div>
         <button onClick={logout} style={{width:'100%',marginTop:'14px',background:'#7c8a9a',color:'#fff',border:'none',height:'44px',borderRadius:'5px',fontWeight:700,cursor:'pointer',fontSize:'12px',fontFamily:FONT,letterSpacing:'0.8px'}}>LOGOUT</button>
-        {/* WELCOME CARD - SMALL */}
         <div style={{background:'#fff',borderRadius:'8px',padding:'14px',marginTop:'18px',border:'1px solid #e8e8e8'}}>
           <h3 style={{fontSize:'14px',fontWeight:800,color:NAVY}}>Welcome to Pinnacle Security Website</h3>
           <p style={{fontSize:'13px',lineHeight:'1.6',color:'#334155',marginTop:'6px'}}>Same as your App - everything works here. Tick ✓ to select many, then Delete. Trash keeps them until you Restore or Permanent Delete.</p>
@@ -132,7 +126,6 @@ const AdminDashboard = () => {
             <button onClick={()=>exportPDF(list)} style={{...smallBtn,background:'#dc2626',color:'#fff'}}>📄 PDF</button>
           </div>
         </div>
-        {/* RECENT */}
         <div style={{background:'#fff',borderRadius:'8px',padding:'14px',marginTop:'10px',border:'1px solid #e8e8e8'}}>
           <h3 style={{fontSize:'14px',fontWeight:800,color:NAVY}}>Recent Contacts & Applicants</h3>
           {recent.length===0 && <p style={{fontSize:'12px',color:'#64748b',marginTop:'8px'}}>{loading?'Loading...':'No data - Ready for new submissions'}</p>}
