@@ -22,6 +22,74 @@ const useIsMobile = () => {
   return m;
 };
 
+// ===== NEW VERIFICATION GATE - BEFORE WEBSITE OPEN =====
+const VerificationGate = ({ onVerified }) => {
+  const [checked, setChecked] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [gitMsg, setGitMsg] = useState(false);
+  const isMobile = useIsMobile();
+
+  const handleCheck = () => {
+    if(checked || verifying) return;
+    setChecked(true);
+    setVerifying(true);
+    setTimeout(() => {
+      setGitMsg(true);
+      setTimeout(() => {
+        sessionStorage.setItem('pinnacle_verified', 'true');
+        onVerified();
+      }, 2200);
+    }, 1300);
+  };
+
+  return (
+    <div style={{position:'fixed', inset:0, zIndex:99999, background:'#0A1931', display:'flex', alignItems:'center', justifyContent:'center', padding: isMobile ? '16px' : '20px'}}>
+      <div style={{background:'#fff', borderRadius:'16px', maxWidth:'440px', width:'100%', padding: isMobile ? '20px 16px' : '28px 24px', boxShadow:'0 20px 60px rgba(0,0,0,0.5)', textAlign:'center'}}>
+        <div style={{color:'#0A1931', fontWeight:900, fontSize: isMobile ? '18px' : '20px', letterSpacing:'0.5px'}}>PINNACLE SECURITY LTD</div>
+        <div style={{color:'#666', fontSize:'12px', marginTop:'4px', fontWeight:700}}>Plot 442 & 443 Masionatess, Muyenga - Secure Access</div>
+        
+        <div style={{marginTop:'22px', background:'#f8fafc', border:'1px solid #ddd', borderRadius:'12px', padding:'16px', display:'flex', alignItems:'center', gap:'12px', textAlign:'left'}}>
+          <div onClick={handleCheck} style={{width:'28px', height:'28px', border:'2px solid #0A1931', borderRadius:'4px', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', background: checked ? '#0A1931' : '#fff', flexShrink:0}}>
+            {checked && <span style={{color:'#FFD700', fontWeight:900, fontSize:'18px'}}>✓</span>}
+          </div>
+          <div style={{flex:1}}>
+            <div style={{fontWeight:900, color:'#0A1931', fontSize:'15px'}}>I'm not a robot</div>
+            <div style={{fontSize:'11px', color:'#888'}}>Click to verify you are human</div>
+          </div>
+          <div style={{textAlign:'center'}}>
+            <div style={{width:'32px', height:'32px', background:'#fff', border:'1px solid #ddd', borderRadius:'4px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'10px'}}>🛡️</div>
+            <div style={{fontSize:'8px', color:'#999', marginTop:'2px'}}>Pinnacle<br/>Secure</div>
+          </div>
+        </div>
+
+        {verifying && !gitMsg && (
+          <div style={{marginTop:'18px', fontSize:'13px', color:'#0A1931', fontWeight:700}}>
+            <span style={{display:'inline-block', width:'16px', height:'16px', border:'2px solid #0A1931', borderTopColor:'transparent', borderRadius:'50%', animation:'spin 0.8s linear infinite', marginRight:'8px', verticalAlign:'middle'}}></span>
+            Verifying... Checking browser security
+          </div>
+        )}
+
+        {gitMsg && (
+          <div style={{marginTop:'18px', background:'#0A1931', color:'#00ff88', borderRadius:'10px', padding:'12px', textAlign:'left', fontFamily:'monospace', fontSize:'12px', lineHeight:'1.5'}}>
+            <div style={{color:'#FFD700'}}>$ git status</div>
+            <div>✔ Human verification successful</div>
+            <div style={{marginTop:'8px', color:'#FFD700'}}>$ git commit -m "feat: verified access"</div>
+            <div>[main 8f9a2c1] feat: verified human access - Welcome to Pinnacle Security LTD</div>
+            <div> 1 file changed, 1 insertion(+)</div>
+            <div style={{marginTop:'8px', color:'#fff'}}>✓ Access Granted - Loading secure site...</div>
+            <div style={{marginTop:'8px', width:'100%', height:'4px', background:'rgba(255,255,255,0.2)', borderRadius:'4px', overflow:'hidden'}}>
+              <div style={{width:'100%', height:'100%', background:'#FFD700', animation:'load 2s ease forwards'}}></div>
+            </div>
+          </div>
+        )}
+
+        <div style={{marginTop:'16px', fontSize:'10px', color:'#999'}}>Protected by Pinnacle Security • 0776971970 • No bots allowed</div>
+      </div>
+      <style>{`@keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}} @keyframes load{0%{width:0}100%{width:100%}}`}</style>
+    </div>
+  )
+}
+
 const Dropdown = ({ title, children, color="#0a1931", t }) => {
   const [open, setOpen] = useState(false);
   return (
@@ -77,7 +145,6 @@ const Navbar = ({ theme, toggleTheme }) => {
           </div>
         )}
 
-        {/* PC ONLY - Apply Now / Admin / Dark - HIDDEN ON PHONE */}
         {!isMobile && (
           <div style={{display:'flex', gap:'6px', alignItems:'center', flexShrink:0, marginLeft:'8px', flexWrap:'nowrap'}}>
             <a onClick={() => scrollTo('join')} style={{background:'#FFD700', color:'#0A1931', padding:'8px 12px', borderRadius:'20px', fontWeight:900, textDecoration:'none', whiteSpace:'nowrap', cursor:'pointer', fontSize:'13px'}}>Apply Now</a>
@@ -88,7 +155,6 @@ const Navbar = ({ theme, toggleTheme }) => {
           </div>
         )}
 
-        {/* PHONE ONLY - ONLY 3 LINES, NOTHING ELSE */}
         {isMobile && (
           <button onClick={() => setOpen(!open)} aria-label="Menu" style={{background:'transparent', border:'1px solid #FFD700', width:'44px', height:'42px', borderRadius:'8px', cursor:'pointer', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', gap:'5px', padding:0, flexShrink:0, marginLeft:'auto'}}>
             <span style={{display:'block', width:'22px', height:'2.5px', background:'#FFD700', borderRadius:'2px'}}></span>
@@ -100,17 +166,17 @@ const Navbar = ({ theme, toggleTheme }) => {
 
       {isMobile && open && (
         <div style={{background:'#0A1931', borderTop:'1px solid rgba(255,255,255,0.15)', padding:'6px 0 10px', display:'flex', flexDirection:'column', maxHeight:'75vh', overflowY:'auto'}}>
-          <button style={{...mobileLink, background:'#FFD700', color:'#0A1931', fontWeight:900, borderRadius:'10px', margin:'8px 12px', width:'auto', textAlign:'center'}} onClick={() => scrollTo('join')}>✅ Apply Now - No Fees</button>
-          <a href="/admin" style={{...mobileLink, color:'#ffcc00', textAlign:'center', fontWeight:900, textDecoration:'none', display:'block'}}>🔐 Admin</a>
-          <button style={{...mobileLink, textAlign:'center', color:'#ffcc00', fontWeight:900}} onClick={toggleTheme}>{theme==='dark' ? '☀️ Switch to Light Mode' : '🌙 Switch to Dark Mode'}</button>
+          <button style={{display:'block', width:'100%', color:'#fff', fontSize:'16px', fontWeight:700, padding:'14px', cursor:'pointer', background:'#FFD700', color:'#0A1931', fontWeight:900, borderRadius:'10px', margin:'8px 12px', width:'auto', textAlign:'center', border:'none', borderBottom:'1px solid rgba(255,255,255,0.12)'}} onClick={() => scrollTo('join')}>✅ Apply Now - No Fees</button>
+          <a href="/admin" style={{display:'block', width:'100%', color:'#ffcc00', fontSize:'16px', fontWeight:700, padding:'14px', cursor:'pointer', background:'transparent', textAlign:'center', border:'none', borderBottom:'1px solid rgba(255,255,255,0.12)', textDecoration:'none'}}>🔐 Admin</a>
+          <button style={{display:'block', width:'100%', color:'#fff', fontSize:'16px', fontWeight:700, padding:'14px', cursor:'pointer', background:'transparent', textAlign:'center', border:'none', color:'#ffcc00'}} onClick={toggleTheme}>{theme==='dark' ? '☀️ Switch to Light Mode' : '🌙 Switch to Dark Mode'}</button>
           <div style={{height:'1px', background:'rgba(255,255,255,0.2)', margin:'8px 0'}}></div>
-          <button style={mobileLink} onClick={() => scrollTo('home')}>🏠 Home</button>
-          <button style={mobileLink} onClick={() => scrollTo('about')}>ℹ️ About Pinnacle</button>
-          <button style={mobileLink} onClick={() => scrollTo('services')}>🛡️ Services - Guard, CCTV, Patrol</button>
-          <button style={mobileLink} onClick={() => scrollTo('mission')}>🎯 Mission, Vision, Values</button>
-          <button style={mobileLink} onClick={() => scrollTo('jobs')}>💼 Jobs - We Are Hiring</button>
-          <button style={mobileLink} onClick={() => scrollTo('aptitude')}>📝 Aptitude Test - Must Do</button>
-          <button style={{...mobileLink, borderBottom:'none'}} onClick={() => scrollTo('contact')}>📞 Contact - 0776971970</button>
+          <button style={{display:'block', width:'100%', color:'#fff', fontSize:'16px', fontWeight:700, padding:'14px', cursor:'pointer', background:'transparent', textAlign:'left', border:'none', borderBottom:'1px solid rgba(255,255,255,0.12)'}} onClick={() => scrollTo('home')}>🏠 Home</button>
+          <button style={{display:'block', width:'100%', color:'#fff', fontSize:'16px', fontWeight:700, padding:'14px', cursor:'pointer', background:'transparent', textAlign:'left', border:'none', borderBottom:'1px solid rgba(255,255,255,0.12)'}} onClick={() => scrollTo('about')}>ℹ️ About Pinnacle</button>
+          <button style={{display:'block', width:'100%', color:'#fff', fontSize:'16px', fontWeight:700, padding:'14px', cursor:'pointer', background:'transparent', textAlign:'left', border:'none', borderBottom:'1px solid rgba(255,255,255,0.12)'}} onClick={() => scrollTo('services')}>🛡️ Services - Guard, CCTV, Patrol</button>
+          <button style={{display:'block', width:'100%', color:'#fff', fontSize:'16px', fontWeight:700, padding:'14px', cursor:'pointer', background:'transparent', textAlign:'left', border:'none', borderBottom:'1px solid rgba(255,255,255,0.12)'}} onClick={() => scrollTo('mission')}>🎯 Mission, Vision, Values</button>
+          <button style={{display:'block', width:'100%', color:'#fff', fontSize:'16px', fontWeight:700, padding:'14px', cursor:'pointer', background:'transparent', textAlign:'left', border:'none', borderBottom:'1px solid rgba(255,255,255,0.12)'}} onClick={() => scrollTo('jobs')}>💼 Jobs - We Are Hiring</button>
+          <button style={{display:'block', width:'100%', color:'#fff', fontSize:'16px', fontWeight:700, padding:'14px', cursor:'pointer', background:'transparent', textAlign:'left', border:'none', borderBottom:'1px solid rgba(255,255,255,0.12)'}} onClick={() => scrollTo('aptitude')}>📝 Aptitude Test - Must Do</button>
+          <button style={{display:'block', width:'100%', color:'#fff', fontSize:'16px', fontWeight:700, padding:'14px', cursor:'pointer', background:'transparent', textAlign:'left', border:'none'}} onClick={() => scrollTo('contact')}>📞 Contact - 0776971970</button>
         </div>
       )}
     </nav>
@@ -315,6 +381,7 @@ const Contact = ({ t }) => {
 
 export default function App(){
   const [theme, setTheme] = useState(() => { try{ return localStorage.getItem('pinnacle-theme') || 'light'; }catch(e){ return 'light'; } });
+  const [verified, setVerified] = useState(() => { try{ return sessionStorage.getItem('pinnacle_verified') === 'true'; }catch(e){ return false; } });
   useEffect(()=>{ try{ localStorage.setItem('pinnacle-theme', theme); }catch(e){} },[theme]);
   const toggleTheme = () => setTheme(t => t==='light' ? 'dark' : 'light');
   const isDark = theme==='dark';
@@ -327,6 +394,7 @@ export default function App(){
   return (
     <div style={{background: t.bg, minHeight:'100vh', color: t.text, fontFamily:'Arial', overflowX:'hidden'}}>
       <style>{`* {box-sizing:border-box} body{margin:0} html{scroll-behavior:smooth} img{max-width:100%}`}</style>
+      {!verified && <VerificationGate onVerified={()=>setVerified(true)} />}
       <Navbar theme={theme} toggleTheme={toggleTheme} />
       <div style={{height:'64px'}}></div>
       <div id="home"><Home t={t} /></div>
