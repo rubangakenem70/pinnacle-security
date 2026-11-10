@@ -495,33 +495,12 @@ const Admin = ({ theme, setTheme }) => {
     if(s==='Rejected') return {background:'#fee2e2', color:'#991b1b'};
     return {background:'#fef9c3', color:'#854d0e'};
   };// PART 4A - Admin Actions
-  const changeStatus = async (item, newStatus) => {
-    try {
-      await updateDoc(doc(db, SUBMISSIONS, item.id), { status: newStatus });
-      setAll(p => p.map(x => x.id===item.id ? {...x, status:newStatus} : x));
-    } catch(e){ alert("Failed: "+e.message); }
-  };
-  const moveToTrash = async (item) => {
-    if(!window.confirm("Move to trash?")) return;
-    await updateDoc(doc(db, SUBMISSIONS, item.id), { deleted:true });
-    setAll(p => p.map(x=>x.id===item.id?{...x, deleted:true}:x));
-  };
-  const restoreItem = async (item) => {
-    await updateDoc(doc(db, SUBMISSIONS, item.id), { deleted:false });
-    setAll(p => p.map(x=>x.id===item.id?{...x, deleted:false}:x));
-  };
-  const deleteForever = async (item) => {
-    if(!window.confirm("Delete FOREVER?")) return;
-    await deleteDoc(doc(db, SUBMISSIONS, item.id));
-    setAll(p => p.filter(x=>x.id!==item.id));
-  };// PART 4B
   const emptyTrash = async () => {
     if(!window.confirm("Empty trash forever?")) return;
     const trash = all.filter(x=>x.deleted);
     for(const t of trash) await deleteDoc(doc(db, SUBMISSIONS, t.id));
     setAll(p=>p.filter(x=>!x.deleted));
   };
-  const toggleSelect = (id) => setSelected(p=> p.includes(id) ? p.filter(x=>x!==id) : [...p, id]);
   const toggleAllPaged = () => {
     const ids = paged.map(x=>x.id);
     const allSel = ids.every(id=>selected.includes(id));
@@ -537,12 +516,6 @@ const Admin = ({ theme, setTheme }) => {
     if(!selected.length) return alert("Select items first");
     for(const id of selected) await updateDoc(doc(db, SUBMISSIONS, id), { status:st });
     setAll(p=>p.map(x=>selected.includes(x.id)?{...x, status:st}:x)); setSelected([]);
-  };
-  const saveEdit = async () => {
-    if(!editItem) return;
-    const {id, ...rest} = editItem; const clean = {...rest}; delete clean._time;
-    await updateDoc(doc(db, SUBMISSIONS, id), clean);
-    setAll(p=>p.map(x=>x.id===id?{...x, ...clean}:x)); setEditItem(null); alert("✅ Saved");
   };
   const openReply = (item) => {
     setReplyItem(item); setReplyStatus(item.status||"Under Review");
