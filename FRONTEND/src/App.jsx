@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom'
 import { initializeApp } from 'firebase/app'
-import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, deleteDoc, doc, serverTimestamp } from 'firebase/firestore'
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp } from 'firebase/firestore'
 
-// ===== FIREBASE - ONE DATABASE FOR 2 FORMS - REAL CONFIG =====
 const firebaseConfig = {
   apiKey: "AIzaSyDf2F5Y9fTYDoDky3OnqMwWbI4duXPu99c",
   authDomain: "pinnacle-security.firebaseapp.com",
@@ -16,7 +15,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const SUBMISSIONS = "submissions";
-
 const ADMIN_PASSWORD = "Pinnacle2026!Secure123";
 
 const Navbar = () => {
@@ -136,17 +134,7 @@ const Blog = () => (
 const Contact = () => {
   const [f,setF]=useState({fullName:"",email:"",phone:"",service:"",message:""}); const [s,setS]=useState("");
   const send=async(e)=>{ e.preventDefault(); setS("Submitting..."); try{
-    await addDoc(collection(db, SUBMISSIONS), {
-      formType: "contact",
-      fullName: f.fullName,
-      full_name: f.fullName,
-      email: f.email,
-      phone: f.phone,
-      service: f.service,
-      message: f.message,
-      createdAt: serverTimestamp(),
-      created_at: new Date().toISOString()
-    });
+    await addDoc(collection(db, SUBMISSIONS), { formType: "contact", fullName: f.fullName, full_name: f.fullName, email: f.email, phone: f.phone, service: f.service, message: f.message, createdAt: serverTimestamp(), created_at: new Date().toISOString() });
     setS(" Submitted!"); setF({fullName:"",email:"",phone:"",service:"",message:""})
   }catch(err){ console.log(err); setS("❌ Error - check Firebase Rules") } };
   return (
@@ -166,7 +154,6 @@ const Contact = () => {
           </div>
           <textarea rows="5" value={f.message} onChange={e=>setF({...f,message:e.target.value})} required placeholder="Message / Location"></textarea>
           <button className="big-btn">Submit</button>{s&&<p className="msg">{s}</p>}
-          <p style={{fontSize:'12px', textAlign:'center'}}>If you submitted wrong details, you can re-submit again. Only correct one will be considered.</p>
         </form>
       </div>
     </div>
@@ -176,20 +163,7 @@ const Contact = () => {
 const Join = () => {
   const [f,setF]=useState({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",position:"SITE INCHARGE",district:""}); const [s,setS]=useState("");
   const send=async(e)=>{ e.preventDefault(); setS("Submitting..."); try{
-    await addDoc(collection(db, SUBMISSIONS), {
-      formType: "applicant",
-      fullName: f.fullName,
-      full_name: f.fullName,
-      phone: f.phone,
-      email: f.email,
-      education: f.education,
-      experience: f.experience,
-      interest: f.interest,
-      position: f.position,
-      district: f.district,
-      createdAt: serverTimestamp(),
-      created_at: new Date().toISOString()
-    });
+    await addDoc(collection(db, SUBMISSIONS), { formType: "applicant", fullName: f.fullName, full_name: f.fullName, phone: f.phone, email: f.email, education: f.education, experience: f.experience, interest: f.interest, position: f.position, district: f.district, createdAt: serverTimestamp(), created_at: new Date().toISOString() });
     setS(" Submitted!"); setF({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",position:"SITE INCHARGE",district:""})
   }catch(err){ console.log(err); setS("❌ Error - check Firebase Rules") } };
   return (
@@ -212,7 +186,6 @@ const Join = () => {
           <div><label>Experience *</label><input value={f.experience} onChange={e=>setF({...f,experience:e.target.value})} required placeholder="Years & where you worked"/></div>
         </div>
         <button className="big-btn">Submit</button>{s&&<p className="msg">{s}</p>}
-        <p style={{fontSize:'12px', textAlign:'center', color:'#666'}}>If you submitted wrong detail, you can submit again. Only last submission will be considered.</p>
       </form>
     </div>
   )
@@ -227,15 +200,12 @@ const AdminLogin = () => {
       localStorage.setItem("pinnacle_admin_token", pass);
       setMsg(" Correct! Opening admin...");
       setTimeout(()=> navigate("/admin"), 500);
-    } else {
-      setMsg(`❌ Wrong password.`);
-    }
+    } else { setMsg(`❌ Wrong password.`); }
   };
   return (
     <div className="section" style={{maxWidth:'520px', margin:'60px auto'}}>
       <div className="form-big" style={{border:'3px solid #ffcc00', textAlign:'center'}}>
         <h2>🔐 Admin Login</h2>
-        <p style={{background:'#fff3cd', padding:'10px', borderRadius:'8px', margin:'10px 0'}}>Protected - Manager Only</p>
         <form onSubmit={login} style={{display:'flex', flexDirection:'column', gap:'15px', marginTop:'20px'}}>
           <input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="Enter Admin Password" required style={{padding:'16px'}} />
           <button className="big-btn">Login to Dashboard</button>
@@ -247,36 +217,48 @@ const AdminLogin = () => {
 }
 
 const Admin = () => {
-  const [contacts, setContacts] = useState([]); 
+  const [contacts, setContacts] = useState([]);
   const [applicants, setApplicants] = useState([]);
   const [tab, setTab] = useState("contacts");
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [page, setPage] = useState(1); const perPage = 10;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
   const token = localStorage.getItem("pinnacle_admin_token");
 
+  // FIXED: No where+orderBy index needed. Fetch all, filter in JS.
   const load = async () => {
+    setLoading(true); setError("");
     try {
-      const cSnap = await getDocs(query(collection(db, SUBMISSIONS), where("formType", "==", "contact"), orderBy("createdAt", "desc")));
-      const aSnap = await getDocs(query(collection(db, SUBMISSIONS), where("formType", "==", "applicant"), orderBy("createdAt", "desc")));
-      setContacts(cSnap.docs.map(d => ({ id: d.id, ...d.data(), createdAt: d.data().createdAt?.toDate?.() || d.data().created_at })));
-      setApplicants(aSnap.docs.map(d => ({ id: d.id, ...d.data(), createdAt: d.data().createdAt?.toDate?.() || d.data().created_at })));
-    } catch(err){ console.log("Load error", err); }
+      const snap = await getDocs(collection(db, SUBMISSIONS));
+      const all = snap.docs.map(d => {
+        const data = d.data();
+        let t = 0;
+        if (data.createdAt?.toDate) t = data.createdAt.toDate().getTime();
+        else if (data.created_at) t = new Date(data.created_at).getTime();
+        else if (data.createdAt?.seconds) t = data.createdAt.seconds * 1000;
+        return { id: d.id, ...data, _time: t, createdAt: data.createdAt?.toDate?.() || data.created_at || new Date() };
+      });
+      all.sort((a,b)=> b._time - a._time);
+      setContacts(all.filter(x => (x.formType||"").toLowerCase() === "contact"));
+      setApplicants(all.filter(x => (x.formType||"").toLowerCase() === "applicant"));
+    } catch(err){ console.log("Load error", err); setError("Load failed: " + (err.message||err)); }
+    setLoading(false);
   }
   useEffect(()=>{ if(!token) navigate("/admin-login"); else load(); },[]);
   useEffect(()=>{ setPage(1); },[tab, search, filterType]);
 
-  const handleDelete = async (id, type) => {
+  const handleDelete = async (id) => {
     if (!window.confirm("Delete this after handling?")) return;
     await deleteDoc(doc(db, SUBMISSIONS, id));
     load();
   }
-
   const exportExcel = () => {
     const data = tab==='contacts'? contacts : applicants;
     if (!data.length) return alert("No data");
-    const headers = Object.keys(data[0]).filter(h=>h!=="createdAt");
+    const headers = Object.keys(data[0]).filter(h=>h!=="createdAt" && h!=="_time");
     const csv = [headers.join(",")].concat(data.map(r=>headers.map(h=>`"${(r[h]||'').toString().replace(/"/g,'""')}"`).join(","))).join("\n");
     const blob = new Blob([csv], {type:'text/csv'}); const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href=url; a.download=`pinnacle_${tab}.csv`; a.click();
@@ -289,14 +271,12 @@ const Admin = () => {
     if (filterType==="all") return matchSearch;
     return matchSearch && (c.service||"").toLowerCase().includes(filterType.toLowerCase());
   });
-
   const filteredApplicants = applicants.filter(a => {
     const q = search.toLowerCase();
     const matchSearch = (a.full_name||a.fullName||"").toLowerCase().includes(q) || (a.phone||"").toLowerCase().includes(q) || (a.email||"").toLowerCase().includes(q) || (a.education||"").toLowerCase().includes(q) || (a.position||"").toLowerCase().includes(q);
     if (filterType==="all") return matchSearch;
     return matchSearch && (a.education||"").toLowerCase() === filterType.toLowerCase();
   });
-
   const currentList = tab==="contacts"? filteredContacts : filteredApplicants;
   const totalPages = Math.ceil(currentList.length / perPage) || 1;
   const paged = currentList.slice((page-1)*perPage, page*perPage);
@@ -317,28 +297,13 @@ const Admin = () => {
           <button onClick={logout} className="tab red">Logout</button>
         </div>
       </div>
+      {loading && <p style={{textAlign:'center', padding:'20px', fontWeight:800}}>Loading from Firebase...</p>}
+      {error && <p style={{textAlign:'center', padding:'12px', background:'#fee2e2', borderRadius:'10px', color:'#b91c1c', fontWeight:800}}>{error}</p>}
       <div className="filter-bar-visible">
         <input className="search-input-visible" placeholder={tab==="contacts"?"🔍 Search by service, name, phone..." : "🔍 Search by education, name, phone..."} value={search} onChange={e=>setSearch(e.target.value)} />
         <select className="dropdown-filter-visible" value={filterType} onChange={e=>setFilterType(e.target.value)}>
           <option value="all">All {tab==="contacts"?"Services":"Education"}</option>
-          {tab==="contacts"? (
-            <>
-              <option>Security Guard Service</option>
-              <option>Construction Security</option>
-              <option>CCTV Installation</option>
-              <option>Mobile Patrol</option>
-              <option>Event Security</option>
-              <option>Alarm System</option>
-            </>
-          ) : (
-            <>
-              <option>P7</option>
-              <option>UCE</option>
-              <option>UACE</option>
-              <option>Diploma</option>
-              <option>Degree</option>
-            </>
-          )}
+          {tab==="contacts"? (<><option>Security Guard Service</option><option>Construction Security</option><option>CCTV Installation</option><option>Mobile Patrol</option><option>Event Security</option><option>Alarm System</option></>) : (<><option>P7</option><option>UCE</option><option>UACE</option><option>Diploma</option><option>Degree</option></>)}
         </select>
         <div className="filter-btns">
           <button className="btn-yellow small" onClick={load}>🔄 Refresh</button>
@@ -349,10 +314,7 @@ const Admin = () => {
       <div className="mobile-cards">
         {paged.map((item,i)=>(
           <div key={item.id || i} className="m-card">
-            <div className="m-head">
-              <b>{item.full_name || item.fullName}</b>
-              <small>⏰ {new Date(item.createdAt||Date.now()).toLocaleString()}</small>
-            </div>
+            <div className="m-head"><b>{item.full_name || item.fullName}</b><small>⏰ {new Date(item.createdAt||Date.now()).toLocaleString()}</small></div>
             <div className="m-line">📧 {item.email || '-'} </div>
             <div className="m-line">📞 {item.phone || '-'} </div>
             <div className="m-tag"><span className="tag blue">{item.service || item.education || item.position || 'General'}</span></div>
@@ -360,18 +322,18 @@ const Admin = () => {
             <div className="m-actions-3">
               <a href={`tel:${item.phone}`} className="m-btn call">📞 Call</a>
               <a href={`https://wa.me/${(item.phone||'').replace(/[^0-9]/g,'')}`} target="_blank" rel="noreferrer" className="m-btn wa">WhatsApp</a>
-              <button onClick={()=>handleDelete(item.id, tab)} className="m-btn del">🗑️ Delete</button>
+              <button onClick={()=>handleDelete(item.id)} className="m-btn del">🗑️ Delete</button>
             </div>
           </div>
         ))}
-        {paged.length===0 && <p className="no-data">No data found</p>}
+        {!loading && paged.length===0 && <p className="no-data">No data found - try Refresh</p>}
       </div>
       <div className="table-card desktop-only">
         <div className="scroll">
           <table className="clear-table">
             <thead><tr><th>#</th><th>Name</th><th>Contact Info</th><th>{tab==="contacts"?"Service":"Education / Position"}</th><th>Details</th><th> Time</th><th>Action</th></tr></thead>
             <tbody>{paged.map((item,i)=>(
-              <tr key={item.id}><td>{(page-1)*perPage+i+1}</td><td><b>{item.full_name||item.fullName}</b></td><td>{item.email}<br/><small>{item.phone}</small></td><td><span className="tag blue">{item.service||item.education}</span><br/><small>{item.position||''}</small></td><td style={{maxWidth:'200px'}}><small>{(item.message||item.interest||item.experience||'').substring(0,100)}</small></td><td><small>{new Date(item.createdAt||Date.now()).toLocaleString()}</small></td><td><button onClick={()=>handleDelete(item.id, tab)} className="del-btn">Delete</button></td></tr>
+              <tr key={item.id}><td>{(page-1)*perPage+i+1}</td><td><b>{item.full_name||item.fullName}</b></td><td>{item.email}<br/><small>{item.phone}</small></td><td><span className="tag blue">{item.service||item.education}</span><br/><small>{item.position||''}</small></td><td style={{maxWidth:'200px'}}><small>{(item.message||item.interest||item.experience||'').substring(0,100)}</small></td><td><small>{new Date(item.createdAt||Date.now()).toLocaleString()}</small></td><td><button onClick={()=>handleDelete(item.id)} className="del-btn">Delete</button></td></tr>
             ))}</tbody>
           </table>
         </div>
@@ -385,7 +347,6 @@ const ProtectedAdmin = () => {
   if (token!== ADMIN_PASSWORD) return <Navigate to="/admin-login" replace />;
   return <Admin />;
 }
-
 const Footer = () => <div className="footer">© 2026 Pinnacle Security Ltd ,All right reseserved</div>
 
 const App = () => (
