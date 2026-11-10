@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom'
+import { Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom'
 import { initializeApp } from 'firebase/app'
 import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, deleteDoc, doc, serverTimestamp } from 'firebase/firestore'
 
@@ -98,12 +98,12 @@ const Blog = () => (
           <h3>🔹 POSITION 1: SITE INCHARGE</h3>
           <p><b>Requirements:</b></p>
           <ul>
-            <li>✅ Minimum UCE Certificate (S4) with at least 4 passes</li>
-            <li>✅ 3+ Years experience in security (must have recommendation letter)</li>
-            <li>✅ Age 25-45 years, physically fit</li>
-            <li>✅ Can read/write English, can make daily OB reports</li>
-            <li>✅ No criminal record (we shall verify with LC1 & Police)</li>
-            <li>✅ Leadership skills - will manage 5-10 guards</li>
+            <li> Minimum UCE Certificate (S4) with at least 4 passes</li>
+            <li> 3+ Years experience in security (must have recommendation letter)</li>
+            <li> Age 25-45 years, physically fit</li>
+            <li> Can read/write English, can make daily OB reports</li>
+            <li> No criminal record (we shall verify with LC1 & Police)</li>
+            <li> Leadership skills - will manage 5-10 guards</li>
           </ul>
           <p><b>Duties:</b> Supervise guards, write daily report, handle client complaints, check attendance, ensure uniform discipline.</p>
         </div>
@@ -111,13 +111,13 @@ const Blog = () => (
           <h3>🔹 POSITION 2: SUPERVISOR</h3>
           <p><b>Requirements:</b></p>
           <ul>
-            <li>✅ Minimum UACE Certificate (S6) - 2 principal passes</li>
-            <li>✅ Valid Rider Permit Class A - Must know how to ride motorcycle</li>
-            <li>✅ 3+ Years as security supervisor or site incharge (with proof)</li>
-            <li>✅ Age 27-40, must have smartphone for reports</li>
-            <li>✅ Can ride long distance: Kampala-Entebbe, Kampala-Mukono</li>
-            <li>✅ Honest, not drunkard, no accident history</li>
-            <li>✅ Can train new guards</li>
+            <li> Minimum UACE Certificate (S6) - 2 principal passes</li>
+            <li> Valid Rider Permit Class A - Must know how to ride motorcycle</li>
+            <li> 3+ Years as security supervisor or site incharge (with proof)</li>
+            <li> Age 27-40, must have smartphone for reports</li>
+            <li> Can ride long distance: Kampala-Entebbe, Kampala-Mukono</li>
+            <li> Honest, not drunkard, no accident history</li>
+            <li> Can train new guards</li>
           </ul>
           <p><b>Duties:</b> Visit sites per day, check guards, handle emergencies, recruit new guards, report to Operations Manager.</p>
         </div>
@@ -147,7 +147,7 @@ const Contact = () => {
       createdAt: serverTimestamp(),
       created_at: new Date().toISOString()
     });
-    setS("✅ Submitted!"); setF({fullName:"",email:"",phone:"",service:"",message:""})
+    setS(" Submitted!"); setF({fullName:"",email:"",phone:"",service:"",message:""})
   }catch(err){ console.log(err); setS("❌ Error - check Firebase Rules") } };
   return (
     <div className="section"><h2>Contact Us</h2>
@@ -190,7 +190,7 @@ const Join = () => {
       createdAt: serverTimestamp(),
       created_at: new Date().toISOString()
     });
-    setS("✅ Submitted!"); setF({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",position:"SITE INCHARGE",district:""})
+    setS(" Submitted!"); setF({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",position:"SITE INCHARGE",district:""})
   }catch(err){ console.log(err); setS("❌ Error - check Firebase Rules") } };
   return (
     <div className="section"><h2>Apply Now - Free Training - No Fees</h2>
@@ -225,7 +225,7 @@ const AdminLogin = () => {
     e.preventDefault();
     if (pass === ADMIN_PASSWORD) {
       localStorage.setItem("pinnacle_admin_token", pass);
-      setMsg("✅ Correct! Opening admin...");
+      setMsg(" Correct! Opening admin...");
       setTimeout(()=> navigate("/admin"), 500);
     } else {
       setMsg(`❌ Wrong password.`);
@@ -369,7 +369,7 @@ const Admin = () => {
       <div className="table-card desktop-only">
         <div className="scroll">
           <table className="clear-table">
-            <thead><tr><th>#</th><th>Name</th><th>Contact Info</th><th>{tab==="contacts"?"Service":"Education / Position"}</th><th>Details</th><th>⏰ Time</th><th>Action</th></tr></thead>
+            <thead><tr><th>#</th><th>Name</th><th>Contact Info</th><th>{tab==="contacts"?"Service":"Education / Position"}</th><th>Details</th><th> Time</th><th>Action</th></tr></thead>
             <tbody>{paged.map((item,i)=>(
               <tr key={item.id}><td>{(page-1)*perPage+i+1}</td><td><b>{item.full_name||item.fullName}</b></td><td>{item.email}<br/><small>{item.phone}</small></td><td><span className="tag blue">{item.service||item.education}</span><br/><small>{item.position||''}</small></td><td style={{maxWidth:'200px'}}><small>{(item.message||item.interest||item.experience||'').substring(0,100)}</small></td><td><small>{new Date(item.createdAt||Date.now()).toLocaleString()}</small></td><td><button onClick={()=>handleDelete(item.id, tab)} className="del-btn">Delete</button></td></tr>
             ))}</tbody>
@@ -386,10 +386,10 @@ const ProtectedAdmin = () => {
   return <Admin />;
 }
 
-const Footer = () => <div className="footer">© 2026 Pinnacle Security Ltd | Plot 442 & 443 Masajjagere, Muyenga | HR: hr@pinnaclegroup.co.ug | Control Room 24/7: 0754 139726</div>
+const Footer = () => <div className="footer">© 2026 Pinnacle Security Ltd ,All right reseserved</div>
 
 const App = () => (
-  <BrowserRouter>
+  <>
     <style>{`
       *{margin:0;padding:0;box-sizing:border-box} body{font-family:Arial,sans-serif; background:#f4f6f9; line-height:1.6; overflow-x:hidden}
   .nav{background:#0a1931; padding:14px 15px; position:sticky; top:0; z-index:999}.nav-top{display:flex; justify-content:space-between; align-items:center}.logo{color:#ffcc00; font-weight:900; font-size:16px}.menu-btn{color:#fff; font-size:26px; cursor:pointer; display:none}.links{display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap}.links a{color:#fff; text-decoration:none; font-size:15px; font-weight:700; padding:8px 10px}.btn-yellow{background:#ffcc00!important; color:#0a1931!important; padding:10px 18px!important; border-radius:25px!important; font-weight:900!important; border:none; cursor:pointer; text-decoration:none; display:inline-block; font-size:14px}.btn-yellow.big{padding:14px 26px!important; font-size:16px}.btn-yellow.small{padding:10px 16px!important; font-size:13px}.btn-admin{background:#1e3a8a!important; color:#ffcc00!important; border:2px solid #ffcc00!important; padding:8px 16px!important; border-radius:25px!important; font-weight:900!important; text-decoration:none; font-size:14px}.btn-dark{background:#0a1931; color:#ffcc00; border:none; padding:12px 18px; border-radius:10px; font-weight:800; cursor:pointer; font-size:13px}.btn-dark.small{padding:10px 14px}.hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:35px 15px; text-align:center; border-radius:0 0 20px 20px}.hero h1{color:#ffcc00; font-size:22px; margin-bottom:10px; line-height:1.3}.hero p{font-size:15px}.dots{margin:12px 0}.dot{width:10px; height:10px; background:#555; border-radius:50%; display:inline-block; margin:0 5px; cursor:pointer}.dot.on{background:#ffcc00}.section{padding:18px 12px; max-width:1250px; margin:auto}.section h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:8px; margin-bottom:16px; font-size:22px}.card{background:#fff; padding:18px; border-radius:14px; margin-bottom:14px; box-shadow:0 4px 12px rgba(0,0,0,0.06); border-left:5px solid #0a1931; font-size:15px; line-height:1.7}.card.gold{border-left-color:#ffcc00; background:#fffbeb}.card.dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; border-left-color:#ffcc00}.card h3{font-size:18px; margin-bottom:10px; color:#0a1931}.card.dark h3{color:#ffcc00}
@@ -417,6 +417,6 @@ const App = () => (
       <Route path="/admin" element={<ProtectedAdmin/>}/>
     </Routes>
     <Footer/>
-  </BrowserRouter>
+  </>
 )
 export default App
