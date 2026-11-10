@@ -618,6 +618,15 @@ const Admin = ({ theme, setTheme }) => {
     </div>
   )
 }// PART 5A - Footer + App
+const Hero = () => (
+  <section className="hero">
+    <h1>PINNACLE SECURITY LTD</h1>
+    <p>Trusted Guards • CCTV • Patrol • VIP Protection in Kampala</p>
+    <div>
+      <Link to="/join">Apply Now</Link> <Link to="/services">Our Services</Link>
+    </div>
+  </section>
+);
 const Footer = () => (
   <footer className="footer">
     <div><h3>🛡️ PINNACLE SECURITY LTD</h3><p>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga, Kampala<br/>📞 0754 139726 (24/7 Control Room) | 📧 hr@pinnaclegroup.co.ug</p><p>4.3★ Rated | 60+ Sites | 150+ Officers | URSB Licensed</p></div>
