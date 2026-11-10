@@ -663,13 +663,13 @@ export default function App(){
       <style>{`// PART 5B
       `}</style>
       <Navbar/>
-      <div className="top-strip">🚨 24/7 Control Room: 0754 139726 | No Recruitment Fees — Never Pay To Apply | Now Hiring in Kampala, Jinja, Mbarara, Gulu</div>
+      <div className="top-strip"> 24/7 Control Room: 0754 139726 | No Recruitment Fees — Never Pay To Apply | Now Hiring in Kampala, Jinja, Mbarara, Gulu</div>
       <Routes>
         <Route path="/" element={<><Hero/><TrustBar/><HomeServices/><Stats/><About/><Gallery/><Testimonials/><ContactCTA/></>}/>
         <Route path="/services" element={<ServicesPage/>}/>
         <Route path="/join" element={<JoinPage/>}/>
         <Route path="/contact" element={<ContactPage/>}/>
-        <Route path="/admin" element={<Admin/>}/>
+        <Route patsh="/admin" element={<Admin/>}/>
         <Route path="*" element={<div className="section"><h2>Page not found</h2><Link to="/">Go Home</Link></div>}/>
       </Routes>
       <Footer/>
