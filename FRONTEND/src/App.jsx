@@ -1,402 +1,422 @@
-import AdminDashboard from './pages/AdminDashboard.jsx';
 import React, { useState, useEffect } from 'react'
+import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom'
+import { initializeApp } from 'firebase/app'
+import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, deleteDoc, doc, serverTimestamp } from 'firebase/firestore'
 
-const GOOGLE_SHEET_WEBHOOK = "https://script.google.com/macros/s/AKfycbz0Fx9gSfPwPXZdi8pivw9IdQ_fzj707fPk22GBECuGYhGzwePtEPZV47TyXk8TN8bggQ/exec";
-const KOBO_APTITUDE_TEST = "https://ee.kobotoolbox.org/x/ODCdeyaJ";
-const GOOGLE_APTITUDE_REGISTER = "https://forms.gle/W8JroZ8n8HGArq248";
-
-const getFullDateTime24 = () => {
-  const d = new Date();
-  const kampala = new Date(d.toLocaleString('en-US', {timeZone:'Africa/Kampala'}));
-  return kampala.getDate().toString().padStart(2,'0') + '/' + (kampala.getMonth()+1).toString().padStart(2,'0') + '/' + kampala.getFullYear() + ' ' + kampala.getHours().toString().padStart(2,'0') + ':' + kampala.getMinutes().toString().padStart(2,'0') + ':' + kampala.getSeconds().toString().padStart(2,'0') + '.' + kampala.getMilliseconds() + '-' + Math.floor(Math.random()*900+100);
+// ===== FIREBASE - ONE DATABASE FOR 2 FORMS - REAL CONFIG =====
+const firebaseConfig = {
+  apiKey: "AIzaSyDf2F5Y9fTYDoDky3OnqMwWbI4duXPu99c",
+  authDomain: "pinnacle-security.firebaseapp.com",
+  projectId: "pinnacle-security",
+  storageBucket: "pinnacle-security.firebasestorage.app",
+  messagingSenderId: "123982360487",
+  appId: "1:123982360487:web:1f9e545294271c3bb3d082",
+  measurementId: "G-7SB3L9XWE6"
 };
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const SUBMISSIONS = "submissions";
 
-const useIsMobile = () => {
-  const [m, setM] = useState(false);
-  useEffect(() => {
-    const check = () => setM(window.innerWidth <= 900);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
-  return m;
-};
+const ADMIN_PASSWORD = "Pinnacle2026!Secure123";
 
-// ===== 2-STEP VERIFICATION + DOUBLE GIT AT ONCE =====
-const VerificationGate = ({ onVerified }) => {
-  const [step, setStep] = useState(1);
-  const [checked, setChecked] = useState(false);
-  const [answer, setAnswer] = useState("");
-  const [gitMsg, setGitMsg] = useState(false);
-  const isMobile = useIsMobile();
-  const num1 = 5;
-  const num2 = 3;
-  const correct = num1 + num2;
-
-  const handleCheck = () => {
-    if(checked) return;
-    setChecked(true);
-    setTimeout(() => setStep(2), 800);
-  };
-
-  const handleVerify2 = () => {
-    if(parseInt(answer) !== correct){
-      alert("Wrong answer! What is "+num1+" + "+num2+" ?");
-      return;
-    }
-    setGitMsg(true);
-    setTimeout(() => {
-      sessionStorage.setItem('pinnacle_verified', 'true');
-      onVerified();
-    }, 2500);
-  };
-
-  return (
-    <div style={{position:'fixed', inset:0, zIndex:99999, background:'#0A1931', display:'flex', alignItems:'center', justifyContent:'center', padding: isMobile ? '16px' : '20px'}}>
-      <div style={{background:'#fff', borderRadius:'16px', maxWidth:'460px', width:'100%', padding: isMobile ? '20px 16px' : '28px 24px', boxShadow:'0 20px 60px rgba(0,0,0,0.5)', textAlign:'center'}}>
-        <div style={{color:'#0A1931', fontWeight:900, fontSize:'19px'}}>PINNACLE SECURITY LTD</div>
-        <div style={{color:'#666', fontSize:'11px', marginTop:'4px', fontWeight:700}}>Step {step} of 2 - Secure Access</div>
-        <div style={{marginTop:'12px', display:'flex', gap:'6px', justifyContent:'center'}}>
-          <div style={{width:'40px', height:'4px', borderRadius:'4px', background: step>=1 ? '#0A1931' : '#ddd'}}></div>
-          <div style={{width:'40px', height:'4px', borderRadius:'4px', background: step>=2 ? '#0A1931' : '#ddd'}}></div>
-        </div>
-
-        {step===1 && (
-          <>
-            <div style={{marginTop:'18px', textAlign:'left', fontWeight:900, color:'#0A1931', fontSize:'14px'}}>Step 1: Confirm you are not a robot</div>
-            <div onClick={handleCheck} style={{marginTop:'10px', background: checked ? '#e6f4ea' : '#f8fafc', border: checked ? '2px solid #0A1931' : '1px solid #ddd', borderRadius:'12px', padding:'14px', display:'flex', alignItems:'center', gap:'12px', cursor:'pointer', textAlign:'left'}}>
-              <div style={{width:'28px', height:'28px', border:'2px solid #0A1931', borderRadius:'4px', display:'flex', alignItems:'center', justifyContent:'center', background: checked ? '#0A1931' : '#fff'}}>
-                {checked && <span style={{color:'#FFD700', fontWeight:900, fontSize:'18px'}}>✓</span>}
-              </div>
-              <div style={{flex:1}}>
-                <div style={{fontWeight:900, color:'#0A1931', fontSize:'14px'}}>I'm not a robot</div>
-                <div style={{fontSize:'11px', color:'#888'}}>Tap to verify</div>
-              </div>
-              <div style={{fontSize:'20px'}}>🛡️</div>
-            </div>
-            {checked && <div style={{marginTop:'12px', fontSize:'12px', color:'#0A1931'}}>✓ Checked - Loading next verification...</div>}
-          </>
-        )}
-
-        {step===2 && !gitMsg && (
-          <>
-            <div style={{marginTop:'18px', textAlign:'left', fontWeight:900, color:'#0A1931', fontSize:'14px'}}>Step 2: Human Check - Quick Math</div>
-            <div style={{marginTop:'10px', background:'#fffbe6', border:'1px solid #FFD700', borderRadius:'12px', padding:'14px', textAlign:'left'}}>
-              <div style={{fontSize:'14px', color:'#0A1931', fontWeight:700}}>What is {num1} + {num2} ? (Prove you are human)</div>
-              <input type="number" value={answer} onChange={e=>setAnswer(e.target.value)} placeholder="Enter answer" style={{marginTop:'10px', padding:'10px', borderRadius:'8px', border:'1px solid #ccc', width:'100%', fontSize:'16px'}} />
-              <button onClick={handleVerify2} style={{marginTop:'10px', width:'100%', background:'#0A1931', color:'#FFD700', padding:'10px', borderRadius:'20px', fontWeight:900, border:'none', cursor:'pointer'}}>VERIFY & SHOW GIT</button>
-            </div>
-          </>
-        )}
-
-        {gitMsg && (
-          <div style={{marginTop:'16px', background:'#0A1931', color:'#00ff88', borderRadius:'10px', padding:'12px', textAlign:'left', fontFamily:'monospace', fontSize:'11.5px', lineHeight:'1.5'}}>
-            <div style={{color:'#FFD700'}}>$ git log --oneline -2</div>
-            <div style={{color:'#fff'}}>8f9a2c1 (HEAD -&gt; main) feat: step 1 - robot check passed</div>
-            <div style={{color:'#fff'}}>a1b2c3d feat: step 2 - human math verified ({num1}+{num2}={correct})</div>
-            <div style={{marginTop:'8px', color:'#FFD700'}}>$ git status</div>
-            <div>✔ All checks passed - Human confirmed</div>
-            <div style={{marginTop:'8px', color:'#FFD700'}}>$ git commit -m "secure: verified access"</div>
-            <div>[main 9z8y7x6] secure: verified human access - Welcome to Pinnacle</div>
-            <div style={{marginTop:'8px', color:'#fff', fontWeight:900}}>✓ Access Granted - Loading Pinnacle Security LTD...</div>
-            <div style={{marginTop:'8px', width:'100%', height:'4px', background:'rgba(255,255,255,0.2)', borderRadius:'4px', overflow:'hidden'}}>
-              <div style={{width:'100%', height:'100%', background:'#FFD700', animation:'load 2s ease forwards'}}></div>
-            </div>
-          </div>
-        )}
-
-        <div style={{marginTop:'12px', fontSize:'10px', color:'#999'}}>Protected by Pinnacle • 2-Step Verification • 0776971970</div>
-      </div>
-      <style>{`@keyframes load{0%{width:0}100%{width:100%}}`}</style>
-    </div>
-  )
-}
-
-const Dropdown = ({ title, children, color="#0a1931", t }) => {
+const Navbar = () => {
+  const loc = useLocation();
+  const active = (p) => loc.pathname === p? {color:'#ffcc00', borderBottom:'3px solid #ffcc00'} : {color:'white'};
   const [open, setOpen] = useState(false);
   return (
-    <div style={{background: t.card, borderRadius:'12px', marginBottom:'12px', border:'2px solid '+color, overflow:'hidden'}}>
-      <div onClick={()=>setOpen(!open)} style={{padding:'14px 18px', cursor:'pointer', display:'flex', justifyContent:'space-between', alignItems:'center', background: open ? color : t.card, color: open ? '#ffcc00' : t.text, fontWeight:900, fontSize:'15px'}}>
-        <span>{title}</span><span style={{fontSize:'20px'}}>{open ? '-' : '+'}</span>
+    <nav className="nav">
+      <div className="nav-top"><span className="logo">🛡️ PINNACLE SECURITY LTD</span><span className="menu-btn" onClick={()=>setOpen(!open)}>{open?'✕':'☰'}</span></div>
+      <div className={`links ${open?'show':''}`}>
+        <Link to="/" style={active("/")} onClick={()=>setOpen(false)}>Home</Link>
+        <Link to="/about" style={active("/about")} onClick={()=>setOpen(false)}>About</Link>
+        <Link to="/services" style={active("/services")} onClick={()=>setOpen(false)}>Services</Link>
+        <Link to="/blog" style={active("/blog")} onClick={()=>setOpen(false)}>Jobs</Link>
+        <Link to="/contact" style={active("/contact")} onClick={()=>setOpen(false)}>Contact</Link>
+        <Link to="/join" className="btn-yellow" onClick={()=>setOpen(false)}>Apply Now</Link>
+        <Link to="/admin" className="btn-admin" onClick={()=>setOpen(false)}>🔐 Admin</Link>
       </div>
-      {open && <div style={{padding:'16px 18px', fontSize:'16px', lineHeight:'1.8', color: t.muted, background: t.card2}}>{children}</div>}
-    </div>
-  )
-}
-
-const Navbar = ({ theme, toggleTheme }) => {
-  const isMobile = useIsMobile();
-  const [open, setOpen] = useState(false);
-  const [hover, setHover] = useState(null);
-  const scrollTo = (id) => { setOpen(false); setHover(null); const el = document.getElementById(id); if (el) { const offset = 78; const top = el.getBoundingClientRect().top + window.scrollY - offset; window.scrollTo({ top, behavior: 'smooth' }); } };
-  const dropWrap = {position:'relative'};
-  const dropBtn = (active) => ({color: active ? '#ffcc00' : '#fff', textDecoration:'none', fontSize:'13.5px', fontWeight:700, padding:'8px 6px', cursor:'pointer', display:'inline-block', whiteSpace:'nowrap'});
-  const mega = {position:'absolute', top:'100%', right:'0', width:'860px', maxWidth:'92vw', background:'#fff', borderRadius:'14px', boxShadow:'0 14px 35px rgba(0,0,0,0.25)', padding:'22px', display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'20px', zIndex:10000, textAlign:'left'};
-  const colTitle = {color:'#0a1931', fontSize:'13px', fontWeight:900, borderBottom:'3px solid #ffcc00', paddingBottom:'6px', marginBottom:'10px'};
-  const colLink = {display:'block', color:'#333', fontSize:'14px', fontWeight:700, padding:'8px 6px', cursor:'pointer'};
-  const colDesc = {display:'block', color:'#777', fontSize:'12px', fontWeight:400, lineHeight:'1.4'};
-  const pcLink = {color:'#fff', textDecoration:'none', fontSize:'13.5px', padding:'8px 6px', cursor:'pointer', fontWeight:700, whiteSpace:'nowrap'};
-  const mobileLink = {display:'block', width:'100%', color:'#fff', fontSize:'16px', fontWeight:700, padding:'14px', cursor:'pointer', background:'transparent', textAlign:'left', border:'none', borderBottom:'1px solid rgba(255,255,255,0.12)'};
-  return (
-    <nav style={{background:'#0A1931', position:'fixed', top:0, left:0, right:0, zIndex:9999, width:'100%', boxShadow:'0 4px 16px rgba(0,0,0,0.35)', borderBottom:'2px solid #FFD700'}}>
-      <div style={{maxWidth:'1440px', margin:'0 auto', padding: isMobile ? '10px 12px' : '10px 14px', display:'flex', justifyContent:'space-between', alignItems:'center', gap:'8px', flexWrap:'nowrap'}}>
-        <span onClick={()=>scrollTo('home')} style={{color:'#FFD700', fontWeight:900, fontSize: isMobile ? '15px' : '17px', lineHeight:'1.15', whiteSpace:'nowrap', cursor:'pointer', flexShrink:0}}>PINNACLE<br/>SECURITY LTD</span>
-        {!isMobile && (
-          <div style={{display:'flex', alignItems:'center', gap:'2px', marginLeft:'auto', justifyContent:'flex-end', flex:1, flexWrap:'nowrap'}}>
-            <div style={{display:'flex', gap:'2px', alignItems:'center', justifyContent:'flex-end', flexWrap:'nowrap'}}>
-              <a onClick={() => scrollTo('home')} style={pcLink}>Home</a>
-              <div style={dropWrap} onMouseEnter={()=>setHover('about')} onMouseLeave={()=>setHover(null)}>
-                <span style={dropBtn(hover==='about')} onClick={()=>scrollTo('about')}>About ▼</span>
-                {hover==='about' && (<div style={mega}><div><div style={colTitle}>ABOUT PINNACLE</div><span style={colLink} onClick={()=>scrollTo('about')}>About Pinnacle <span style={colDesc}>Since 2009, 150+ officers, 60+ sites, UN 2013-2025, Serena Kigo.</span></span><span style={colLink} onClick={()=>scrollTo('about')}>Our History & Welfare <span style={colDesc}>Free Food & Accommodation for all staff.</span></span></div><div><div style={colTitle}>MISSION & VALUES</div><span style={colLink} onClick={()=>scrollTo('mission')}>Mission, Vision, Values <span style={colDesc}>DISCIPLINE - Our daily life, Vision 2030.</span></span><span style={colLink} onClick={()=>scrollTo('mission')}>Why Clients Trust Us <span style={colDesc}>24/7 Control, 10-Min Response, Replacement Guarantee.</span></span></div><div><div style={colTitle}>BIG CLIENTS</div><span style={colLink} onClick={()=>scrollTo('about')}>United Nations (UN) <span style={colDesc}>2013 to 2025 - 12 years.</span></span><span style={colLink} onClick={()=>scrollTo('about')}>Serena Hotel - Still in Kigo <span style={colDesc}>5-star standard, polite, smart.</span></span></div></div>)}
-              </div>
-              <div style={dropWrap} onMouseEnter={()=>setHover('services')} onMouseLeave={()=>setHover(null)}>
-                <span style={dropBtn(hover==='services')} onClick={()=>scrollTo('services')}>Services ▼</span>
-                {hover==='services' && (<div style={mega}><div><div style={colTitle}>🛡️ GUARDING</div><span style={colLink} onClick={()=>scrollTo('services')}>Security Guard Service <span style={colDesc}>Homes, Shops, Offices - Day / Night.</span></span><span style={colLink} onClick={()=>scrollTo('services')}>Construction Site Security <span style={colDesc}>Stop cement, iron bars, fuel theft.</span></span></div><div><div style={colTitle}>📹 TECHNOLOGY</div><span style={colLink} onClick={()=>scrollTo('services')}>CCTV Installation <span style={colDesc}>4 cameras 1.2M, 8 cameras 2.1M, phone viewing.</span></span><span style={colLink} onClick={()=>scrollTo('services')}>Mobile Patrol <span style={colDesc}>Patrol car visits 3x night.</span></span></div><div><div style={colTitle}>⭐ SPECIAL</div><span style={colLink} onClick={()=>scrollTo('services')}>Event Security <span style={colDesc}>40k per guard per day.</span></span><span style={colLink} onClick={()=>scrollTo('services')}>Escort & VIP Protection <span style={colDesc}>Cash, goods, VIP - safe, discreet.</span></span></div></div>)}
-              </div>
-              <div style={dropWrap} onMouseEnter={()=>setHover('career')} onMouseLeave={()=>setHover(null)}>
-                <span style={dropBtn(hover==='career')} onClick={()=>scrollTo('jobs')}>Career ▼</span>
-                {hover==='career' && (<div style={mega}><div><div style={colTitle}>💼 JOBS</div><span style={colLink} onClick={()=>scrollTo('jobs')}>Site Incharge - 5 Posts <span style={colDesc}>UCE + 3yrs + Free Food & Accommodation.</span></span><span style={colLink} onClick={()=>scrollTo('jobs')}>Security Officer - 50 Posts <span style={colDesc}>P7 & above, Free Food & Accommodation.</span></span></div><div><div style={colTitle}>📝 APPLY & TEST</div><span style={colLink} onClick={()=>scrollTo('aptitude')}>Aptitude Test <span style={colDesc}>Must for all - FREE, 20-30 mins.</span></span><span style={colLink} onClick={()=>scrollTo('join')}>Apply Now <span style={colDesc}>No Fees - Interview daily 8am Muyenga.</span></span></div><div><div style={colTitle}>🎓 GROW</div><span style={colLink} onClick={()=>scrollTo('jobs')}>Training - 2 Weeks FREE <span style={colDesc}>Discipline + OB + radio + first aid.</span></span><span style={colLink} onClick={()=>scrollTo('contact')}>Contact HR <span style={colDesc}>0776971970 - hr@pinnaclegroup.co.ug</span></span></div></div>)}
-              </div>
-              <a onClick={() => scrollTo('mission')} style={pcLink}>Mission</a>
-              <a onClick={() => scrollTo('jobs')} style={pcLink}>Jobs</a>
-              <a onClick={() => scrollTo('aptitude')} style={pcLink}>Aptitude Test</a>
-              <a onClick={() => scrollTo('contact')} style={pcLink}>Contact</a>
-            </div>
-          </div>
-        )}
-        {!isMobile && (
-          <div style={{display:'flex', gap:'6px', alignItems:'center', flexShrink:0, marginLeft:'8px', flexWrap:'nowrap'}}>
-            <a onClick={() => scrollTo('join')} style={{background:'#FFD700', color:'#0A1931', padding:'8px 12px', borderRadius:'20px', fontWeight:900, textDecoration:'none', whiteSpace:'nowrap', cursor:'pointer', fontSize:'13px'}}>Apply Now</a>
-            <a href="/admin" style={{color:'#ffcc00', fontWeight:'900', border:'1px solid #ffcc00', borderRadius:'20px', padding:'7px 10px', textDecoration:'none', whiteSpace:'nowrap', fontSize:'12.5px'}}>Admin</a>
-            <button onClick={toggleTheme} style={{background: theme==='dark' ? '#ffcc00' : 'transparent', color: theme==='dark' ? '#0a1931' : '#ffcc00', border:'1px solid #ffcc00', padding:'7px 10px', borderRadius:'20px', fontWeight:900, cursor:'pointer', whiteSpace:'nowrap', fontSize:'12.5px'}}>
-              {theme==='dark' ? '☀️ Light' : '🌙 Dark'}
-            </button>
-          </div>
-        )}
-        {isMobile && (
-          <button onClick={() => setOpen(!open)} aria-label="Menu" style={{background:'transparent', border:'1px solid #FFD700', width:'44px', height:'42px', borderRadius:'8px', cursor:'pointer', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', gap:'5px', padding:0, flexShrink:0, marginLeft:'auto'}}>
-            <span style={{display:'block', width:'22px', height:'2.5px', background:'#FFD700', borderRadius:'2px'}}></span>
-            <span style={{display:'block', width:'22px', height:'2.5px', background:'#FFD700', borderRadius:'2px'}}></span>
-            <span style={{display:'block', width:'22px', height:'2.5px', background:'#FFD700', borderRadius:'2px'}}></span>
-          </button>
-        )}
-      </div>
-      {isMobile && open && (
-        <div style={{background:'#0A1931', borderTop:'1px solid rgba(255,255,255,0.15)', padding:'6px 0 10px', display:'flex', flexDirection:'column', maxHeight:'75vh', overflowY:'auto'}}>
-          <button style={{display:'block', width:'100%', fontSize:'16px', fontWeight:700, padding:'14px', cursor:'pointer', background:'#FFD700', color:'#0A1931', fontWeight:900, borderRadius:'10px', margin:'8px 12px', width:'auto', textAlign:'center', border:'none'}} onClick={() => scrollTo('join')}>✅ Apply Now - No Fees</button>
-          <a href="/admin" style={{display:'block', width:'100%', color:'#ffcc00', fontSize:'16px', fontWeight:700, padding:'14px', cursor:'pointer', background:'transparent', textAlign:'center', border:'none', borderBottom:'1px solid rgba(255,255,255,0.12)', textDecoration:'none'}}>🔐 Admin</a>
-          <button style={{display:'block', width:'100%', fontSize:'16px', fontWeight:700, padding:'14px', cursor:'pointer', background:'transparent', textAlign:'center', border:'none', color:'#ffcc00'}} onClick={toggleTheme}>{theme==='dark' ? '☀️ Switch to Light Mode' : '🌙 Switch to Dark Mode'}</button>
-          <div style={{height:'1px', background:'rgba(255,255,255,0.2)', margin:'8px 0'}}></div>
-          <button style={mobileLink} onClick={() => scrollTo('home')}>🏠 Home</button>
-          <button style={mobileLink} onClick={() => scrollTo('about')}>ℹ️ About Pinnacle</button>
-          <button style={mobileLink} onClick={() => scrollTo('services')}>🛡️ Services - Guard, CCTV, Patrol</button>
-          <button style={mobileLink} onClick={() => scrollTo('mission')}>🎯 Mission, Vision, Values</button>
-          <button style={mobileLink} onClick={() => scrollTo('jobs')}>💼 Jobs - We Are Hiring</button>
-          <button style={mobileLink} onClick={() => scrollTo('aptitude')}>📝 Aptitude Test - Must Do</button>
-          <button style={{...mobileLink, borderBottom:'none'}} onClick={() => scrollTo('contact')}>📞 Contact - 0776971970</button>
-        </div>
-      )}
     </nav>
   )
 }
 
-const Home = ({ t }) => {
-  const isMobile = useIsMobile();
+const Home = () => {
   const [i, setI] = useState(0);
-  useEffect(() => { const t2 = setInterval(() => setI(p => (p + 1) % 3), 3500); return () => clearInterval(t2) }, []);
-  const slides = [
-    { t: "Pinnacle Security Limited", d: "Plot 442 & 443 Masionatess, Muyenga - Licensed Security Company | 60+ Sites | 150+ Officers | 24/7 Control Room" },
-    { t: "WE ARE RECRUITING - JOIN US TODAY", d: "SITE INCHARGE, SUPERVISOR, SECURITY OFFICER - Free Food & Accommodation + Free Training + No Fees" },
-    { t: "Your Safety is Our Priority - 0776971970", d: "hr@pinnaclegroup.co.ug | Free Food & Accommodation | Free Training | No Recruitment Fees | Licensed by Uganda Police" },
+  useEffect(()=>{ const t=setInterval(()=>setI(p=>(p+1)%3), 3500); return()=>clearInterval(t) },[]);
+  const slides=[
+    {t:"Pinnacle Security Limited - 4.3★ Rated", d:"Plot 442 & 443 Masajjagere, Muyenga - Licensed Security Company"},
+    {t:"🚨 WE ARE RECRUITING - JOIN US TODAY", d:"SITE INCHARGE: UCE + 3yrs experience | SUPERVISOR: UACE + Rider Permit + 3yrs"},
+    {t:"60+ Sites | 150+ Officers | 24/7 Control Room 0754 139726", d:"hr@pinnaclegroup.co.ug | Free Training | No Recruitment Fees"},
   ];
-  const card = {background: t.card, padding: isMobile ? '16px' : '20px', borderRadius:'12px', color: t.text, lineHeight:'1.7'};
-  const cardGold = {...card, background: t.cardGold};
-  const cardDark = {...card, background:'#000', color:'#fff', borderLeft:'4px solid #FFD700'};
+  return (<><div className="hero"><h1>{slides[i].t}</h1><p>{slides[i].d}</p><div className="dots">{[0,1,2].map(n=><span key={n} className={n===i?'dot on':'dot'} onClick={()=>setI(n)}></span>)}</div><Link to="/join" className="btn-yellow big">Apply Now - Free</Link></div>
+    <div className="section"><div className="card"><h3>🛡️ Who We Are - 4.3★ Rated Security Company</h3><p>Pinnacle Security Ltd at Plot 442 & 443 Masajjagere, Off Kironde Road Muyenga is a URSB Licensed Private Security Organization. We protect 60+ sites in Kampala, Wakiso, Mukono, Entebbe with 150+ disciplined, trained officers. Control Room 0754 139726 is 24/7.</p></div><div className="card gold"><h3>🎯 Our Core Services</h3><p>✅ Security Guard Service - Armed & Unarmed. ✅ Construction Security. ✅ CCTV Installation & Monitoring. ✅ Mobile Patrol & Rapid Response. ✅ Event Security. ✅ Alarm Systems & Electric Fences.</p></div><div className="card dark"><h3>🚨 URGENT RECRUITMENT - No Fees - Free Training 2 Weeks</h3><p><b>SITE INCHARGE:</b> UCE + 3yrs experience. <b>SUPERVISOR:</b> UACE + Rider Permit + 3yrs. Training: 2 weeks free at Muyenga HQ.</p><Link to="/join" className="btn-yellow">Apply Now Online - Free</Link></div></div></>)
+}
+
+const About = () => (
+  <div className="section">
+    <h2>About Pinnacle Security Ltd</h2>
+    <div className="about-hero">
+      <h3>🛡️ Pinnacle Security Ltd - Protecting What Matters Most Since 2018</h3>
+      <p>Located at <b>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga Hill, Kampala - Uganda</b>, Pinnacle Security Limited is a fully licensed Private Security Organization registered under URSB and Ministry of Internal Affairs.</p>
+      <p>With <b>4.3★ Google Rating, 60+ Active Sites, 150+ Trained Officers</b> and 24/7 Control Room <b>0754 139726</b>, we are one of the fastest growing security companies in Kampala, Wakiso, Mukono and Entebbe corridor.</p>
+    </div>
+    <div className="about-grid">
+      <div className="card about-card"><div className="about-icon">🎯</div><h3>Our Mission</h3><p>To provide <b>professional, affordable, and reliable security solutions</b> to homes, businesses, construction sites, schools, hotels and events. We are committed to protecting lives, property and investments with discipline, integrity and rapid response. <b>No Hidden Fees, No Exploitation, Free Training for all recruits</b>.</p></div>
+      <div className="card about-card gold"><div className="about-icon">👁️</div><h3>Our Vision</h3><p>To be <b>Uganda's most trusted and most respected security company by 2030</b>. A company where every client feels safe, every guard feels valued, and every site is protected with technology + manpower.</p></div>
+      <div className="card about-card dark-card"><div className="about-icon">💎</div><h3>Core Values</h3><ul className="about-list"><li><b>D</b> - Discipline</li><li><b>I</b> - Integrity</li><li><b>S</b> - Service</li><li><b>C</b> - Courage</li><li><b>P</b> - Professionalism</li></ul></div>
+    </div>
+  </div>
+)
+
+const Services = () => {
+  const [open,setOpen]=useState(null);
+  const list=[
+    {n:"1. Security Guard Service", short:"Armed & Unarmed guards for homes, shops, offices", full:["We deploy disciplined guards with uniform, ID, radio. Duties: Gate control, patrol, visitor register, night vigilance.", "Includes supervisor visits 3x a week, free replacement if guard absent, monthly report, 10 min rapid response."]},
+    {n:"2. Construction Site Security", short:"Special guards for building sites - protect cement, iron bars", full:["We understand construction theft: cement, D12/D16, timber, tools. Guards trained to check materials in/out, store management, night torch patrol."]},
+    {n:"3. CCTV Installation & Monitoring", short:"4 cameras from 2.5M with phone viewing", full:["We supply & install: DVR, 4 HD cameras, 1TB HDD, cables, installation. You view on phone anywhere. Night vision, motion alert.", "Brands: Hikvision, Dahua - 2 years warranty."]},
+    {n:"4. Mobile Patrol & Rapid Response", short:"Our car patrols your area every 2 hours", full:["Best for homes without full-time guard. Our patrol car with 2 officers patrols your zone. 3 visits day, 3 visits night. Random timing.", "Includes 10-min rapid response if alarm. Coverage: Muyenga, Buziga, Munyonyo, Ggaba, Kansanga, Kabalagala."]},
+    {n:"5. Event Security & Bouncers", short:"Weddings, concerts, conferences", full:["We provide: Crowd control, gate, VIP protection, parking control, anti-theft. Uniform: Smart suits for corporate, t-shirts for concerts."]},
+    {n:"6. Alarm Systems & Electric Fences", short:"Intruder alarm and electric fence protection", full:["Alarm: Magnetic sensors on doors/windows, motion inside, loud siren + call to your phone + control room.", "Electric Fence: 5 lines, energizer, battery backup, warning signs. Works on Yaka & solar."]},
+  ];
   return (
-    <div style={{maxWidth:'1200px', margin:'0 auto', padding: isMobile ? '16px 12px' : '20px', paddingTop:'30px'}}>
-      <div style={{background:'#1a2f7a', color:'#fff', borderRadius:'16px', padding: isMobile ? '24px 14px' : '36px 20px', textAlign:'center'}}>
-        <h1 style={{color:'#FFD700', fontSize: isMobile ? '23px' : '32px', lineHeight:'1.25', margin:'0 0 10px'}}>{slides[i].t}</h1>
-        <p style={{fontSize: isMobile ? '15px' : '18px', color:'#fff', lineHeight:'1.6'}}>{slides[i].d}</p>
-        <div style={{display:'flex', gap:'8px', justifyContent:'center', marginTop:'14px'}}>{[0,1,2].map(n => <span key={n} onClick={() => setI(n)} style={{width:'10px', height:'10px', borderRadius:'50%', background: n===i ? '#FFD700' : '#fff', opacity: n===i ? 1 : 0.5, cursor:'pointer'}}></span>)}</div>
-        <div style={{display:'flex', gap:'12px', justifyContent:'center', flexWrap:'wrap', marginTop:'12px'}}><a onClick={() => document.getElementById('join').scrollIntoView({behavior:'smooth'})} style={{background:'#FFD700', color:'#0A1931', padding:'12px 24px', borderRadius:'20px', fontWeight:900, cursor:'pointer'}}>Apply Now</a><a onClick={() => document.getElementById('aptitude').scrollIntoView({behavior:'smooth'})} style={{background:'#fff', color:'#0A1931', padding:'12px 24px', borderRadius:'20px', fontWeight:900, cursor:'pointer'}}>Aptitude Test</a></div>
+    <div className="section"><h2>Our Services - Click + to Expand</h2>
+      {list.map((s,i)=><div key={i} className="service-box"><div className="service-head" onClick={()=>setOpen(open===i?null:i)}><div><strong>{s.n}</strong><p className="service-short">{s.short}</p></div><span className="expand-btn">{open===i?'Close −':'Open +'}</span></div>{open===i&&<div className="service-body">{s.full.map((p,k)=><p key={k}>• {p}</p>)}</div>}</div>)}
+    </div>
+  )
+}
+
+const Blog = () => (
+  <div className="section">
+    <div className="memo">
+      <div className="memo-head">
+        <h2 style={{border:'none', marginBottom:'5px'}}>📋 INTERNAL MEMO - PINNACLE SECURITY LTD</h2>
+        <p><b>From:</b> Human Resource Manager | <b>To:</b> All Applicants | <b>Date:</b> {new Date().toLocaleDateString()} | <b>Ref:</b> PSL/HR/2026/08</p>
+        <p><b>Subject: URGENT RECRUITMENT - SITE INCHARGE, SUPERVISOR & GENERAL GUARDS</b></p>
       </div>
-      <p style={{textAlign:'center', marginTop:'18px', fontSize:'17px', lineHeight:'1.7', color: t.muted}}>Welcome to Pinnacle Security Ltd. We are not just a security company. We are your neighbours, your protectors, your partners. When you sleep at night, we are awake. When you go to work, we guard your home. When you build, we guard your materials. When you celebrate, we guard your event. That is our promise: <b style={{color: t.text}}>We do not just guard buildings. We guard lives, families, businesses, and dreams.</b> We have protected the United Nations for 12 years, the Entebbe Express Highway, and Serena Hotel in Kigo. If big organisations trust us, you can trust us too. Call us today for a FREE site survey on 0776971970 - no fees, no pressure, just honest advice.</p>
-      <div style={{marginTop:'22px', display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap:'16px'}}>
-        <div style={card}><h3 style={{color: t.text}}>Who We Are - Licensed & Trusted</h3><p style={{color: t.muted}}>Pinnacle Security Ltd is a fully licensed private security company at <b style={{color: t.text}}>Plot 442 & 443 Massionatees, Muyenga Hill</b>. Since 2009, we have grown to 60+ sites and 150+ trained officers. We provide <b style={{color: t.text}}>free food and accommodation</b> to all guards, supervisors and site incharges.</p></div>
-        <div style={cardGold}><h3 style={{color: t.text}}>Core Services</h3><p style={{color: t.muted}}><b style={{color: t.text}}>Guard Service:</b> Day/night guards for homes, shops, offices — with free food & accommodation</p></div>
-        <div style={cardDark}><h3 style={{color:'#FFD700'}}>URGENT RECRUITMENT - No Fees</h3><p style={{color:'#fff'}}><b>SITE INCHARGE:</b> UCE + 3yrs — Attractive salary + Free Food & Accommodation</p><p style={{color:'#fff', marginTop:'10px'}}><b>SUPERVISOR:</b> UACE + Rider Permit + 3yrs — Attractive salary + Free Food & Accommodation</p><p style={{color:'#fff', marginTop:'10px'}}><b>SECURITY OFFICER:</b> P7 & above — Attractive salary + Free Food & Accommodation</p><a onClick={() => document.getElementById('join').scrollIntoView({behavior:'smooth'})} style={{marginTop:'18px', width:'100%', textAlign:'center', display:'block', cursor:'pointer', background:'#FFD700', color:'#0A1931', padding:'12px 24px', borderRadius:'20px', fontWeight:900}}>Apply Now</a></div>
+      <div className="memo-body">
+        <p>Management has approved recruitment for immediate deployment. Applications are <b>FREE, No Fees</b>. Training is <b>2 weeks FREE at Muyenga HQ Plot 442/443</b>.</p>
+        <div className="job-card">
+          <h3>🔹 POSITION 1: SITE INCHARGE</h3>
+          <p><b>Requirements:</b></p>
+          <ul>
+            <li>✅ Minimum UCE Certificate (S4) with at least 4 passes</li>
+            <li>✅ 3+ Years experience in security (must have recommendation letter)</li>
+            <li>✅ Age 25-45 years, physically fit</li>
+            <li>✅ Can read/write English, can make daily OB reports</li>
+            <li>✅ No criminal record (we shall verify with LC1 & Police)</li>
+            <li>✅ Leadership skills - will manage 5-10 guards</li>
+          </ul>
+          <p><b>Duties:</b> Supervise guards, write daily report, handle client complaints, check attendance, ensure uniform discipline.</p>
+        </div>
+        <div className="job-card gold">
+          <h3>🔹 POSITION 2: SUPERVISOR</h3>
+          <p><b>Requirements:</b></p>
+          <ul>
+            <li>✅ Minimum UACE Certificate (S6) - 2 principal passes</li>
+            <li>✅ Valid Rider Permit Class A - Must know how to ride motorcycle</li>
+            <li>✅ 3+ Years as security supervisor or site incharge (with proof)</li>
+            <li>✅ Age 27-40, must have smartphone for reports</li>
+            <li>✅ Can ride long distance: Kampala-Entebbe, Kampala-Mukono</li>
+            <li>✅ Honest, not drunkard, no accident history</li>
+            <li>✅ Can train new guards</li>
+          </ul>
+          <p><b>Duties:</b> Visit sites per day, check guards, handle emergencies, recruit new guards, report to Operations Manager.</p>
+        </div>
+        <div className="general-recruit">
+          <h3>🔹 GENERAL RECRUITMENT: SECURITY OFFICER</h3>
+          <p>We are ALWAYS recruiting disciplined men & women to join our team. You can apply as general guard and be called when vacancy comes.</p>
+          <p><b>Requirements:</b> P7/UCE, Age 22-45, No crime, Physically fit, Willing to work day/night, Training FREE.</p>
+          <Link to="/join" className="big-recruit-btn">👮 APPLY NOW FOR GENERAL RECRUITMENT - FREE</Link>
+        </div>
+        <p style={{marginTop:'20px', background:'#fff3cd', padding:'12px', borderRadius:'8px'}}><b>How to Apply:</b> Click Apply Now, fill form. Or come physically to Plot 442/443 Masajjagere, Muyenga. Contact HR: <b>hr@pinnaclegroup.co.ug</b> / Control: 0754 139726.</p>
+      </div>
+    </div>
+  </div>
+)
+
+const Contact = () => {
+  const [f,setF]=useState({fullName:"",email:"",phone:"",service:"",message:""}); const [s,setS]=useState("");
+  const send=async(e)=>{ e.preventDefault(); setS("Submitting..."); try{
+    await addDoc(collection(db, SUBMISSIONS), {
+      formType: "contact",
+      fullName: f.fullName,
+      full_name: f.fullName,
+      email: f.email,
+      phone: f.phone,
+      service: f.service,
+      message: f.message,
+      createdAt: serverTimestamp(),
+      created_at: new Date().toISOString()
+    });
+    setS("✅ Submitted!"); setF({fullName:"",email:"",phone:"",service:"",message:""})
+  }catch(err){ console.log(err); setS("❌ Error - check Firebase Rules") } };
+  return (
+    <div className="section"><h2>Contact Us</h2>
+      <div className="form-2col">
+        <div className="form-left-info">
+          <div className="card"><h3>📍 Visit Us</h3><p>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga Hill, Kampala.<br/>Mon-Sat 8am-6pm. Control Room 24/7.</p><p>📞 0754 139726<br/>📧 hr@pinnaclegroup.co.ug</p></div>
+        </div>
+        <form className="form-big" onSubmit={send}>
+          <div className="two-col">
+            <input value={f.fullName} onChange={e=>setF({...f,fullName:e.target.value})} required placeholder="Enter your fullname"/>
+            <input value={f.phone} onChange={e=>setF({...f,phone:e.target.value})} required placeholder="Enter your phone number"/>
+          </div>
+          <div className="two-col">
+            <input type="email" value={f.email} onChange={e=>setF({...f,email:e.target.value})} required placeholder="Enter your email"/>
+            <select value={f.service} onChange={e=>setF({...f,service:e.target.value})} required><option value="">Choose Service</option><option>Security Guard Service</option><option>Construction Security</option><option>CCTV Installation</option><option>Mobile Patrol</option><option>Event Security</option><option>Alarm System</option></select>
+          </div>
+          <textarea rows="5" value={f.message} onChange={e=>setF({...f,message:e.target.value})} required placeholder="Message / Location"></textarea>
+          <button className="big-btn">Submit</button>{s&&<p className="msg">{s}</p>}
+          <p style={{fontSize:'12px', textAlign:'center'}}>If you submitted wrong details, you can re-submit again. Only correct one will be considered.</p>
+        </form>
       </div>
     </div>
   )
 }
 
-const About = ({ t }) => {
-  const isMobile = useIsMobile();
-  const card = {background: t.card, padding:'20px', borderRadius:'12px', color: t.text, lineHeight:'1.7'};
+const Join = () => {
+  const [f,setF]=useState({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",position:"SITE INCHARGE",district:""}); const [s,setS]=useState("");
+  const send=async(e)=>{ e.preventDefault(); setS("Submitting..."); try{
+    await addDoc(collection(db, SUBMISSIONS), {
+      formType: "applicant",
+      fullName: f.fullName,
+      full_name: f.fullName,
+      phone: f.phone,
+      email: f.email,
+      education: f.education,
+      experience: f.experience,
+      interest: f.interest,
+      position: f.position,
+      district: f.district,
+      createdAt: serverTimestamp(),
+      created_at: new Date().toISOString()
+    });
+    setS("✅ Submitted!"); setF({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",position:"SITE INCHARGE",district:""})
+  }catch(err){ console.log(err); setS("❌ Error - check Firebase Rules") } };
   return (
-    <div style={{maxWidth:'1200px', margin:'0 auto', padding: isMobile ? '16px 12px' : '20px'}}>
-      <h2 style={{textAlign:'center', color: t.text, fontSize: isMobile ? '22px' : '28px'}}>About Pinnacle Security Ltd - Detailed</h2>
-      <div style={{display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap:'16px'}}>
-        <div style={card}><h3 style={{color: t.text}}>Our History & Welfare</h3><p style={{color: t.muted}}>Started in 2009. Today 150+ officers, 60+ sites. Free food & accommodation to all staff.</p></div>
-        <div style={{...card, background: t.cardGold}}><h3 style={{color: t.text}}>Why Clients Trust Us</h3><p style={{color: t.muted}}>24/7 Control, 10-Min Response, Free Food & Accommodation, Replacement Guarantee.</p></div>
-        <div style={{...card, background:'#000', color:'#fff'}}><h3 style={{color:'#FFD700'}}>Our Numbers</h3><p style={{color:'#fff'}}>150+ Officers<br/>60+ Sites<br/>UN 2013-2025, Serena Kigo</p></div>
+    <div className="section"><h2>Apply Now - Free Training - No Fees</h2>
+      <form className="form-big" onSubmit={send}>
+        <div className="two-col">
+          <div><label>Full Name *</label><input value={f.fullName} onChange={e=>setF({...f,fullName:e.target.value})} required placeholder="Enter your fullname"/></div>
+          <div><label>Phone *</label><input value={f.phone} onChange={e=>setF({...f,phone:e.target.value})} required placeholder="Enter your phone number"/></div>
+        </div>
+        <div className="two-col">
+          <div><label>Email *</label><input type="email" value={f.email} onChange={e=>setF({...f,email:e.target.value})} required placeholder="Enter your email"/></div>
+          <div><label>Education *</label><select value={f.education} onChange={e=>setF({...f,education:e.target.value})} required><option value="">Choose Education</option><option>P7</option><option>UCE</option><option>UACE</option><option>Diploma</option><option>Degree</option></select></div>
+        </div>
+        <div className="two-col">
+          <div><label>Position Applying For *</label><select value={f.position} onChange={e=>setF({...f,position:e.target.value})} required><option>SITE INCHARGE</option><option>SUPERVISOR</option><option>SECURITY OFFICER - General</option></select></div>
+          <div><label>District *</label><input value={f.district} onChange={e=>setF({...f,district:e.target.value})} required placeholder="Enter your district"/></div>
+        </div>
+        <div className="two-col">
+          <div><label>Why Interested? *</label><input value={f.interest} onChange={e=>setF({...f,interest:e.target.value})} required placeholder="Why are you interested?"/></div>
+          <div><label>Experience *</label><input value={f.experience} onChange={e=>setF({...f,experience:e.target.value})} required placeholder="Years & where you worked"/></div>
+        </div>
+        <button className="big-btn">Submit</button>{s&&<p className="msg">{s}</p>}
+        <p style={{fontSize:'12px', textAlign:'center', color:'#666'}}>If you submitted wrong detail, you can submit again. Only last submission will be considered.</p>
+      </form>
+    </div>
+  )
+}
+
+const AdminLogin = () => {
+  const [pass, setPass] = useState(""); const [msg, setMsg] = useState("");
+  const navigate = useNavigate();
+  const login = (e) => {
+    e.preventDefault();
+    if (pass === ADMIN_PASSWORD) {
+      localStorage.setItem("pinnacle_admin_token", pass);
+      setMsg("✅ Correct! Opening admin...");
+      setTimeout(()=> navigate("/admin"), 500);
+    } else {
+      setMsg(`❌ Wrong password.`);
+    }
+  };
+  return (
+    <div className="section" style={{maxWidth:'520px', margin:'60px auto'}}>
+      <div className="form-big" style={{border:'3px solid #ffcc00', textAlign:'center'}}>
+        <h2>🔐 Admin Login</h2>
+        <p style={{background:'#fff3cd', padding:'10px', borderRadius:'8px', margin:'10px 0'}}>Protected - Manager Only</p>
+        <form onSubmit={login} style={{display:'flex', flexDirection:'column', gap:'15px', marginTop:'20px'}}>
+          <input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="Enter Admin Password" required style={{padding:'16px'}} />
+          <button className="big-btn">Login to Dashboard</button>
+          {msg && <p className="msg">{msg}</p>}
+        </form>
       </div>
     </div>
   )
 }
 
-const Services = ({ t }) => {
-  const isMobile = useIsMobile();
-  const card = {background: t.card, padding:'20px', borderRadius:'12px', color: t.text, lineHeight:'1.7', marginBottom:'12px'};
-  return (
-    <div style={{maxWidth:'1200px', margin:'0 auto', padding: isMobile ? '16px 12px' : '20px'}}>
-      <h2 style={{textAlign:'center', color: t.text, fontSize: isMobile ? '22px' : '28px'}}>Our Security Services</h2>
-      <div style={card}><h3 style={{color: t.text}}>1. Security Guard Service</h3><p style={{color: t.muted}}>Homes, Shops, Offices - Day/night guards with free food & accommodation.</p></div>
-      <div style={{...card, background: t.cardGold}}><h3 style={{color: t.text}}>2. Construction & CCTV & Patrol</h3><p style={{color: t.muted}}>CCTV 4 cam 1.2M, Patrol 3x night, Event 40k per guard.</p></div>
-    </div>
-  )
-}
+const Admin = () => {
+  const [contacts, setContacts] = useState([]); 
+  const [applicants, setApplicants] = useState([]);
+  const [tab, setTab] = useState("contacts");
+  const [search, setSearch] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [page, setPage] = useState(1); const perPage = 10;
+  const navigate = useNavigate();
+  const token = localStorage.getItem("pinnacle_admin_token");
 
-const MissionPage = ({ t }) => {
-  const isMobile = useIsMobile();
-  const card = {background: t.card, padding:'20px', borderRadius:'12px', lineHeight:'1.7'};
-  return (
-    <div style={{maxWidth:'1200px', margin:'0 auto', padding: isMobile ? '16px 12px' : '20px'}}>
-      <h2 style={{textAlign:'center', color: t.text}}>Our Mission, Vision, Values</h2>
-      <div style={{display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap:'16px'}}>
-        <div style={card}><h3 style={{color: t.text}}>Mission</h3><p style={{color: t.muted}}>Professional, affordable, disciplined security.</p></div>
-        <div style={{...card, background: t.cardGold}}><h3 style={{color: t.text}}>Vision 2030</h3><p style={{color: t.muted}}>500+ officers, 200+ sites.</p></div>
-        <div style={{...card, background:'#000', color:'#fff'}}><h3 style={{color:'#FFD700'}}>DISCIPLINE</h3><p style={{color:'#fff'}}>Discipline is our daily life.</p></div>
-      </div>
-    </div>
-  )
-}
+  const load = async () => {
+    try {
+      const cSnap = await getDocs(query(collection(db, SUBMISSIONS), where("formType", "==", "contact"), orderBy("createdAt", "desc")));
+      const aSnap = await getDocs(query(collection(db, SUBMISSIONS), where("formType", "==", "applicant"), orderBy("createdAt", "desc")));
+      setContacts(cSnap.docs.map(d => ({ id: d.id, ...d.data(), createdAt: d.data().createdAt?.toDate?.() || d.data().created_at })));
+      setApplicants(aSnap.docs.map(d => ({ id: d.id, ...d.data(), createdAt: d.data().createdAt?.toDate?.() || d.data().created_at })));
+    } catch(err){ console.log("Load error", err); }
+  }
+  useEffect(()=>{ if(!token) navigate("/admin-login"); else load(); },[]);
+  useEffect(()=>{ setPage(1); },[tab, search, filterType]);
 
-const Blog = ({ t }) => {
-  const isMobile = useIsMobile();
+  const handleDelete = async (id, type) => {
+    if (!window.confirm("Delete this after handling?")) return;
+    await deleteDoc(doc(db, SUBMISSIONS, id));
+    load();
+  }
+
+  const exportExcel = () => {
+    const data = tab==='contacts'? contacts : applicants;
+    if (!data.length) return alert("No data");
+    const headers = Object.keys(data[0]).filter(h=>h!=="createdAt");
+    const csv = [headers.join(",")].concat(data.map(r=>headers.map(h=>`"${(r[h]||'').toString().replace(/"/g,'""')}"`).join(","))).join("\n");
+    const blob = new Blob([csv], {type:'text/csv'}); const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download=`pinnacle_${tab}.csv`; a.click();
+  }
+  const logout = () => { localStorage.removeItem("pinnacle_admin_token"); navigate("/admin-login"); }
+
+  const filteredContacts = contacts.filter(c => {
+    const q = search.toLowerCase();
+    const matchSearch = (c.full_name||c.fullName||"").toLowerCase().includes(q) || (c.email||"").toLowerCase().includes(q) || (c.phone||"").toLowerCase().includes(q) || (c.service||"").toLowerCase().includes(q) || (c.message||"").toLowerCase().includes(q);
+    if (filterType==="all") return matchSearch;
+    return matchSearch && (c.service||"").toLowerCase().includes(filterType.toLowerCase());
+  });
+
+  const filteredApplicants = applicants.filter(a => {
+    const q = search.toLowerCase();
+    const matchSearch = (a.full_name||a.fullName||"").toLowerCase().includes(q) || (a.phone||"").toLowerCase().includes(q) || (a.email||"").toLowerCase().includes(q) || (a.education||"").toLowerCase().includes(q) || (a.position||"").toLowerCase().includes(q);
+    if (filterType==="all") return matchSearch;
+    return matchSearch && (a.education||"").toLowerCase() === filterType.toLowerCase();
+  });
+
+  const currentList = tab==="contacts"? filteredContacts : filteredApplicants;
+  const totalPages = Math.ceil(currentList.length / perPage) || 1;
+  const paged = currentList.slice((page-1)*perPage, page*perPage);
+
   return (
-    <div style={{maxWidth:'1200px', margin:'0 auto', padding: isMobile ? '16px 12px' : '20px'}}>
-      <div style={{background: t.card, borderRadius:'14px', overflow:'hidden'}}>
-        <div style={{background:'#0A1931', color:'#fff', padding:'20px'}}><h2 style={{color:'#FFD700', fontSize:'20px', margin:'0 0 8px'}}>INTERNAL MEMO - PINNACLE</h2><p style={{color:'#fff'}}>URGENT RECRUITMENT - Free Food & Accommodation - No Fees</p></div>
-        <div style={{padding:'20px'}}>
-          <Dropdown t={t} title="POSITION 1: SITE INCHARGE - 5 Posts" color="#ffcc00"><div style={{color: t.muted}}>Attractive salary + Free Food & Accommodation + Motorcycle</div></Dropdown>
-          <Dropdown t={t} title="POSITION 2: SUPERVISOR - 10 Posts" color="#0a1931"><div style={{color: t.muted}}>Attractive salary + Free Food & Accommodation</div></Dropdown>
-          <Dropdown t={t} title="POSITION 3: SECURITY OFFICER - 50 Posts" color="#0a1931"><div style={{color: t.muted}}>Attractive salary + Free Food & Accommodation</div></Dropdown>
+    <div className="admin-page">
+      <div className="admin-top">
+        <h2>🔐 Admin</h2>
+        <div className="stats">
+          <span>📩 {contacts.length} Contacts</span>
+          <span>👮 {applicants.length} Applicants</span>
+          <span>Page {page}/{totalPages}</span>
+        </div>
+        <div className="tabs">
+          <button onClick={()=>setTab("contacts")} className={tab==="contacts"?"tab on":"tab"}>Contacts</button>
+          <button onClick={()=>setTab("applicants")} className={tab==="applicants"?"tab on":"tab"}>Applicants</button>
+          <button onClick={exportExcel} className="tab white">📊 Export Excel</button>
+          <button onClick={logout} className="tab red">Logout</button>
         </div>
       </div>
-    </div>
-  )
-}
-
-const Aptitude = ({ t }) => {
-  const isMobile = useIsMobile();
-  const card = {background: t.card, padding:'20px', borderRadius:'12px', lineHeight:'1.7'};
-  return (
-    <div style={{maxWidth:'1200px', margin:'0 auto', padding: isMobile ? '16px 12px' : '20px'}}>
-      <h2 style={{textAlign:'center', color: t.text}}>Online Aptitude Test</h2>
-      <div style={{display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap:'16px', marginTop:'16px'}}>
-        <div style={card}><h3 style={{color: t.text}}>Step 1: Register</h3><a href={GOOGLE_APTITUDE_REGISTER} target="_blank" rel="noreferrer" style={{display:'block', textAlign:'center', marginTop:'12px', background:'#FFD700', color:'#0A1931', padding:'12px 24px', borderRadius:'20px', fontWeight:900, textDecoration:'none'}}>Register Now</a></div>
-        <div style={{...card, background: t.cardGold}}><h3 style={{color: t.text}}>Step 2: Do Test</h3><a href={KOBO_APTITUDE_TEST} target="_blank" rel="noreferrer" style={{display:'block', textAlign:'center', marginTop:'12px', background:'#0a1931', color:'#ffcc00', padding:'12px 24px', borderRadius:'20px', fontWeight:900, textDecoration:'none'}}>Start Test</a></div>
-        <div style={{...card, background:'#000', color:'#fff'}}><h3 style={{color:'#FFD700'}}>Step 3: Interview</h3><p style={{color:'#fff'}}>8am Muyenga HQ</p></div>
-      </div>
-    </div>
-  )
-}
-
-const Join = ({ t }) => {
-  const isMobile = useIsMobile();
-  const [form, setForm] = useState({FullName:'', Phone:'', Email:'', Position:'Security Officer', District:'', Education:'', Experience:''});
-  const [sent, setSent] = useState(false);
-  const submit = async (e) => {
-    e.preventDefault();
-    const payload = Object.assign({}, form, {timestamp: getFullDateTime24(), Timestamp: getFullDateTime24(), type:'applicant'});
-    try { await fetch(GOOGLE_SHEET_WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)}); } catch(err){}
-    setSent(true);
-  };
-  const inp = {padding:'12px', borderRadius:'10px', border:'1px solid #ccc', width:'100%', fontSize:'15px', background:'#fff', color:'#0a1931', boxSizing:'border-box'};
-  return (
-    <div style={{maxWidth:'1200px', margin:'0 auto', padding: isMobile ? '16px 12px' : '20px'}} id="join">
-      <h2 style={{textAlign:'center', color: t.text}}>Apply Now - No Fees</h2>
-      <div style={{background: t.card, padding:'20px', borderRadius:'12px', maxWidth:'600px', margin:'0 auto', color: t.text}}>
-        {sent ? <p style={{textAlign:'center', fontWeight:900, color: t.text}}>✅ Application Sent!</p> : (
-        <form onSubmit={submit} style={{display:'flex', flexDirection:'column', gap:'10px'}}>
-          <input required placeholder="Full Name" value={form.FullName} onChange={e=>setForm({...form, FullName:e.target.value})} style={inp} />
-          <input required placeholder="Phone" value={form.Phone} onChange={e=>setForm({...form, Phone:e.target.value})} style={inp} />
-          <input placeholder="Email" value={form.Email} onChange={e=>setForm({...form, Email:e.target.value})} style={inp} />
-          <select value={form.Position} onChange={e=>setForm({...form, Position:e.target.value})} style={inp}><option>Security Officer</option><option>Supervisor</option><option>Site Incharge</option></select>
-          <input placeholder="District" value={form.District} onChange={e=>setForm({...form, District:e.target.value})} style={inp} />
-          <input placeholder="Education" value={form.Education} onChange={e=>setForm({...form, Education:e.target.value})} style={inp} />
-          <input placeholder="Experience" value={form.Experience} onChange={e=>setForm({...form, Experience:e.target.value})} style={inp} />
-          <button type="submit" style={{background:'#FFD700', color:'#0A1931', padding:'12px 24px', borderRadius:'20px', fontWeight:900, border:'none', cursor:'pointer'}}>Submit</button>
-        </form>)}
-      </div>
-    </div>
-  )
-}
-
-const Contact = ({ t }) => {
-  const isMobile = useIsMobile();
-  const [form, setForm] = useState({ FullName:'', Phone:'', Email:'', Service:'Security Guard Service', Messages:'' });
-  const [sent, setSent] = useState(false);
-  const [sending, setSending] = useState(false);
-  const submit = async (e) => {
-    e.preventDefault();
-    if(!form.FullName || !form.Phone || !form.Messages){ alert("Fill Name, Phone and Message"); return; }
-    setSending(true);
-    const ts = getFullDateTime24();
-    const payload = Object.assign({}, form, { timestamp:ts, Timestamp:ts, type:'contact', Type:'contact' });
-    try { await fetch(GOOGLE_SHEET_WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)}); } catch(err){}
-    setSending(false); setSent(true);
-  };
-  const inp = { padding:'12px 14px', borderRadius:'10px', border:'1px solid #ccc', width:'100%', fontSize:'15px', background:'#fff', color:'#0a1931', boxSizing:'border-box' };
-  return (
-    <div style={{maxWidth:'1200px', margin:'0 auto', padding: isMobile ? '16px 12px' : '20px'}} id="contact">
-      <h2 style={{textAlign:'center', color: t.text}}>Contact Us</h2>
-      <div style={{display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap:'16px'}}>
-        <div style={{background: t.card, padding:'20px', borderRadius:'12px', color: t.text}}>
-          <h3>📍 Visit / Call</h3><p>0776971970 | hr@pinnaclegroup.co.ug</p>
-        </div>
-        <div style={{background: t.card, padding:'20px', borderRadius:'12px', color: t.text}}>
-          <h3>✉️ Send Message</h3>
-          {sent ? <div style={{textAlign:'center'}}>✅ Sent!</div> : (
-            <form onSubmit={submit} style={{display:'flex', flexDirection:'column', gap:'10px'}}>
-              <input required placeholder="Full Name" value={form.FullName} onChange={e=>setForm({...form, FullName:e.target.value})} style={inp} />
-              <input required placeholder="Phone" value={form.Phone} onChange={e=>setForm({...form, Phone:e.target.value})} style={inp} />
-              <input placeholder="Email" value={form.Email} onChange={e=>setForm({...form, Email:e.target.value})} style={inp} />
-              <select value={form.Service} onChange={e=>setForm({...form, Service:e.target.value})} style={inp}><option>Security Guard Service</option><option>Construction</option><option>CCTV</option><option>Other</option></select>
-              <textarea required rows={4} placeholder="Message" value={form.Messages} onChange={e=>setForm({...form, Messages:e.target.value})} style={{...inp, minHeight:'90px'}} />
-              <button type="submit" disabled={sending} style={{background:'#FFD700', color:'#0A1931', padding:'12px 24px', borderRadius:'20px', fontWeight:900, border:'none', cursor:'pointer'}}>{sending?'Sending...':'Send'}</button>
-            </form>
+      <div className="filter-bar-visible">
+        <input className="search-input-visible" placeholder={tab==="contacts"?"🔍 Search by service, name, phone..." : "🔍 Search by education, name, phone..."} value={search} onChange={e=>setSearch(e.target.value)} />
+        <select className="dropdown-filter-visible" value={filterType} onChange={e=>setFilterType(e.target.value)}>
+          <option value="all">All {tab==="contacts"?"Services":"Education"}</option>
+          {tab==="contacts"? (
+            <>
+              <option>Security Guard Service</option>
+              <option>Construction Security</option>
+              <option>CCTV Installation</option>
+              <option>Mobile Patrol</option>
+              <option>Event Security</option>
+              <option>Alarm System</option>
+            </>
+          ) : (
+            <>
+              <option>P7</option>
+              <option>UCE</option>
+              <option>UACE</option>
+              <option>Diploma</option>
+              <option>Degree</option>
+            </>
           )}
+        </select>
+        <div className="filter-btns">
+          <button className="btn-yellow small" onClick={load}>🔄 Refresh</button>
+          <button className="btn-dark small" onClick={()=>setPage(p=>Math.max(1,p-1))}>‹ Prev</button>
+          <button className="btn-dark small" onClick={()=>setPage(p=>Math.min(totalPages,p+1))}>Next ›</button>
+        </div>
+      </div>
+      <div className="mobile-cards">
+        {paged.map((item,i)=>(
+          <div key={item.id || i} className="m-card">
+            <div className="m-head">
+              <b>{item.full_name || item.fullName}</b>
+              <small>⏰ {new Date(item.createdAt||Date.now()).toLocaleString()}</small>
+            </div>
+            <div className="m-line">📧 {item.email || '-'} </div>
+            <div className="m-line">📞 {item.phone || '-'} </div>
+            <div className="m-tag"><span className="tag blue">{item.service || item.education || item.position || 'General'}</span></div>
+            <div className="m-msg">{(item.message||item.interest||item.experience||'').substring(0,120)}</div>
+            <div className="m-actions-3">
+              <a href={`tel:${item.phone}`} className="m-btn call">📞 Call</a>
+              <a href={`https://wa.me/${(item.phone||'').replace(/[^0-9]/g,'')}`} target="_blank" rel="noreferrer" className="m-btn wa">WhatsApp</a>
+              <button onClick={()=>handleDelete(item.id, tab)} className="m-btn del">🗑️ Delete</button>
+            </div>
+          </div>
+        ))}
+        {paged.length===0 && <p className="no-data">No data found</p>}
+      </div>
+      <div className="table-card desktop-only">
+        <div className="scroll">
+          <table className="clear-table">
+            <thead><tr><th>#</th><th>Name</th><th>Contact Info</th><th>{tab==="contacts"?"Service":"Education / Position"}</th><th>Details</th><th>⏰ Time</th><th>Action</th></tr></thead>
+            <tbody>{paged.map((item,i)=>(
+              <tr key={item.id}><td>{(page-1)*perPage+i+1}</td><td><b>{item.full_name||item.fullName}</b></td><td>{item.email}<br/><small>{item.phone}</small></td><td><span className="tag blue">{item.service||item.education}</span><br/><small>{item.position||''}</small></td><td style={{maxWidth:'200px'}}><small>{(item.message||item.interest||item.experience||'').substring(0,100)}</small></td><td><small>{new Date(item.createdAt||Date.now()).toLocaleString()}</small></td><td><button onClick={()=>handleDelete(item.id, tab)} className="del-btn">Delete</button></td></tr>
+            ))}</tbody>
+          </table>
         </div>
       </div>
     </div>
   )
 }
 
-export default function App(){
-  const [theme, setTheme] = useState(() => { try{ return localStorage.getItem('pinnacle-theme') || 'light'; }catch(e){ return 'light'; } });
-  const [verified, setVerified] = useState(() => { try{ return sessionStorage.getItem('pinnacle_verified') === 'true'; }catch(e){ return false; } });
-  useEffect(()=>{ try{ localStorage.setItem('pinnacle-theme', theme); }catch(e){} },[theme]);
-  const toggleTheme = () => setTheme(t => t==='light' ? 'dark' : 'light');
-  const isDark = theme==='dark';
-  const t = isDark ? { bg:'#0A1931', card:'#16294a', card2:'#0f2040', cardGold:'#2a2a1a', text:'#ffffff', muted:'#e2e8f0' } : { bg:'#f5f5f5', card:'#ffffff', card2:'#f8fafc', cardGold:'#fffbe6', text:'#0A1931', muted:'#334155' };
-  if(window.location.pathname === '/admin') return <AdminDashboard />;
-  return (
-    <div style={{background: t.bg, minHeight:'100vh', color: t.text, fontFamily:'Arial', overflowX:'hidden'}}>
-      <style>{`* {box-sizing:border-box} body{margin:0} html{scroll-behavior:smooth} img{max-width:100%}`}</style>
-      {!verified && <VerificationGate onVerified={()=>setVerified(true)} />}
-      <Navbar theme={theme} toggleTheme={toggleTheme} />
-      <div style={{height:'64px'}}></div>
-      <div id="home"><Home t={t} /></div>
-      <div id="about"><About t={t} /></div>
-      <div id="services"><Services t={t} /></div>
-      <div id="mission"><MissionPage t={t} /></div>
-      <div id="jobs"><Blog t={t} /></div>
-      <div id="aptitude"><Aptitude t={t} /></div>
-      <Join t={t} />
-      <Contact t={t} />
-      <div style={{background:'#0A1931', color:'#fff', textAlign:'center', padding:'24px 14px', marginTop:'20px'}}>PINNACLE SECURITY LTD © 2026 | 0776971970</div>
-    </div>
-  )
+const ProtectedAdmin = () => {
+  const token = localStorage.getItem("pinnacle_admin_token");
+  if (token!== ADMIN_PASSWORD) return <Navigate to="/admin-login" replace />;
+  return <Admin />;
 }
+
+const Footer = () => <div className="footer">© 2026 Pinnacle Security Ltd | Plot 442 & 443 Masajjagere, Muyenga | HR: hr@pinnaclegroup.co.ug | Control Room 24/7: 0754 139726</div>
+
+const App = () => (
+  <BrowserRouter>
+    <style>{`
+      *{margin:0;padding:0;box-sizing:border-box} body{font-family:Arial,sans-serif; background:#f4f6f9; line-height:1.6; overflow-x:hidden}
+  .nav{background:#0a1931; padding:14px 15px; position:sticky; top:0; z-index:999}.nav-top{display:flex; justify-content:space-between; align-items:center}.logo{color:#ffcc00; font-weight:900; font-size:16px}.menu-btn{color:#fff; font-size:26px; cursor:pointer; display:none}.links{display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap}.links a{color:#fff; text-decoration:none; font-size:15px; font-weight:700; padding:8px 10px}.btn-yellow{background:#ffcc00!important; color:#0a1931!important; padding:10px 18px!important; border-radius:25px!important; font-weight:900!important; border:none; cursor:pointer; text-decoration:none; display:inline-block; font-size:14px}.btn-yellow.big{padding:14px 26px!important; font-size:16px}.btn-yellow.small{padding:10px 16px!important; font-size:13px}.btn-admin{background:#1e3a8a!important; color:#ffcc00!important; border:2px solid #ffcc00!important; padding:8px 16px!important; border-radius:25px!important; font-weight:900!important; text-decoration:none; font-size:14px}.btn-dark{background:#0a1931; color:#ffcc00; border:none; padding:12px 18px; border-radius:10px; font-weight:800; cursor:pointer; font-size:13px}.btn-dark.small{padding:10px 14px}.hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:35px 15px; text-align:center; border-radius:0 0 20px 20px}.hero h1{color:#ffcc00; font-size:22px; margin-bottom:10px; line-height:1.3}.hero p{font-size:15px}.dots{margin:12px 0}.dot{width:10px; height:10px; background:#555; border-radius:50%; display:inline-block; margin:0 5px; cursor:pointer}.dot.on{background:#ffcc00}.section{padding:18px 12px; max-width:1250px; margin:auto}.section h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:8px; margin-bottom:16px; font-size:22px}.card{background:#fff; padding:18px; border-radius:14px; margin-bottom:14px; box-shadow:0 4px 12px rgba(0,0,0,0.06); border-left:5px solid #0a1931; font-size:15px; line-height:1.7}.card.gold{border-left-color:#ffcc00; background:#fffbeb}.card.dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; border-left-color:#ffcc00}.card h3{font-size:18px; margin-bottom:10px; color:#0a1931}.card.dark h3{color:#ffcc00}
+   .about-hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:22px; border-radius:16px; margin-bottom:16px; border:2px solid #ffcc00}.about-hero h3{color:#ffcc00; font-size:20px; margin-bottom:12px}.about-hero p{margin-bottom:10px; line-height:1.8}.about-grid{display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:16px}.about-card{text-align:center}.about-list{list-style:none; text-align:left; margin-top:10px}.about-list li{padding:4px 0; font-size:14px}
+   .service-box{background:#fff; border-radius:12px; margin-bottom:10px; box-shadow:0 2px 8px rgba(0,0,0,0.05); border-left:4px solid #0a1931; overflow:hidden}.service-head{display:flex; justify-content:space-between; align-items:center; padding:14px; cursor:pointer; background:#fff}.service-short{font-size:12px; color:#666; margin-top:3px}.expand-btn{background:#0a1931; color:#ffcc00; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:800}.service-body{background:#f8fafc; padding:14px; border-top:1px solid #e2e8f0}.service-body p{margin-bottom:8px; font-size:14px}
+   .memo{background:#fff; border-radius:16px; padding:20px; box-shadow:0 6px 20px rgba(0,0,0,0.08); border:3px solid #0a1931}.memo-head{background:#0a1931; color:#fff; padding:16px; border-radius:12px; margin:-20px -20px 20px -20px; text-align:center}.memo-head h2{color:#ffcc00; font-size:18px}.memo-head p{font-size:12px; margin-top:4px}.memo-body{line-height:1.7}.job-card{background:#f0f7ff; border-left:5px solid #1e40af; padding:16px; border-radius:12px; margin-bottom:14px}.job-card.gold{background:#fffbeb; border-left-color:#ffcc00}.job-card h3{color:#0a1931; font-size:16px; margin-bottom:8px}.job-card ul{margin-left:20px; margin-top:8px}.job-card li{font-size:13px; margin-bottom:4px}.general-recruit{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:18px; border-radius:14px; text-align:center; border:2px solid #ffcc00}.general-recruit h3{color:#ffcc00}.big-recruit-btn{display:block; background:#ffcc00; color:#0a1931; padding:16px; border-radius:12px; font-weight:900; text-decoration:none; margin-top:12px; font-size:16px}
+   .form-big{max-width:900px; margin:16px auto; background:#fff; padding:22px; border-radius:16px; display:flex; flex-direction:column; gap:14px; box-shadow:0 6px 20px rgba(0,0,0,0.08)}.form-big input,.form-big select,.form-big textarea{padding:14px; border:2px solid #0a1931; border-radius:10px; font-size:16px; width:100%; outline:none}.form-big label{font-size:13px; font-weight:800; color:#0a1931; margin-bottom:4px; display:block}.two-col{display:grid; grid-template-columns:1fr 1fr; gap:14px} @media(max-width:700px){.two-col{grid-template-columns:1fr}}.form-2col{display:grid; grid-template-columns:300px 1fr; gap:16px} @media(max-width:900px){.form-2col{grid-template-columns:1fr}}.big-btn{background:#0a1931; color:#ffcc00; padding:16px; border:none; border-radius:12px; font-weight:900; cursor:pointer; font-size:17px}.msg{padding:12px; background:#d4edda; border-radius:10px; font-size:14px; text-align:center; font-weight:700}
+   .admin-page{padding:10px; max-width:1300px; margin:auto}
+   .admin-top{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:16px; border-radius:16px; text-align:center; margin-bottom:10px; border:2px solid #ffcc00}.admin-top h2{color:#ffcc00; border:none; margin-bottom:6px; font-size:18px}.stats{display:flex; gap:8px; justify-content:center; margin:10px 0; flex-wrap:wrap}.stats span{background:rgba(255,204,0,0.15); border:1.5px solid #ffcc00; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:800; color:#ffcc00}.tabs{display:flex; gap:8px; justify-content:center; margin-top:10px; flex-wrap:wrap}.tab{padding:8px 16px; border-radius:20px; border:1.5px solid #ffcc00; background:transparent; color:#ffcc00; font-weight:800; font-size:12px; cursor:pointer}.tab.on{background:#ffcc00; color:#0a1931}.tab.white{background:#fff; color:#0a1931}.tab.red{border-color:#ff4444; color:#ff4444}
+   .filter-bar-visible{display:flex; gap:8px; margin-bottom:12px; background:#ffffff; padding:14px; border-radius:14px; flex-wrap:wrap; align-items:center; border:3px solid #0a1931; box-shadow:0 4px 12px rgba(0,0,0,0.1)}.search-input-visible{flex:1; padding:14px 16px; border-radius:10px; border:3px solid #0a1931; font-size:14px; min-width:200px; background:#ffffff; color:#0a1931; font-weight:800}.dropdown-filter-visible{padding:14px; border-radius:10px; border:3px solid #0a1931; font-size:13px; font-weight:800; background:#fffbeb; min-width:150px; color:#0a1931}.filter-btns{display:flex; gap:6px; flex-wrap:wrap}
+   .mobile-cards{display:flex; flex-direction:column; gap:10px}.m-card{background:#fff; border-radius:12px; padding:14px; box-shadow:0 2px 10px rgba(0,0,0,0.07); border-left:4px solid #ffcc00; border-top:2px solid #0a1931; border-right:2px solid #0a1931; border-bottom:2px solid #0a1931}.m-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:4px}.m-head b{font-size:14px; color:#0a1931}.m-head small{font-size:10px; color:#0a1931; background:#ffcc00; padding:4px 8px; border-radius:10px; font-weight:800}.m-line{font-size:12px; color:#334155; margin:2px 0; word-break:break-all}.m-tag{margin:6px 0}.m-msg{font-size:12px; color:#475569; background:#f8fafc; padding:8px; border-radius:8px; margin:6px 0; border:1px solid #cbd5e1}.m-actions-3{display:grid; grid-template-columns:1fr 1fr 0.8fr; gap:6px; margin-top:8px}.m-btn{text-align:center; padding:10px 8px; border-radius:8px; font-size:11px; font-weight:800; text-decoration:none; border:none; cursor:pointer}.m-btn.call{background:#0a1931; color:#ffcc00}.m-btn.wa{background:#22c55e; color:#fff}.m-btn.del{background:#fee2e2; color:#dc2626}
+   .table-card{background:#fff; border-radius:14px; padding:12px; box-shadow:0 4px 14px rgba(0,0,0,0.06); border:3px solid #0a1931}.scroll{overflow-x:auto}.clear-table{width:100%; border-collapse:collapse; font-size:13px; min-width:950px}.clear-table th{background:#0a1931; color:#ffcc00; padding:14px 10px; text-align:left; border:2px solid #0a1931}.clear-table td{padding:12px 10px; border:2px solid #94a3b8; vertical-align:top}.clear-table tr:nth-child(even){background:#f8fafc}.tag{padding:4px 10px; border-radius:12px; font-size:11px; font-weight:800}.tag.blue{background:#dbeafe; color:#1e40af}.del-btn{background:#e11d48; color:#fff; border:none; padding:7px 12px; border-radius:6px; cursor:pointer; font-weight:800; font-size:12px}.no-data{text-align:center; padding:20px; color:#888}
+   .desktop-only{display:none} @media(min-width:768px){.mobile-cards{display:none}.desktop-only{display:block}.about-grid{grid-template-columns:1fr 1fr 1fr}}
+   .footer{background:#0a1931; color:#aaa; text-align:center; padding:16px; font-size:11px; margin-top:20px; line-height:1.6} @media(max-width:850px){.menu-btn{display:block}.links{display:none; flex-direction:column; align-items:flex-start; padding-top:12px}.links.show{display:flex} }
+    `}</style>
+    <Navbar/>
+    <Routes>
+      <Route path="/" element={<Home/>}/>
+      <Route path="/about" element={<About/>}/>
+      <Route path="/services" element={<Services/>}/>
+      <Route path="/blog" element={<Blog/>}/>
+      <Route path="/contact" element={<Contact/>}/>
+      <Route path="/join" element={<Join/>}/>
+      <Route path="/admin-login" element={<AdminLogin/>}/>
+      <Route path="/admin" element={<ProtectedAdmin/>}/>
+    </Routes>
+    <Footer/>
+  </BrowserRouter>
+)
+export default App
