@@ -1,7 +1,8 @@
+// ===== PART 1 of 4 - PINNACLE SECURITY LTD - UPGRADED =====
 import React, { useState, useEffect } from 'react'
 import { Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom'
 import { initializeApp } from 'firebase/app'
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp } from 'firebase/firestore'
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: "AIzaSyDf2F5Y9fTYDoDky3OnqMwWbI4duXPu99c",
@@ -17,13 +18,52 @@ const db = getFirestore(app);
 const SUBMISSIONS = "submissions";
 const ADMIN_PASSWORD = "Pinnacle2026!Secure123";
 
-const Navbar = () => {
+// ===== HELPERS =====
+const cleanPhone = (p) => (p||'').replace(/[^0-9]/g,'');
+const waPhone = (p) => { let c = cleanPhone(p); if(c.startsWith('0')) c = '256' + c.slice(1); return c; };
+const waLink = (p, msg) => `https://wa.me/${waPhone(p)}?text=${encodeURIComponent(msg||'')}`;
+const mailLink = (emails, subject, body) => `mailto:${Array.isArray(emails)?emails.join(','):emails}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+const APPLICANT_STATUS = ["Under Review", "Hired", "Rejected"];
+const CONTACT_STATUS = ["Under Review", "Resolved", "Rejected"];
+
+const getReplyTemplate = (item, status) => {
+  const name = item.full_name || item.fullName || 'Dear Applicant';
+  if(item.formType === 'applicant'){
+    if(status === 'Hired') return `Dear ${name},\n\nCongratulations! 🎉 You have been HIRED by Pinnacle Security Ltd for the position of ${item.position || 'Security Officer'}.\n\nPlease report to our HQ at Plot 442 & 443 Masajjagere, Muyenga, Kampala for 2 weeks FREE training. Come with your National ID, LC1 letter and academic documents.\n\nCall Control Room: 0754 139726\nEmail: hr@pinnaclegroup.co.ug\n\nWelcome to Pinnacle Family!`;
+    if(status === 'Rejected') return `Dear ${name},\n\nThank you for applying to Pinnacle Security Ltd for ${item.position || 'Security Officer'}.\n\nAfter review, we are unable to offer you a position at this time. Please do not give up, you can re-apply after 3 months.\n\nThank you for your interest.\nPinnacle Security Ltd - HR\n0754 139726`;
+    return `Dear ${name},\n\nThank you for applying to Pinnacle Security Ltd. Your application for ${item.position || 'Security Officer'} is UNDER REVIEW.\n\nOur HR team will call you very soon. Please keep your phone on.\n\nControl: 0754 139726`;
+  } else {
+    if(status === 'Resolved') return `Dear ${name},\n\nThank you for contacting Pinnacle Security Ltd about ${item.service || 'our services'}.\n\nYour request has been RESOLVED. Our team will call you shortly to confirm deployment / quotation.\n\nFor urgent help call 0754 139726 (24/7 Control Room).\nThank you for choosing Pinnacle!`;
+    if(status === 'Rejected') return `Dear ${name},\n\nThank you for contacting Pinnacle Security Ltd.\n\nWe have reviewed your request for ${item.service || 'our services'} and we are unable to proceed at this time. Please call us on 0754 139726 for other options.\n\nThank you.`;
+    return `Dear ${name},\n\nThank you for contacting Pinnacle Security Ltd. Your request for ${item.service || 'our services'} is UNDER REVIEW.\n\nOur team will call you within 24 hours.\nControl: 0754 139726`;
+  }
+};
+
+// ===== THEMES: 3 COLORS =====
+// gold = Navy + Yellow (default), green = Dark Green + Lime, maroon = Maroon + Gold
+const THEMES = [
+  { id:'gold', label:'🟡 Gold / Navy' },
+  { id:'green', label:'🟢 Green' },
+  { id:'maroon', label:'🔴 Maroon' },
+];
+
+// ===== NAVBAR - NO ADMIN LINK (Admin only via /admin direct link) =====
+const Navbar = ({ theme, setTheme }) => {
   const loc = useLocation();
-  const active = (p) => loc.pathname === p? {color:'#ffcc00', borderBottom:'3px solid #ffcc00'} : {color:'white'};
+  const active = (p) => loc.pathname === p ? {color:'var(--accent)', borderBottom:'3px solid var(--accent)'} : {color:'white'};
   const [open, setOpen] = useState(false);
   return (
     <nav className="nav">
-      <div className="nav-top"><span className="logo">🛡️ PINNACLE SECURITY LTD</span><span className="menu-btn" onClick={()=>setOpen(!open)}>{open?'✕':'☰'}</span></div>
+      <div className="nav-top">
+        <span className="logo">🛡️ PINNACLE SECURITY LTD</span>
+        <div style={{display:'flex', gap:'8px', alignItems:'center'}}>
+          <select value={theme} onChange={e=>setTheme(e.target.value)} style={{padding:'6px', borderRadius:'20px', border:'2px solid var(--accent)', fontWeight:800, fontSize:'12px'}}>
+            {THEMES.map(t=><option key={t.id} value={t.id}>{t.label}</option>)}
+          </select>
+          <span className="menu-btn" onClick={()=>setOpen(!open)}>{open?'✕':'☰'}</span>
+        </div>
+      </div>
       <div className={`links ${open?'show':''}`}>
         <Link to="/" style={active("/")} onClick={()=>setOpen(false)}>Home</Link>
         <Link to="/about" style={active("/about")} onClick={()=>setOpen(false)}>About</Link>
@@ -31,12 +71,12 @@ const Navbar = () => {
         <Link to="/blog" style={active("/blog")} onClick={()=>setOpen(false)}>Jobs</Link>
         <Link to="/contact" style={active("/contact")} onClick={()=>setOpen(false)}>Contact</Link>
         <Link to="/join" className="btn-yellow" onClick={()=>setOpen(false)}>Apply Now</Link>
-        <Link to="/admin" className="btn-admin" onClick={()=>setOpen(false)}>🔐 Admin</Link>
       </div>
     </nav>
   )
 }
 
+// ===== HOME - MORE TEXT =====
 const Home = () => {
   const [i, setI] = useState(0);
   useEffect(()=>{ const t=setInterval(()=>setI(p=>(p+1)%3), 3500); return()=>clearInterval(t) },[]);
@@ -45,8 +85,17 @@ const Home = () => {
     {t:"🚨 WE ARE RECRUITING - JOIN US TODAY", d:"SITE INCHARGE: UCE + 3yrs experience | SUPERVISOR: UACE + Rider Permit + 3yrs"},
     {t:"60+ Sites | 150+ Officers | 24/7 Control Room 0754 139726", d:"hr@pinnaclegroup.co.ug | Free Training | No Recruitment Fees"},
   ];
-  return (<><div className="hero"><h1>{slides[i].t}</h1><p>{slides[i].d}</p><div className="dots">{[0,1,2].map(n=><span key={n} className={n===i?'dot on':'dot'} onClick={()=>setI(n)}></span>)}</div><Link to="/join" className="btn-yellow big">Apply Now - Free</Link></div>
-    <div className="section"><div className="card"><h3>🛡️ Who We Are - 4.3★ Rated Security Company</h3><p>Pinnacle Security Ltd at Plot 442 & 443 Masajjagere, Off Kironde Road Muyenga is a URSB Licensed Private Security Organization. We protect 60+ sites in Kampala, Wakiso, Mukono, Entebbe with 150+ disciplined, trained officers. Control Room 0754 139726 is 24/7.</p></div><div className="card gold"><h3>🎯 Our Core Services</h3><p>✅ Security Guard Service - Armed & Unarmed. ✅ Construction Security. ✅ CCTV Installation & Monitoring. ✅ Mobile Patrol & Rapid Response. ✅ Event Security. ✅ Alarm Systems & Electric Fences.</p></div><div className="card dark"><h3>🚨 URGENT RECRUITMENT - No Fees - Free Training 2 Weeks</h3><p><b>SITE INCHARGE:</b> UCE + 3yrs experience. <b>SUPERVISOR:</b> UACE + Rider Permit + 3yrs. Training: 2 weeks free at Muyenga HQ.</p><Link to="/join" className="btn-yellow">Apply Now Online - Free</Link></div></div></>)
+  return (<>
+    <div className="hero"><h1>{slides[i].t}</h1><p>{slides[i].d}</p><div className="dots">{[0,1,2].map(n=><span key={n} className={n===i?'dot on':'dot'} onClick={()=>setI(n)}></span>)}</div><Link to="/join" className="btn-yellow big">Apply Now - Free</Link></div>
+    <div className="section">
+      <div className="card"><h3>🛡️ Who We Are - 4.3★ Rated Security Company in Kampala</h3><p>Pinnacle Security Ltd at Plot 442 & 443 Masajjagere, Off Kironde Road Muyenga is a URSB Licensed Private Security Organization. We protect 60+ sites in Kampala, Wakiso, Mukono, Entebbe with 150+ disciplined, trained officers. Control Room 0754 139726 is 24/7. We protect homes, shops, offices, schools, hotels, churches, construction sites and events. Our guards are trained in gate control, patrol, visitor registration, OB reporting, first aid, customer care and emergency response. We do not charge recruitment fees. We do not exploit guards. We train for free and we pay on time. That is why clients trust us and guards stay with us.</p></div>
+      <div className="card gold"><h3>🎯 Our Core Services</h3><p>✅ Security Guard Service - Armed & Unarmed. ✅ Construction Security - Protect cement, iron bars, timber. ✅ CCTV Installation & Monitoring - View on phone anywhere. ✅ Mobile Patrol & Rapid Response - Car patrol every 2 hours. ✅ Event Security - Weddings, concerts, conferences. ✅ Alarm Systems & Electric Fences - Intruder alarm + solar backup.</p><Link to="/services" className="btn-yellow">View All Services + Prices</Link></div>
+      <div className="card"><h3>⭐ Why 100+ Clients Choose Pinnacle?</h3><p><b>1. Rapid Response in 10 Minutes:</b> Our control room and patrol car respond fast in Muyenga, Buziga, Munyonyo, Ggaba, Kansanga, Kabalagala, Makindye, Nsambya, Kololo, Nakasero, Ntinda, Kira, Naalya, Entebbe Road.<br/><b>2. Supervision 3x a Week:</b> Every site is visited by a supervisor. No sleeping guards. No absent guards without replacement.<br/><b>3. Free Replacement:</b> If your guard is sick or absent, we replace same day free.<br/><b>4. Monthly Report:</b> You get a written report of incidents, attendance and patrol.<br/><b>5. Honest Pricing:</b> No hidden fees. Quotation is free. You only pay after deployment.</p></div>
+      <div className="card dark"><h3>🚨 URGENT RECRUITMENT - No Fees - Free Training 2 Weeks</h3><p><b>SITE INCHARGE:</b> UCE + 3yrs experience. <b>SUPERVISOR:</b> UACE + Rider Permit + 3yrs. <b>GENERAL GUARD:</b> P7/UCE, Age 22-45. Training: 2 weeks free at Muyenga HQ. Come with National ID, LC1 letter, academic papers. No fees at any stage. If anyone asks you for money to get a job, report to 0754 139726 immediately - it is a scam.</p><Link to="/join" className="btn-yellow">Apply Now Online - Free</Link></div>
+      <div className="card"><h3>📍 Areas We Cover</h3><p>Muyenga, Buziga, Munyonyo, Ggaba, Kansanga, Kabalagala, Makindye, Nsambya, Kololo, Nakasero, Kampala Central, Ntinda, Kira, Naalya, Bukoto, Naguru, Muyenga Hill, Entebbe, Kajjansi, Wakiso, Mukono, Seeta, Sonde, Gayaza, Matugga. If your area is not listed, call us - we can still deploy.</p></div>
+      <div className="card gold"><h3>💬 What Our Clients Say</h3><p><i>"Since Pinnacle took over our construction site in Muyenga, theft stopped completely. Very disciplined guards." - Mr. Kato, Construction Client</i><br/><i>"Their patrol car comes every night. I sleep well now." - Mrs. Nakato, Home Client, Buziga</i><br/><i>"I applied free, trained free, and got deployed in 3 weeks. No bribe." - Officer Denis, Site Incharge</i></p></div>
+    </div>
+  </>)
 }
 
 const About = () => (
@@ -56,28 +105,35 @@ const About = () => (
       <h3>🛡️ Pinnacle Security Ltd - Protecting What Matters Most Since 2018</h3>
       <p>Located at <b>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga Hill, Kampala - Uganda</b>, Pinnacle Security Limited is a fully licensed Private Security Organization registered under URSB and Ministry of Internal Affairs.</p>
       <p>With <b>4.3★ Google Rating, 60+ Active Sites, 150+ Trained Officers</b> and 24/7 Control Room <b>0754 139726</b>, we are one of the fastest growing security companies in Kampala, Wakiso, Mukono and Entebbe corridor.</p>
+      <p>We started small in 2018 with 10 guards. Today we protect homes, shops, schools, hotels, hospitals, churches, warehouses and construction sites across Uganda. Our secret is simple: Discipline, Integrity, Service, Courage, Professionalism. We treat every client like family and every guard like a brother/sister. We believe security is not just standing at a gate - it is protecting lives, property, dreams and investments.</p>
     </div>
     <div className="about-grid">
       <div className="card about-card"><div className="about-icon">🎯</div><h3>Our Mission</h3><p>To provide <b>professional, affordable, and reliable security solutions</b> to homes, businesses, construction sites, schools, hotels and events. We are committed to protecting lives, property and investments with discipline, integrity and rapid response. <b>No Hidden Fees, No Exploitation, Free Training for all recruits</b>.</p></div>
-      <div className="card about-card gold"><div className="about-icon">👁️</div><h3>Our Vision</h3><p>To be <b>Uganda's most trusted and most respected security company by 2030</b>. A company where every client feels safe, every guard feels valued, and every site is protected with technology + manpower.</p></div>
-      <div className="card about-card dark-card"><div className="about-icon">💎</div><h3>Core Values</h3><ul className="about-list"><li><b>D</b> - Discipline</li><li><b>I</b> - Integrity</li><li><b>S</b> - Service</li><li><b>C</b> - Courage</li><li><b>P</b> - Professionalism</li></ul></div>
+      <div className="card about-card gold"><div className="about-icon">👁️</div><h3>Our Vision</h3><p>To be <b>Uganda's most trusted and most respected security company by 2030</b>. A company where every client feels safe, every guard feels valued, and every site is protected with technology + manpower. We want to combine CCTV, alarms, electric fences, patrol cars and well-trained manpower to make Uganda safer, one site at a time.</p></div>
+      <div className="card about-card dark-card"><div className="about-icon">💎</div><h3>Core Values</h3><ul className="about-list"><li><b>D</b> - Discipline: We obey orders, we keep time, we respect uniform.</li><li><b>I</b> - Integrity: We do not steal, we do not lie, we do not take bribes.</li><li><b>S</b> - Service: Client comes first, always.</li><li><b>C</b> - Courage: We stand firm in danger to protect you.</li><li><b>P</b> - Professionalism: Smart uniform, clean report, polite language.</li></ul></div>
     </div>
+    <div className="card"><h3>📋 Our Licenses & Compliance</h3><p>✅ Registered with URSB (Uganda Registration Services Bureau). ✅ Licensed Private Security Organization under Ministry of Internal Affairs. ✅ Guards vetted with LC1 and Police. ✅ Uniformed, ID cards, radios. ✅ Monthly supervision and training refresher. When you hire Pinnacle, you hire a legal, compliant, accountable company - not a briefcase company.</p></div>
+    <div className="card gold"><h3>🤝 How We Work With You - 4 Easy Steps</h3><p><b>Step 1:</b> Call 0754 139726 or fill Contact Form - Free site visit.<br/><b>Step 2:</b> We visit your site, assess risk, give free quotation same day.<br/><b>Step 3:</b> You approve, we deploy trained guards within 24-48 hours.<br/><b>Step 4:</b> Supervisor visits 3x a week, you get monthly report, we replace guards free if needed.</p></div>
   </div>
-)
+)// ===== PART 2 of 4 - SERVICES + JOBS + CONTACT + JOIN =====
 
 const Services = () => {
   const [open,setOpen]=useState(null);
   const list=[
-    {n:"1. Security Guard Service", short:"Armed & Unarmed guards for homes, shops, offices", full:["We deploy disciplined guards with uniform, ID, radio. Duties: Gate control, patrol, visitor register, night vigilance.", "Includes supervisor visits 3x a week, free replacement if guard absent, monthly report, 10 min rapid response."]},
-    {n:"2. Construction Site Security", short:"Special guards for building sites - protect cement, iron bars", full:["We understand construction theft: cement, D12/D16, timber, tools. Guards trained to check materials in/out, store management, night torch patrol."]},
-    {n:"3. CCTV Installation & Monitoring", short:"4 cameras from 2.5M with phone viewing", full:["We supply & install: DVR, 4 HD cameras, 1TB HDD, cables, installation. You view on phone anywhere. Night vision, motion alert.", "Brands: Hikvision, Dahua - 2 years warranty."]},
-    {n:"4. Mobile Patrol & Rapid Response", short:"Our car patrols your area every 2 hours", full:["Best for homes without full-time guard. Our patrol car with 2 officers patrols your zone. 3 visits day, 3 visits night. Random timing.", "Includes 10-min rapid response if alarm. Coverage: Muyenga, Buziga, Munyonyo, Ggaba, Kansanga, Kabalagala."]},
-    {n:"5. Event Security & Bouncers", short:"Weddings, concerts, conferences", full:["We provide: Crowd control, gate, VIP protection, parking control, anti-theft. Uniform: Smart suits for corporate, t-shirts for concerts."]},
-    {n:"6. Alarm Systems & Electric Fences", short:"Intruder alarm and electric fence protection", full:["Alarm: Magnetic sensors on doors/windows, motion inside, loud siren + call to your phone + control room.", "Electric Fence: 5 lines, energizer, battery backup, warning signs. Works on Yaka & solar."]},
+    {n:"1. Security Guard Service", short:"Armed & Unarmed guards for homes, shops, offices", full:["We deploy disciplined guards with uniform, ID, radio. Duties: Gate control, patrol, visitor register, night vigilance, OB report, customer care.", "Includes supervisor visits 3x a week, free replacement if guard absent, monthly report, 10 min rapid response.", "Best for: Homes, shops, offices, schools, hotels, hospitals, churches, warehouses, apartments. Call 0754 139726 for FREE quotation."]},
+    {n:"2. Construction Site Security", short:"Special guards for building sites - protect cement, iron bars", full:["We understand construction theft: cement, D12/D16, timber, tools, Yaka, water tanks. Guards trained to check materials in/out, store management, night torch patrol.", "We keep a materials register: every bag of cement, every bar, every trip is recorded. Theft drops to zero when Pinnacle is on site.", "Best for: Building sites in Muyenga, Buziga, Munyonyo, Ggaba, Kira, Naalya, Entebbe Road, Wakiso, Mukono."]},
+    {n:"3. CCTV Installation & Monitoring", short:"4 cameras from 2.5M with phone viewing", full:["We supply & install: DVR, 4 HD cameras, 1TB HDD, cables, installation. You view on phone anywhere. Night vision, motion alert.", "Brands: Hikvision, Dahua - 2 years warranty. We also do maintenance, repair, upgrade, and monitoring from our Control Room.", "Best for: Homes, shops, offices, schools, bars, rentals. Protect your property even when you are abroad."]},
+    {n:"4. Mobile Patrol & Rapid Response", short:"Our car patrols your area every 2 hours", full:["Best for homes without full-time guard. Our patrol car with 2 officers patrols your zone. 3 visits day, 3 visits night. Random timing.", "Includes 10-min rapid response if alarm. Coverage: Muyenga, Buziga, Munyonyo, Ggaba, Kansanga, Kabalagala.", "If thieves try your home, our patrol will find them. If you press alarm, we come. You sleep, we watch."]},
+    {n:"5. Event Security & Bouncers", short:"Weddings, concerts, conferences", full:["We provide: Crowd control, gate, VIP protection, parking control, anti-theft. Uniform: Smart suits for corporate, t-shirts for concerts.", "We handle: Weddings, introduction, graduation, concerts, football matches, church crusades, conferences, political rallies.", "Book early - 1 week before event for best planning. Call 0754 139726."]},
+    {n:"6. Alarm Systems & Electric Fences", short:"Intruder alarm and electric fence protection", full:["Alarm: Magnetic sensors on doors/windows, motion inside, loud siren + call to your phone + control room.", "Electric Fence: 5 lines, energizer, battery backup, warning signs. Works on Yaka & solar.", "Best for: Homes, shops, schools, factories. Alarm + Fence + Guard = Maximum Protection. Ask for combined discount."]},
+    {n:"7. VIP & Executive Protection", short:"Bodyguards for VIPs, businessmen, politicians", full:["Discreet, trained, polite bodyguards for VIP movement, airport pickup, hotel, meetings, events.", "We plan routes, check venues, and keep you safe without disturbing your business."]},
+    {n:"8. Cash Escort & Bank Escort", short:"Safe movement of cash and valuables", full:["We escort cash from shop to bank, from bank to site, payroll escort, valuables escort. Armed + patrol car.", "Your money is safe with Pinnacle. We do not joke with cash."]},
   ];
   return (
     <div className="section"><h2>Our Services - Click + to Expand</h2>
+      <p style={{textAlign:'center', marginBottom:'16px', background:'#fff3cd', padding:'12px', borderRadius:'10px'}}><b>All services include FREE site visit + FREE quotation.</b> Call 0754 139726 or fill Contact Form. No hidden fees. You only pay after deployment.</p>
       {list.map((s,i)=><div key={i} className="service-box"><div className="service-head" onClick={()=>setOpen(open===i?null:i)}><div><strong>{s.n}</strong><p className="service-short">{s.short}</p></div><span className="expand-btn">{open===i?'Close −':'Open +'}</span></div>{open===i&&<div className="service-body">{s.full.map((p,k)=><p key={k}>• {p}</p>)}</div>}</div>)}
+      <div className="card dark" style={{marginTop:'16px'}}><h3>❓ Not Sure Which Service You Need?</h3><p>Tell us your problem: "Thieves steal at night", "My site loses cement", "I travel a lot", "My wedding needs security". We will advise you FREE. No pressure. Call 0754 139726 or WhatsApp us. We will visit your site and recommend the cheapest solution that actually works.</p><Link to="/contact" className="btn-yellow">Get Free Advice</Link></div>
     </div>
   )
 }
@@ -91,7 +147,7 @@ const Blog = () => (
         <p><b>Subject: URGENT RECRUITMENT - SITE INCHARGE, SUPERVISOR & GENERAL GUARDS</b></p>
       </div>
       <div className="memo-body">
-        <p>Management has approved recruitment for immediate deployment. Applications are <b>FREE, No Fees</b>. Training is <b>2 weeks FREE at Muyenga HQ Plot 442/443</b>.</p>
+        <p>Management has approved recruitment for immediate deployment. Applications are <b>FREE, No Fees</b>. Training is <b>2 weeks FREE at Muyenga HQ Plot 442/443</b>. If anyone asks you for money, it is a SCAM. Report to 0754 139726.</p>
         <div className="job-card">
           <h3>🔹 POSITION 1: SITE INCHARGE</h3>
           <p><b>Requirements:</b></p>
@@ -104,6 +160,7 @@ const Blog = () => (
             <li> Leadership skills - will manage 5-10 guards</li>
           </ul>
           <p><b>Duties:</b> Supervise guards, write daily report, handle client complaints, check attendance, ensure uniform discipline.</p>
+          <p><b>What you get:</b> Salary on time, free uniform, free training, promotion to Supervisor if you perform well.</p>
         </div>
         <div className="job-card gold">
           <h3>🔹 POSITION 2: SUPERVISOR</h3>
@@ -123,9 +180,11 @@ const Blog = () => (
           <h3>🔹 GENERAL RECRUITMENT: SECURITY OFFICER</h3>
           <p>We are ALWAYS recruiting disciplined men & women to join our team. You can apply as general guard and be called when vacancy comes.</p>
           <p><b>Requirements:</b> P7/UCE, Age 22-45, No crime, Physically fit, Willing to work day/night, Training FREE.</p>
+          <p style={{fontSize:'13px', marginTop:'8px'}}>Women are highly encouraged to apply. We have many sites that need female guards for schools, hotels and homes.</p>
           <Link to="/join" className="big-recruit-btn">👮 APPLY NOW FOR GENERAL RECRUITMENT - FREE</Link>
         </div>
-        <p style={{marginTop:'20px', background:'#fff3cd', padding:'12px', borderRadius:'8px'}}><b>How to Apply:</b> Click Apply Now, fill form. Or come physically to Plot 442/443 Masajjagere, Muyenga. Contact HR: <b>hr@pinnaclegroup.co.ug</b> / Control: 0754 139726.</p>
+        <p style={{marginTop:'20px', background:'#fff3cd', padding:'12px', borderRadius:'8px'}}><b>How to Apply:</b> Click Apply Now, fill form. Or come physically to Plot 442/443 Masajjagere, Muyenga. Contact HR: <b>hr@pinnaclegroup.co.ug</b> / Control: 0754 139726. <b>Bring:</b> National ID, LC1 Letter, Academic Papers, 2 Passport Photos.</p>
+        <p style={{marginTop:'10px', background:'#d4edda', padding:'12px', borderRadius:'8px'}}><b>After You Apply:</b> 1) HR reviews your form. 2) We call you for interview. 3) You do 2 weeks free training at Muyenga. 4) You get deployed to a site near you. 5) You start earning. Simple, free, fair.</p>
       </div>
     </div>
   </div>
@@ -134,14 +193,17 @@ const Blog = () => (
 const Contact = () => {
   const [f,setF]=useState({fullName:"",email:"",phone:"",service:"",message:""}); const [s,setS]=useState("");
   const send=async(e)=>{ e.preventDefault(); setS("Submitting..."); try{
-    await addDoc(collection(db, SUBMISSIONS), { formType: "contact", fullName: f.fullName, full_name: f.fullName, email: f.email, phone: f.phone, service: f.service, message: f.message, createdAt: serverTimestamp(), created_at: new Date().toISOString() });
-    setS(" Submitted!"); setF({fullName:"",email:"",phone:"",service:"",message:""})
+    await addDoc(collection(db, SUBMISSIONS), { formType: "contact", status: "Under Review", fullName: f.fullName, full_name: f.fullName, email: f.email, phone: f.phone, service: f.service, message: f.message, createdAt: serverTimestamp(), created_at: new Date().toISOString() });
+    setS("✅ Submitted! Our team will call you within 24 hours. Control: 0754 139726"); setF({fullName:"",email:"",phone:"",service:"",message:""})
   }catch(err){ console.log(err); setS("❌ Error - check Firebase Rules") } };
   return (
-    <div className="section"><h2>Contact Us</h2>
+    <div className="section"><h2>Contact Us - Free Quotation</h2>
+      <p style={{textAlign:'center', marginBottom:'14px'}}>Tell us what you need. We will call you back within 24 hours. For emergencies, call Control Room 0754 139726 (24/7).</p>
       <div className="form-2col">
         <div className="form-left-info">
-          <div className="card"><h3>📍 Visit Us</h3><p>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga Hill, Kampala.<br/>Mon-Sat 8am-6pm. Control Room 24/7.</p><p>📞 0754 139726<br/>📧 hr@pinnaclegroup.co.ug</p></div>
+          <div className="card"><h3>📍 Visit Us</h3><p>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga Hill, Kampala.<br/>Mon-Sat 8am-6pm. Control Room 24/7.</p><p>📞 0754 139726<br/>📧 hr@pinnaclegroup.co.ug<br/>🌐 Pinnacle Security Ltd</p></div>
+          <div className="card gold"><h3>⚡ Need Urgent Guard?</h3><p>If you need a guard TODAY, call 0754 139726 directly. Do not wait for form. We can deploy within 24-48 hours in Kampala.</p></div>
+          <div className="card"><h3>💬 WhatsApp Us</h3><p>Click below to WhatsApp us your location and service needed. We reply fast.</p><a href="https://wa.me/256754139726?text=Hello%20Pinnacle%2C%20I%20need%20security%20service" target="_blank" rel="noreferrer" className="btn-yellow">WhatsApp 0754 139726</a></div>
         </div>
         <form className="form-big" onSubmit={send}>
           <div className="two-col">
@@ -150,10 +212,11 @@ const Contact = () => {
           </div>
           <div className="two-col">
             <input type="email" value={f.email} onChange={e=>setF({...f,email:e.target.value})} required placeholder="Enter your email"/>
-            <select value={f.service} onChange={e=>setF({...f,service:e.target.value})} required><option value="">Choose Service</option><option>Security Guard Service</option><option>Construction Security</option><option>CCTV Installation</option><option>Mobile Patrol</option><option>Event Security</option><option>Alarm System</option></select>
+            <select value={f.service} onChange={e=>setF({...f,service:e.target.value})} required><option value="">Choose Service</option><option>Security Guard Service</option><option>Construction Security</option><option>CCTV Installation</option><option>Mobile Patrol</option><option>Event Security</option><option>Alarm System</option><option>VIP Protection</option><option>Cash Escort</option></select>
           </div>
-          <textarea rows="5" value={f.message} onChange={e=>setF({...f,message:e.target.value})} required placeholder="Message / Location"></textarea>
-          <button className="big-btn">Submit</button>{s&&<p className="msg">{s}</p>}
+          <textarea rows="5" value={f.message} onChange={e=>setF({...f,message:e.target.value})} required placeholder="Message / Location - e.g. I need 2 guards in Buziga for my home, starting next week"></textarea>
+          <button className="big-btn">Submit - Get Free Quotation</button>{s&&<p className="msg">{s}</p>}
+          <p style={{fontSize:'12px', textAlign:'center'}}>Your details are private. We will only use them to call you back about your request.</p>
         </form>
       </div>
     </div>
@@ -163,11 +226,12 @@ const Contact = () => {
 const Join = () => {
   const [f,setF]=useState({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",position:"SITE INCHARGE",district:""}); const [s,setS]=useState("");
   const send=async(e)=>{ e.preventDefault(); setS("Submitting..."); try{
-    await addDoc(collection(db, SUBMISSIONS), { formType: "applicant", fullName: f.fullName, full_name: f.fullName, phone: f.phone, email: f.email, education: f.education, experience: f.experience, interest: f.interest, position: f.position, district: f.district, createdAt: serverTimestamp(), created_at: new Date().toISOString() });
-    setS(" Submitted!"); setF({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",position:"SITE INCHARGE",district:""})
+    await addDoc(collection(db, SUBMISSIONS), { formType: "applicant", status: "Under Review", fullName: f.fullName, full_name: f.fullName, phone: f.phone, email: f.email, education: f.education, experience: f.experience, interest: f.interest, position: f.position, district: f.district, createdAt: serverTimestamp(), created_at: new Date().toISOString() });
+    setS("✅ Submitted! HR will call you soon. Keep your phone on. Control: 0754 139726"); setF({fullName:"",phone:"",email:"",education:"",experience:"",interest:"",position:"SITE INCHARGE",district:""})
   }catch(err){ console.log(err); setS("❌ Error - check Firebase Rules") } };
   return (
     <div className="section"><h2>Apply Now - Free Training - No Fees</h2>
+      <p style={{textAlign:'center', background:'#fff3cd', padding:'12px', borderRadius:'10px', marginBottom:'14px'}}><b>⚠️ WARNING:</b> Pinnacle NEVER charges fees. If anyone asks you for money for a job, it is a scam. Report to 0754 139726.</p>
       <form className="form-big" onSubmit={send}>
         <div className="two-col">
           <div><label>Full Name *</label><input value={f.fullName} onChange={e=>setF({...f,fullName:e.target.value})} required placeholder="Enter your fullname"/></div>
@@ -185,199 +249,430 @@ const Join = () => {
           <div><label>Why Interested? *</label><input value={f.interest} onChange={e=>setF({...f,interest:e.target.value})} required placeholder="Why are you interested?"/></div>
           <div><label>Experience *</label><input value={f.experience} onChange={e=>setF({...f,experience:e.target.value})} required placeholder="Years & where you worked"/></div>
         </div>
-        <button className="big-btn">Submit</button>{s&&<p className="msg">{s}</p>}
+        <button className="big-btn">Submit Application - Free</button>{s&&<p className="msg">{s}</p>}
+        <p style={{fontSize:'12px', textAlign:'center', color:'#666'}}>After submit: HR reviews → Calls you for interview → 2 weeks free training at Muyenga → Deployment near you.</p>
       </form>
     </div>
   )
-}
+}// ===== PART 3A of 4 - ADMIN LOGIN + ADMIN START =====
 
-const AdminLogin = () => {
+const AdminLogin = ({ theme, setTheme }) => {
   const [pass, setPass] = useState(""); const [msg, setMsg] = useState("");
   const navigate = useNavigate();
   const login = (e) => {
     e.preventDefault();
     if (pass === ADMIN_PASSWORD) {
       localStorage.setItem("pinnacle_admin_token", pass);
-      setMsg(" Correct! Opening admin...");
+      setMsg("✅ Correct! Opening admin...");
       setTimeout(()=> navigate("/admin"), 500);
     } else { setMsg(`❌ Wrong password.`); }
   };
   return (
     <div className="section" style={{maxWidth:'520px', margin:'60px auto'}}>
-      <div className="form-big" style={{border:'3px solid #ffcc00', textAlign:'center'}}>
+      <div className="form-big" style={{border:'3px solid var(--accent)', textAlign:'center'}}>
         <h2>🔐 Admin Login</h2>
+        <p style={{background:'#fff3cd', padding:'10px', borderRadius:'8px', margin:'10px 0'}}>Protected - Manager Only<br/>Go to: pinnacle-security-bice.vercel.app/admin</p>
+        <div style={{display:'flex', gap:'6px', justifyContent:'center', flexWrap:'wrap'}}>
+          {THEMES.map(t=><button key={t.id} type="button" onClick={()=>setTheme(t.id)} className="tab" style={{borderColor:'var(--accent)', color: theme===t.id ? '#fff' : 'var(--nav)', background: theme===t.id ? 'var(--nav)' : '#fff'}}>{t.label}</button>)}
+        </div>
         <form onSubmit={login} style={{display:'flex', flexDirection:'column', gap:'15px', marginTop:'20px'}}>
           <input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="Enter Admin Password" required style={{padding:'16px'}} />
           <button className="big-btn">Login to Dashboard</button>
           {msg && <p className="msg">{msg}</p>}
         </form>
+        <Link to="/" style={{fontSize:'13px', fontWeight:800}}>← Back to Website</Link>
       </div>
     </div>
   )
 }
 
-const Admin = () => {
-  const [contacts, setContacts] = useState([]);
-  const [applicants, setApplicants] = useState([]);
-  const [tab, setTab] = useState("contacts");
+// ===== ADMIN - PART 3A: State + Load + Helpers =====
+const Admin = ({ theme, setTheme }) => {
+  const [all, setAll] = useState([]);
+  const [tab, setTab] = useState("applicants"); // applicants | contacts | trash
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [filterType, setFilterType] = useState("all");
-  const [page, setPage] = useState(1); const perPage = 10;
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selected, setSelected] = useState([]);
+  const [editItem, setEditItem] = useState(null);
+  const [replyItem, setReplyItem] = useState(null);
+  const [replyText, setReplyText] = useState("");
+  const [replyStatus, setReplyStatus] = useState("");
+  const [bulkMsg, setBulkMsg] = useState("");
+  const [showBulk, setShowBulk] = useState(false);
+  const [showPrint, setShowPrint] = useState(false);
   const navigate = useNavigate();
   const token = localStorage.getItem("pinnacle_admin_token");
 
-  // FIXED: No where+orderBy index needed. Fetch all, filter in JS.
   const load = async () => {
     setLoading(true); setError("");
     try {
       const snap = await getDocs(collection(db, SUBMISSIONS));
-      const all = snap.docs.map(d => {
+      const list = snap.docs.map(d => {
         const data = d.data();
         let t = 0;
         if (data.createdAt?.toDate) t = data.createdAt.toDate().getTime();
         else if (data.created_at) t = new Date(data.created_at).getTime();
         else if (data.createdAt?.seconds) t = data.createdAt.seconds * 1000;
-        return { id: d.id, ...data, _time: t, createdAt: data.createdAt?.toDate?.() || data.created_at || new Date() };
+        return { id: d.id, ...data, status: data.status || "Under Review", deleted: data.deleted || false, _time: t, createdAt: data.createdAt?.toDate?.() || data.created_at || new Date() };
       });
-      all.sort((a,b)=> b._time - a._time);
-      setContacts(all.filter(x => (x.formType||"").toLowerCase() === "contact"));
-      setApplicants(all.filter(x => (x.formType||"").toLowerCase() === "applicant"));
+      list.sort((a,b)=> b._time - a._time);
+      setAll(list);
     } catch(err){ console.log("Load error", err); setError("Load failed: " + (err.message||err)); }
     setLoading(false);
-  }
-  useEffect(()=>{ if(!token) navigate("/admin-login"); else load(); },[]);
-  useEffect(()=>{ setPage(1); },[tab, search, filterType]);
+  };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this after handling?")) return;
+  useEffect(()=>{ if(!token) navigate("/admin-login"); else load(); },[]);
+  useEffect(()=>{ setPage(1); setSelected([]); },[tab, search, statusFilter, filterType, perPage]);
+
+  const logout = () => { localStorage.removeItem("pinnacle_admin_token"); navigate("/admin-login"); };
+
+  // Filtering - trash shows only deleted, others hide deleted
+  const baseList = all.filter(x => {
+    if(tab === 'trash') return x.deleted === true;
+    if(x.deleted) return false;
+    if(tab === 'contacts') return (x.formType||'').toLowerCase() === 'contact';
+    return (x.formType||'').toLowerCase() === 'applicant';
+  });
+
+  const filtered = baseList.filter(item => {
+    const q = search.toLowerCase();
+    const name = (item.full_name||item.fullName||"").toLowerCase();
+    const hay = `${name} ${item.email||''} ${item.phone||''} ${item.service||''} ${item.education||''} ${item.position||''} ${item.district||''} ${item.message||''} ${item.interest||''}`.toLowerCase();
+    if(q && !hay.includes(q)) return false;
+    if(statusFilter !== 'all' && (item.status||'') !== statusFilter) return false;
+    if(filterType !== 'all'){
+      if(tab === 'contacts' && !(item.service||'').toLowerCase().includes(filterType.toLowerCase())) return false;
+      if(tab !== 'contacts' && tab !== 'trash' && (item.education||'') !== filterType) return false;
+    }
+    return true;
+  });
+
+  const totalPages = Math.ceil(filtered.length / perPage) || 1;
+  const safePage = Math.min(page, totalPages);
+  const paged = filtered.slice((safePage-1)*perPage, safePage*perPage);
+  const contactsCount = all.filter(x=>!x.deleted && x.formType==='contact').length;
+  const applicantsCount = all.filter(x=>!x.deleted && x.formType==='applicant').length;
+  const trashCount = all.filter(x=>x.deleted).length;
+  const hiredCount = all.filter(x=>!x.deleted && x.status==='Hired').length;
+    // ===== PART 3B - ADMIN ACTIONS: Status + Auto Reply + Edit + Trash + Bulk + Export =====
+
+  // Change status + open auto-reply box
+  const changeStatus = async (item, newStatus) => {
+    try {
+      await updateDoc(doc(db, SUBMISSIONS, item.id), { status: newStatus });
+      setAll(prev => prev.map(p => p.id === item.id ? { ...p, status: newStatus } : p));
+      setReplyStatus(newStatus);
+      setReplyItem({ ...item, status: newStatus });
+      setReplyText(getReplyTemplate(item, newStatus));
+    } catch(e){ alert("Status failed: " + e.message); }
+  };
+
+  // Send single reply - Email / WhatsApp / Copy
+  const sendReplyEmail = () => {
+    if(!replyItem) return;
+    const subj = replyItem.formType === 'applicant' ? `Pinnacle Security - Your Application Status: ${replyStatus}` : `Pinnacle Security - Your Request Status: ${replyStatus}`;
+    window.open(mailLink(replyItem.email, subj, replyText), '_blank');
+  };
+  const sendReplyWhatsApp = () => {
+    if(!replyItem) return;
+    window.open(waLink(replyItem.phone, replyText), '_blank');
+  };
+  const sendReplySMS = () => {
+    if(!replyItem) return;
+    window.open(`sms:${waPhone(replyItem.phone)}?body=${encodeURIComponent(replyText)}`, '_blank');
+  };
+
+  // Edit
+  const saveEdit = async (e) => {
+    e.preventDefault();
+    if(!editItem) return;
+    try {
+      const { id, _time, createdAt, ...rest } = editItem;
+      await updateDoc(doc(db, SUBMISSIONS, id), rest);
+      setAll(prev => prev.map(p => p.id === id ? { ...p, ...rest } : p));
+      setEditItem(null);
+      alert("✅ Saved!");
+    } catch(err){ alert("Edit failed: " + err.message); }
+  };
+
+  // Trash / Restore / Permanent Delete
+  const moveToTrash = async (id) => {
+    if(!window.confirm("Move to Trash? You can restore later.")) return;
+    await updateDoc(doc(db, SUBMISSIONS, id), { deleted: true, deletedAt: new Date().toISOString() });
+    setAll(prev => prev.map(p => p.id === id ? { ...p, deleted: true } : p));
+    setSelected(prev => prev.filter(x => x !== id));
+  };
+  const restoreItem = async (id) => {
+    await updateDoc(doc(db, SUBMISSIONS, id), { deleted: false });
+    setAll(prev => prev.map(p => p.id === id ? { ...p, deleted: false } : p));
+  };
+  const deleteForever = async (id) => {
+    if(!window.confirm("Delete FOREVER? Cannot restore.")) return;
     await deleteDoc(doc(db, SUBMISSIONS, id));
-    load();
-  }
+    setAll(prev => prev.filter(p => p.id !== id));
+  };
+
+  // Multi-select
+  const toggleSelect = (id) => {
+    setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+  const toggleSelectAll = () => {
+    if(selected.length === paged.length) setSelected([]);
+    else setSelected(paged.map(p => p.id));
+  };
+  const bulkTrash = async () => {
+    if(!selected.length) return alert("Select at least 1 first (tick checkbox)");
+    if(!window.confirm(`Move ${selected.length} to Trash?`)) return;
+    for(const id of selected){ await updateDoc(doc(db, SUBMISSIONS, id), { deleted: true }); }
+    setAll(prev => prev.map(p => selected.includes(p.id) ? { ...p, deleted: true } : p));
+    setSelected([]);
+  };
+  const bulkRestore = async () => {
+    if(!selected.length) return alert("Select at least 1");
+    for(const id of selected){ await updateDoc(doc(db, SUBMISSIONS, id), { deleted: false }); }
+    setAll(prev => prev.map(p => selected.includes(p.id) ? { ...p, deleted: false } : p));
+    setSelected([]);
+  };
+  const bulkDeleteForever = async () => {
+    if(!selected.length) return alert("Select at least 1");
+    if(!window.confirm(`Delete ${selected.length} FOREVER?`)) return;
+    for(const id of selected){ await deleteDoc(doc(db, SUBMISSIONS, id)); }
+    setAll(prev => prev.filter(p => !selected.includes(p.id)));
+    setSelected([]);
+  };
+
+  // Bulk Email / WhatsApp / SMS - uses selected or all filtered
+  const getBulkTargets = () => {
+    const list = selected.length ? filtered.filter(x => selected.includes(x.id)) : filtered;
+    return list;
+  };
+  const bulkEmail = () => {
+    const list = getBulkTargets();
+    if(!list.length) return alert("No one to email");
+    const emails = [...new Set(list.map(x => x.email).filter(Boolean))];
+    if(!emails.length) return alert("No emails found");
+    window.open(mailLink(emails, "Message from Pinnacle Security Ltd", bulkMsg || "Hello, this is Pinnacle Security Ltd. Thank you for contacting / applying to us. Call 0754 139726."), '_blank');
+  };
+  const bulkWhatsApp = () => {
+    const list = getBulkTargets();
+    if(!list.length) return alert("No one selected");
+    // WhatsApp only opens one by one - we open first 5, rest can be copied
+    if(!window.confirm(`This will open WhatsApp for ${list.length} people one by one (first one now). Continue?`)) return;
+    window.open(waLink(list[0].phone, bulkMsg || "Hello, this is Pinnacle Security Ltd. Thank you! Call 0754 139726."), '_blank');
+  };
+  const bulkSMS = () => {
+    const list = getBulkTargets();
+    if(!list.length) return alert("No one selected");
+    window.open(`sms:${waPhone(list[0].phone)}?body=${encodeURIComponent(bulkMsg || "Hello from Pinnacle Security Ltd")}`, '_blank');
+  };
+
+  // Export CSV / PDF
   const exportExcel = () => {
-    const data = tab==='contacts'? contacts : applicants;
+    const data = filtered;
     if (!data.length) return alert("No data");
-    const headers = Object.keys(data[0]).filter(h=>h!=="createdAt" && h!=="_time");
-    const csv = [headers.join(",")].concat(data.map(r=>headers.map(h=>`"${(r[h]||'').toString().replace(/"/g,'""')}"`).join(","))).join("\n");
+    const headers = ["Name","Email","Phone","Type","Service/Education","Position","District","Status","Message/Interest","Date"];
+    const rows = data.map(r => [
+      r.full_name||r.fullName||'', r.email||'', r.phone||'', r.formType||'', r.service||r.education||'', r.position||'', r.district||'', r.status||'', (r.message||r.interest||r.experience||'').replace(/\n/g,' '), new Date(r.createdAt||Date.now()).toLocaleString()
+    ]);
+    const csv = [headers.join(",")].concat(rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(","))).join("\n");
     const blob = new Blob([csv], {type:'text/csv'}); const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href=url; a.download=`pinnacle_${tab}.csv`; a.click();
-  }
-  const logout = () => { localStorage.removeItem("pinnacle_admin_token"); navigate("/admin-login"); }
+  };
+  const exportPDF = () => {
+    const data = filtered;
+    if(!data.length) return alert("No data to print");
+    const html = `<html><head><title>Pinnacle - ${tab}</title><style>body{font-family:Arial} table{width:100%;border-collapse:collapse} th,td{border:1px solid #333;padding:8px;font-size:12px} th{background:#0a1931;color:#ffcc00}</style></head><body><h2>PINNACLE SECURITY LTD - ${tab.toUpperCase()} (${data.length})</h2><p>Generated: ${new Date().toLocaleString()} | Control: 0754 139726</p><table><tr><th>#</th><th>Name</th><th>Phone</th><th>Email</th><th>Service / Position</th><th>Status</th><th>Date</th></tr>${data.map((r,i)=>`<tr><td>${i+1}</td><td>${r.full_name||r.fullName||''}</td><td>${r.phone||''}</td><td>${r.email||''}</td><td>${r.service||r.education||''} ${r.position||''}</td><td>${r.status||''}</td><td>${new Date(r.createdAt||Date.now()).toLocaleDateString()}</td></tr>`).join('')}</table></body></html>`;
+    const w = window.open('', '_blank'); w.document.write(html); w.document.close(); setTimeout(()=>w.print(), 500);
+  };
 
-  const filteredContacts = contacts.filter(c => {
-    const q = search.toLowerCase();
-    const matchSearch = (c.full_name||c.fullName||"").toLowerCase().includes(q) || (c.email||"").toLowerCase().includes(q) || (c.phone||"").toLowerCase().includes(q) || (c.service||"").toLowerCase().includes(q) || (c.message||"").toLowerCase().includes(q);
-    if (filterType==="all") return matchSearch;
-    return matchSearch && (c.service||"").toLowerCase().includes(filterType.toLowerCase());
-  });
-  const filteredApplicants = applicants.filter(a => {
-    const q = search.toLowerCase();
-    const matchSearch = (a.full_name||a.fullName||"").toLowerCase().includes(q) || (a.phone||"").toLowerCase().includes(q) || (a.email||"").toLowerCase().includes(q) || (a.education||"").toLowerCase().includes(q) || (a.position||"").toLowerCase().includes(q);
-    if (filterType==="all") return matchSearch;
-    return matchSearch && (a.education||"").toLowerCase() === filterType.toLowerCase();
-  });
-  const currentList = tab==="contacts"? filteredContacts : filteredApplicants;
-  const totalPages = Math.ceil(currentList.length / perPage) || 1;
-  const paged = currentList.slice((page-1)*perPage, page*perPage);
+  const statusColor = (s) => {
+    if(s==='Hired' || s==='Resolved') return {background:'#dcfce7', color:'#166534'};
+    if(s==='Rejected') return {background:'#fee2e2', color:'#991b1b'};
+    return {background:'#fef9c3', color:'#854d0e'};
+  };// PART 4A - Admin Actions
+  const changeStatus = async (item, newStatus) => {
+    try {
+      await updateDoc(doc(db, SUBMISSIONS, item.id), { status: newStatus });
+      setAll(p => p.map(x => x.id===item.id ? {...x, status:newStatus} : x));
+    } catch(e){ alert("Failed: "+e.message); }
+  };
+  const moveToTrash = async (item) => {
+    if(!window.confirm("Move to trash?")) return;
+    await updateDoc(doc(db, SUBMISSIONS, item.id), { deleted:true });
+    setAll(p => p.map(x=>x.id===item.id?{...x, deleted:true}:x));
+  };
+  const restoreItem = async (item) => {
+    await updateDoc(doc(db, SUBMISSIONS, item.id), { deleted:false });
+    setAll(p => p.map(x=>x.id===item.id?{...x, deleted:false}:x));
+  };
+  const deleteForever = async (item) => {
+    if(!window.confirm("Delete FOREVER?")) return;
+    await deleteDoc(doc(db, SUBMISSIONS, item.id));
+    setAll(p => p.filter(x=>x.id!==item.id));
+  };// PART 4B
+  const emptyTrash = async () => {
+    if(!window.confirm("Empty trash forever?")) return;
+    const trash = all.filter(x=>x.deleted);
+    for(const t of trash) await deleteDoc(doc(db, SUBMISSIONS, t.id));
+    setAll(p=>p.filter(x=>!x.deleted));
+  };
+  const toggleSelect = (id) => setSelected(p=> p.includes(id) ? p.filter(x=>x!==id) : [...p, id]);
+  const toggleAllPaged = () => {
+    const ids = paged.map(x=>x.id);
+    const allSel = ids.every(id=>selected.includes(id));
+    setSelected(p=> allSel ? p.filter(x=>!ids.includes(x)) : [...new Set([...p, ...ids])]);
+  };
+  const bulkDelete = async () => {
+    if(!selected.length) return alert("Select items first");
+    if(!window.confirm(`Move ${selected.length} to trash?`)) return;
+    for(const id of selected) await updateDoc(doc(db, SUBMISSIONS, id), { deleted:true });
+    setAll(p=>p.map(x=>selected.includes(x.id)?{...x, deleted:true}:x)); setSelected([]);
+  };// PART 4C
+  const bulkStatus = async (st) => {
+    if(!selected.length) return alert("Select items first");
+    for(const id of selected) await updateDoc(doc(db, SUBMISSIONS, id), { status:st });
+    setAll(p=>p.map(x=>selected.includes(x.id)?{...x, status:st}:x)); setSelected([]);
+  };
+  const saveEdit = async () => {
+    if(!editItem) return;
+    const {id, ...rest} = editItem; const clean = {...rest}; delete clean._time;
+    await updateDoc(doc(db, SUBMISSIONS, id), clean);
+    setAll(p=>p.map(x=>x.id===id?{...x, ...clean}:x)); setEditItem(null); alert("✅ Saved");
+  };
+  const openReply = (item) => {
+    setReplyItem(item); setReplyStatus(item.status||"Under Review");
+    setReplyText(getReplyTemplate(item, item.status||"Under Review"));
+  };
+  const sendReply = async (type) => {
+    if(!replyItem) return;
+    if(replyStatus !== replyItem.status) await changeStatus(replyItem, replyStatus);
+    const msg = replyText;
+    if(type==='whatsapp') window.open(waLink(replyItem.phone, msg), '_blank');
+    if(type==='email') window.open(mailLink([replyItem.email, 'hr@pinnaclegroup.co.ug'], `Pinnacle - ${replyItem.formType} - ${replyStatus}`, msg), '_blank');
+    if(type==='sms') window.open(`sms:${replyItem.phone}?body=${encodeURIComponent(msg)}`, '_blank');
+    setReplyItem(null);
+  };// PART 4D
+  const exportCSV = () => {
+    const rows = filtered.map(x=>[x.full_name||x.fullName||'', x.phone||'', x.email||'', x.status||'', x.position||x.service||'', new Date(x._time).toLocaleDateString()].join(','));
+    const blob = new Blob([["Name,Phone,Email,Status,Position/Service,Date"].concat(rows).join("\n")], {type:'text/csv'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='pinnacle.csv'; a.click();
+  };
+
+  if(!token) return null;
+  if(loading) return <div className="section"><h2>Loading admin...</h2></div>;
 
   return (
-    <div className="admin-page">
+    <div className="section admin-wrap">
       <div className="admin-top">
-        <h2>🔐 Admin</h2>
-        <div className="stats">
-          <span>📩 {contacts.length} Contacts</span>
-          <span>👮 {applicants.length} Applicants</span>
-          <span>Page {page}/{totalPages}</span>
+        <div><h2>📊 Admin Dashboard</h2><p>Applicants: {applicantsCount} | Contacts: {contactsCount} | Hired: {hiredCount} | Trash: {trashCount}</p></div>
+        <div style={{display:'flex', gap:'6px', flexWrap:'wrap'}}>
+          <select value={theme} onChange={e=>setTheme(e.target.value)}>{THEMES.map(t=><option key={t.id} value={t.id}>{t.label}</option>)}</select>
+          <button className="tab" onClick={load}>🔄 Refresh</button>
+          <button className="tab" onClick={exportCSV}>⬇ CSV</button>
+          <button className="tab" onClick={()=>window.print()}>🖨 Print / PDF</button>
+          <button className="tab" onClick={logout}>Logout</button>
+          <Link to="/" className="tab">← Website</Link>
         </div>
-        <div className="tabs">
-          <button onClick={()=>setTab("contacts")} className={tab==="contacts"?"tab on":"tab"}>Contacts</button>
-          <button onClick={()=>setTab("applicants")} className={tab==="applicants"?"tab on":"tab"}>Applicants</button>
-          <button onClick={exportExcel} className="tab white">📊 Export Excel</button>
-          <button onClick={logout} className="tab red">Logout</button>
+      </div>// PART 4E
+      <div className="tabs">
+        <button className={tab==='applicants'?'tab on':'tab'} onClick={()=>setTab('applicants')}>👮 Applicants ({applicantsCount})</button>
+        <button className={tab==='contacts'?'tab on':'tab'} onClick={()=>setTab('contacts')}>📩 Contacts ({contactsCount})</button>
+        <button className={tab==='trash'?'tab on':'tab'} onClick={()=>setTab('trash')}>🗑 Trash ({trashCount})</button>
+      </div>
+
+      <div className="filters">
+        <input placeholder="🔍 Search name, phone, email, district..." value={search} onChange={e=>setSearch(e.target.value)} style={{flex:2}} />
+        <select value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}><option value="all">All Status</option>{(tab==='contacts'?CONTACT_STATUS:APPLICANT_STATUS).map(s=><option key={s} value={s}>{s}</option>)}</select>
+        <select value={filterType} onChange={e=>setFilterType(e.target.value)}><option value="all">All Types</option>{tab==='contacts'?["Security Guard Service","Construction Security","CCTV Installation","Mobile Patrol","Event Security","Alarm System","VIP Protection","Cash Escort"].map(s=><option key={s} value={s}>{s}</option>):["P7","UCE","UACE","Diploma","Degree"].map(s=><option key={s} value={s}>{s}</option>)}</select>
+        <select value={perPage} onChange={e=>setPerPage(Number(e.target.value))}><option value={10}>10 / page</option><option value={20}>20 / page</option><option value={50}>50 / page</option></select>
+      </div>
+
+      {selected.length>0 && <div className="bulk-bar">✅ {selected.length} selected: <button onClick={()=>bulkStatus('Hired')}>Mark Hired</button><button onClick={()=>bulkStatus('Under Review')}>Mark Review</button><button onClick={()=>bulkStatus('Rejected')}>Mark Rejected</button><button onClick={bulkDelete}>🗑 Move to Trash</button><button onClick={()=>setSelected([])}>Clear</button></div>}
+      {tab==='trash' && trashCount>0 && <div style={{margin:'10px 0'}}><button className="tab" onClick={emptyTrash}>Empty Trash Forever</button></div>}
+      {error && <p style={{color:'red'}}>{error}</p>}// PART 4F
+      <div className="table-wrap"><table className="admin-table">
+        <thead><tr><th><input type="checkbox" checked={paged.length>0 && paged.every(x=>selected.includes(x.id))} onChange={toggleAllPaged}/></th><th>Name</th><th>Phone / Email</th><th>{tab==='contacts'?'Service':'Position / Edu'}</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+        <tbody>
+          {paged.length===0 && <tr><td colSpan="7" style={{textAlign:'center', padding:'20px'}}>No records. Try clear search.</td></tr>}
+          {paged.map(item=>(
+            <tr key={item.id}>
+              <td><input type="checkbox" checked={selected.includes(item.id)} onChange={()=>toggleSelect(item.id)}/></td>
+              <td><b>{item.full_name||item.fullName||'No Name'}</b><br/><small>{item.district||''} {item.experience?`• ${item.experience}`:''}</small></td>
+              <td><a href={`tel:${item.phone}`}>{item.phone||''}</a><br/><small>{item.email||''}</small></td>
+              <td>{tab==='contacts'?item.service:item.position}<br/><small>{tab!=='contacts'?item.education:''} {item.message?`• ${String(item.message).slice(0,60)}`:''} {item.interest?`• ${String(item.interest).slice(0,60)}`:''}</small></td>
+              <td><select value={item.status||'Under Review'} onChange={e=>changeStatus(item, e.target.value)} style={{padding:'6px', borderRadius:'6px', fontWeight:800}}>{(item.formType==='contact'?CONTACT_STATUS:APPLICANT_STATUS).map(s=><option key={s} value={s}>{s}</option>)}</select></td>
+              <td><small>{new Date(item._time||Date.now()).toLocaleDateString()}</small></td>
+              <td><div style={{display:'flex', gap:'4px', flexWrap:'wrap'}}>
+                <button className="mini" onClick={()=>openReply(item)}>💬 Reply</button>
+                <button className="mini" onClick={()=>setEditItem({...item})}>✏ Edit</button>
+                {item.deleted ? <><button className="mini" onClick={()=>restoreItem(item)}>↩ Restore</button><button className="mini danger" onClick={()=>deleteForever(item)}>Delete Forever</button></> : <button className="mini danger" onClick={()=>moveToTrash(item)}>🗑 Trash</button>}
+              </div></td>
+            </tr>
+          ))}
+        </tbody>
+      </table></div>
+
+      <div style={{display:'flex', justifyContent:'center', gap:'8px', marginTop:'14px', alignItems:'center'}}>
+        <button className="tab" disabled={safePage<=1} onClick={()=>setPage(safePage-1)}>← Prev</button>
+        <span>Page {safePage} / {totalPages} — {filtered.length} total</span>
+        <button className="tab" disabled={safePage>=totalPages} onClick={()=>setPage(safePage+1)}>Next →</button>
+      </div>// PART 4G
+      {editItem && <div className="modal"><div className="modal-box"><h3>✏ Edit Record</h3>
+        <label>Full Name</label><input value={editItem.full_name||editItem.fullName||''} onChange={e=>setEditItem({...editItem, full_name:e.target.value, fullName:e.target.value})}/>
+        <label>Phone</label><input value={editItem.phone||''} onChange={e=>setEditItem({...editItem, phone:e.target.value})}/>
+        <label>Email</label><input value={editItem.email||''} onChange={e=>setEditItem({...editItem, email:e.target.value})}/>
+        <label>District / Message</label><input value={editItem.district||editItem.message||''} onChange={e=>setEditItem({...editItem, district:e.target.value, message:e.target.value})}/>
+        <label>Status</label><select value={editItem.status} onChange={e=>setEditItem({...editItem, status:e.target.value})}>{(editItem.formType==='contact'?CONTACT_STATUS:APPLICANT_STATUS).map(s=><option key={s} value={s}>{s}</option>)}</select>
+        <div style={{display:'flex', gap:'8px', marginTop:'10px'}}><button className="big-btn" onClick={saveEdit}>Save</button><button className="tab" onClick={()=>setEditItem(null)}>Cancel</button></div>
+      </div></div>}
+
+      {replyItem && <div className="modal"><div className="modal-box"><h3>💬 Reply to {replyItem.full_name||replyItem.fullName}</h3>
+        <p><b>Phone:</b> {replyItem.phone} | <b>Email:</b> {replyItem.email}</p>
+        <label>Change Status</label><select value={replyStatus} onChange={e=>{setReplyStatus(e.target.value); setReplyText(getReplyTemplate(replyItem, e.target.value));}}>{(replyItem.formType==='contact'?CONTACT_STATUS:APPLICANT_STATUS).map(s=><option key={s} value={s}>{s}</option>)}</select>
+        <label>Message (you can edit)</label><textarea rows="10" value={replyText} onChange={e=>setReplyText(e.target.value)} style={{width:'100%'}}/>
+        <div style={{display:'flex', gap:'8px', flexWrap:'wrap', marginTop:'10px'}}>
+          <button className="big-btn" onClick={()=>sendReply('whatsapp')}>🟢 Send WhatsApp</button>
+          <button className="tab" onClick={()=>sendReply('email')}>📧 Send Email</button>
+          <button className="tab" onClick={()=>sendReply('sms')}>📱 Send SMS</button>
+          <button className="tab" onClick={()=>setReplyItem(null)}>Close</button>
         </div>
-      </div>
-      {loading && <p style={{textAlign:'center', padding:'20px', fontWeight:800}}>Loading from Firebase...</p>}
-      {error && <p style={{textAlign:'center', padding:'12px', background:'#fee2e2', borderRadius:'10px', color:'#b91c1c', fontWeight:800}}>{error}</p>}
-      <div className="filter-bar-visible">
-        <input className="search-input-visible" placeholder={tab==="contacts"?"🔍 Search by service, name, phone..." : "🔍 Search by education, name, phone..."} value={search} onChange={e=>setSearch(e.target.value)} />
-        <select className="dropdown-filter-visible" value={filterType} onChange={e=>setFilterType(e.target.value)}>
-          <option value="all">All {tab==="contacts"?"Services":"Education"}</option>
-          {tab==="contacts"? (<><option>Security Guard Service</option><option>Construction Security</option><option>CCTV Installation</option><option>Mobile Patrol</option><option>Event Security</option><option>Alarm System</option></>) : (<><option>P7</option><option>UCE</option><option>UACE</option><option>Diploma</option><option>Degree</option></>)}
-        </select>
-        <div className="filter-btns">
-          <button className="btn-yellow small" onClick={load}>🔄 Refresh</button>
-          <button className="btn-dark small" onClick={()=>setPage(p=>Math.max(1,p-1))}>‹ Prev</button>
-          <button className="btn-dark small" onClick={()=>setPage(p=>Math.min(totalPages,p+1))}>Next ›</button>
-        </div>
-      </div>
-      <div className="mobile-cards">
-        {paged.map((item,i)=>(
-          <div key={item.id || i} className="m-card">
-            <div className="m-head"><b>{item.full_name || item.fullName}</b><small>⏰ {new Date(item.createdAt||Date.now()).toLocaleString()}</small></div>
-            <div className="m-line">📧 {item.email || '-'} </div>
-            <div className="m-line">📞 {item.phone || '-'} </div>
-            <div className="m-tag"><span className="tag blue">{item.service || item.education || item.position || 'General'}</span></div>
-            <div className="m-msg">{(item.message||item.interest||item.experience||'').substring(0,120)}</div>
-            <div className="m-actions-3">
-              <a href={`tel:${item.phone}`} className="m-btn call">📞 Call</a>
-              <a href={`https://wa.me/${(item.phone||'').replace(/[^0-9]/g,'')}`} target="_blank" rel="noreferrer" className="m-btn wa">WhatsApp</a>
-              <button onClick={()=>handleDelete(item.id)} className="m-btn del">🗑️ Delete</button>
-            </div>
-          </div>
-        ))}
-        {!loading && paged.length===0 && <p className="no-data">No data found - try Refresh</p>}
-      </div>
-      <div className="table-card desktop-only">
-        <div className="scroll">
-          <table className="clear-table">
-            <thead><tr><th>#</th><th>Name</th><th>Contact Info</th><th>{tab==="contacts"?"Service":"Education / Position"}</th><th>Details</th><th> Time</th><th>Action</th></tr></thead>
-            <tbody>{paged.map((item,i)=>(
-              <tr key={item.id}><td>{(page-1)*perPage+i+1}</td><td><b>{item.full_name||item.fullName}</b></td><td>{item.email}<br/><small>{item.phone}</small></td><td><span className="tag blue">{item.service||item.education}</span><br/><small>{item.position||''}</small></td><td style={{maxWidth:'200px'}}><small>{(item.message||item.interest||item.experience||'').substring(0,100)}</small></td><td><small>{new Date(item.createdAt||Date.now()).toLocaleString()}</small></td><td><button onClick={()=>handleDelete(item.id)} className="del-btn">Delete</button></td></tr>
-            ))}</tbody>
-          </table>
-        </div>
-      </div>
+      </div></div>}
+    </div>
+  )
+}// PART 5A - Footer + App
+const Footer = () => (
+  <footer className="footer">
+    <div><h3>🛡️ PINNACLE SECURITY LTD</h3><p>Plot 442 & 443 Masajjagere, Off Kironde Road, Muyenga, Kampala<br/>📞 0754 139726 (24/7 Control Room) | 📧 hr@pinnaclegroup.co.ug</p><p>4.3★ Rated | 60+ Sites | 150+ Officers | URSB Licensed</p></div>
+    <div><h4>Quick Links</h4><Link to="/">Home</Link> | <Link to="/services">Services</Link> | <Link to="/join">Apply</Link> | <Link to="/contact">Contact</Link></div>
+    <div><h4>Services</h4><p>Guards • Construction • CCTV • Patrol • Events • Alarm • VIP • Cash Escort</p></div>
+    <p className="copy">© {new Date().getFullYear()} Pinnacle Security Ltd. All Rights Reserved. No Recruitment Fees. | Admin: /admin (Manager Only)</p>
+  </footer>
+)
+
+export default function App(){
+  const [theme, setTheme] = useState(localStorage.getItem('pinnacle_theme')||'gold');
+  useEffect(()=>{ localStorage.setItem('pinnacle_theme', theme); document.body.setAttribute('data-theme', theme); },[theme]);
+  useEffect(()=>{ document.body.setAttribute('data-theme', theme); },[]);
+  return (
+    <div className="app">
+      <style>{`// PART 5B
+      `}</style>
+      <Navbar/>
+      <div className="top-strip">🚨 24/7 Control Room: 0754 139726 | No Recruitment Fees — Never Pay To Apply | Now Hiring in Kampala, Jinja, Mbarara, Gulu</div>
+      <Routes>
+        <Route path="/" element={<><Hero/><TrustBar/><HomeServices/><Stats/><About/><Gallery/><Testimonials/><ContactCTA/></>}/>
+        <Route path="/services" element={<ServicesPage/>}/>
+        <Route path="/join" element={<JoinPage/>}/>
+        <Route path="/contact" element={<ContactPage/>}/>
+        <Route path="/admin" element={<Admin/>}/>
+        <Route path="*" element={<div className="section"><h2>Page not found</h2><Link to="/">Go Home</Link></div>}/>
+      </Routes>
+      <Footer/>
     </div>
   )
 }
-
-const ProtectedAdmin = () => {
-  const token = localStorage.getItem("pinnacle_admin_token");
-  if (token!== ADMIN_PASSWORD) return <Navigate to="/admin-login" replace />;
-  return <Admin />;
-}
-const Footer = () => <div className="footer">© 2026 Pinnacle Security Ltd ,All right reseserved</div>
-
-const App = () => (
-  <>
-    <style>{`
-      *{margin:0;padding:0;box-sizing:border-box} body{font-family:Arial,sans-serif; background:#f4f6f9; line-height:1.6; overflow-x:hidden}
-  .nav{background:#0a1931; padding:14px 15px; position:sticky; top:0; z-index:999}.nav-top{display:flex; justify-content:space-between; align-items:center}.logo{color:#ffcc00; font-weight:900; font-size:16px}.menu-btn{color:#fff; font-size:26px; cursor:pointer; display:none}.links{display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap}.links a{color:#fff; text-decoration:none; font-size:15px; font-weight:700; padding:8px 10px}.btn-yellow{background:#ffcc00!important; color:#0a1931!important; padding:10px 18px!important; border-radius:25px!important; font-weight:900!important; border:none; cursor:pointer; text-decoration:none; display:inline-block; font-size:14px}.btn-yellow.big{padding:14px 26px!important; font-size:16px}.btn-yellow.small{padding:10px 16px!important; font-size:13px}.btn-admin{background:#1e3a8a!important; color:#ffcc00!important; border:2px solid #ffcc00!important; padding:8px 16px!important; border-radius:25px!important; font-weight:900!important; text-decoration:none; font-size:14px}.btn-dark{background:#0a1931; color:#ffcc00; border:none; padding:12px 18px; border-radius:10px; font-weight:800; cursor:pointer; font-size:13px}.btn-dark.small{padding:10px 14px}.hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:35px 15px; text-align:center; border-radius:0 0 20px 20px}.hero h1{color:#ffcc00; font-size:22px; margin-bottom:10px; line-height:1.3}.hero p{font-size:15px}.dots{margin:12px 0}.dot{width:10px; height:10px; background:#555; border-radius:50%; display:inline-block; margin:0 5px; cursor:pointer}.dot.on{background:#ffcc00}.section{padding:18px 12px; max-width:1250px; margin:auto}.section h2{text-align:center; color:#0a1931; border-bottom:4px solid #ffcc00; padding-bottom:8px; margin-bottom:16px; font-size:22px}.card{background:#fff; padding:18px; border-radius:14px; margin-bottom:14px; box-shadow:0 4px 12px rgba(0,0,0,0.06); border-left:5px solid #0a1931; font-size:15px; line-height:1.7}.card.gold{border-left-color:#ffcc00; background:#fffbeb}.card.dark{background:linear-gradient(135deg,#1e293b,#0f172a); color:#fff; border-left-color:#ffcc00}.card h3{font-size:18px; margin-bottom:10px; color:#0a1931}.card.dark h3{color:#ffcc00}
-   .about-hero{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:22px; border-radius:16px; margin-bottom:16px; border:2px solid #ffcc00}.about-hero h3{color:#ffcc00; font-size:20px; margin-bottom:12px}.about-hero p{margin-bottom:10px; line-height:1.8}.about-grid{display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:16px}.about-card{text-align:center}.about-list{list-style:none; text-align:left; margin-top:10px}.about-list li{padding:4px 0; font-size:14px}
-   .service-box{background:#fff; border-radius:12px; margin-bottom:10px; box-shadow:0 2px 8px rgba(0,0,0,0.05); border-left:4px solid #0a1931; overflow:hidden}.service-head{display:flex; justify-content:space-between; align-items:center; padding:14px; cursor:pointer; background:#fff}.service-short{font-size:12px; color:#666; margin-top:3px}.expand-btn{background:#0a1931; color:#ffcc00; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:800}.service-body{background:#f8fafc; padding:14px; border-top:1px solid #e2e8f0}.service-body p{margin-bottom:8px; font-size:14px}
-   .memo{background:#fff; border-radius:16px; padding:20px; box-shadow:0 6px 20px rgba(0,0,0,0.08); border:3px solid #0a1931}.memo-head{background:#0a1931; color:#fff; padding:16px; border-radius:12px; margin:-20px -20px 20px -20px; text-align:center}.memo-head h2{color:#ffcc00; font-size:18px}.memo-head p{font-size:12px; margin-top:4px}.memo-body{line-height:1.7}.job-card{background:#f0f7ff; border-left:5px solid #1e40af; padding:16px; border-radius:12px; margin-bottom:14px}.job-card.gold{background:#fffbeb; border-left-color:#ffcc00}.job-card h3{color:#0a1931; font-size:16px; margin-bottom:8px}.job-card ul{margin-left:20px; margin-top:8px}.job-card li{font-size:13px; margin-bottom:4px}.general-recruit{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:18px; border-radius:14px; text-align:center; border:2px solid #ffcc00}.general-recruit h3{color:#ffcc00}.big-recruit-btn{display:block; background:#ffcc00; color:#0a1931; padding:16px; border-radius:12px; font-weight:900; text-decoration:none; margin-top:12px; font-size:16px}
-   .form-big{max-width:900px; margin:16px auto; background:#fff; padding:22px; border-radius:16px; display:flex; flex-direction:column; gap:14px; box-shadow:0 6px 20px rgba(0,0,0,0.08)}.form-big input,.form-big select,.form-big textarea{padding:14px; border:2px solid #0a1931; border-radius:10px; font-size:16px; width:100%; outline:none}.form-big label{font-size:13px; font-weight:800; color:#0a1931; margin-bottom:4px; display:block}.two-col{display:grid; grid-template-columns:1fr 1fr; gap:14px} @media(max-width:700px){.two-col{grid-template-columns:1fr}}.form-2col{display:grid; grid-template-columns:300px 1fr; gap:16px} @media(max-width:900px){.form-2col{grid-template-columns:1fr}}.big-btn{background:#0a1931; color:#ffcc00; padding:16px; border:none; border-radius:12px; font-weight:900; cursor:pointer; font-size:17px}.msg{padding:12px; background:#d4edda; border-radius:10px; font-size:14px; text-align:center; font-weight:700}
-   .admin-page{padding:10px; max-width:1300px; margin:auto}
-   .admin-top{background:linear-gradient(135deg,#0a1931,#1e3a8a); color:#fff; padding:16px; border-radius:16px; text-align:center; margin-bottom:10px; border:2px solid #ffcc00}.admin-top h2{color:#ffcc00; border:none; margin-bottom:6px; font-size:18px}.stats{display:flex; gap:8px; justify-content:center; margin:10px 0; flex-wrap:wrap}.stats span{background:rgba(255,204,0,0.15); border:1.5px solid #ffcc00; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:800; color:#ffcc00}.tabs{display:flex; gap:8px; justify-content:center; margin-top:10px; flex-wrap:wrap}.tab{padding:8px 16px; border-radius:20px; border:1.5px solid #ffcc00; background:transparent; color:#ffcc00; font-weight:800; font-size:12px; cursor:pointer}.tab.on{background:#ffcc00; color:#0a1931}.tab.white{background:#fff; color:#0a1931}.tab.red{border-color:#ff4444; color:#ff4444}
-   .filter-bar-visible{display:flex; gap:8px; margin-bottom:12px; background:#ffffff; padding:14px; border-radius:14px; flex-wrap:wrap; align-items:center; border:3px solid #0a1931; box-shadow:0 4px 12px rgba(0,0,0,0.1)}.search-input-visible{flex:1; padding:14px 16px; border-radius:10px; border:3px solid #0a1931; font-size:14px; min-width:200px; background:#ffffff; color:#0a1931; font-weight:800}.dropdown-filter-visible{padding:14px; border-radius:10px; border:3px solid #0a1931; font-size:13px; font-weight:800; background:#fffbeb; min-width:150px; color:#0a1931}.filter-btns{display:flex; gap:6px; flex-wrap:wrap}
-   .mobile-cards{display:flex; flex-direction:column; gap:10px}.m-card{background:#fff; border-radius:12px; padding:14px; box-shadow:0 2px 10px rgba(0,0,0,0.07); border-left:4px solid #ffcc00; border-top:2px solid #0a1931; border-right:2px solid #0a1931; border-bottom:2px solid #0a1931}.m-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:4px}.m-head b{font-size:14px; color:#0a1931}.m-head small{font-size:10px; color:#0a1931; background:#ffcc00; padding:4px 8px; border-radius:10px; font-weight:800}.m-line{font-size:12px; color:#334155; margin:2px 0; word-break:break-all}.m-tag{margin:6px 0}.m-msg{font-size:12px; color:#475569; background:#f8fafc; padding:8px; border-radius:8px; margin:6px 0; border:1px solid #cbd5e1}.m-actions-3{display:grid; grid-template-columns:1fr 1fr 0.8fr; gap:6px; margin-top:8px}.m-btn{text-align:center; padding:10px 8px; border-radius:8px; font-size:11px; font-weight:800; text-decoration:none; border:none; cursor:pointer}.m-btn.call{background:#0a1931; color:#ffcc00}.m-btn.wa{background:#22c55e; color:#fff}.m-btn.del{background:#fee2e2; color:#dc2626}
-   .table-card{background:#fff; border-radius:14px; padding:12px; box-shadow:0 4px 14px rgba(0,0,0,0.06); border:3px solid #0a1931}.scroll{overflow-x:auto}.clear-table{width:100%; border-collapse:collapse; font-size:13px; min-width:950px}.clear-table th{background:#0a1931; color:#ffcc00; padding:14px 10px; text-align:left; border:2px solid #0a1931}.clear-table td{padding:12px 10px; border:2px solid #94a3b8; vertical-align:top}.clear-table tr:nth-child(even){background:#f8fafc}.tag{padding:4px 10px; border-radius:12px; font-size:11px; font-weight:800}.tag.blue{background:#dbeafe; color:#1e40af}.del-btn{background:#e11d48; color:#fff; border:none; padding:7px 12px; border-radius:6px; cursor:pointer; font-weight:800; font-size:12px}.no-data{text-align:center; padding:20px; color:#888}
-   .desktop-only{display:none} @media(min-width:768px){.mobile-cards{display:none}.desktop-only{display:block}.about-grid{grid-template-columns:1fr 1fr 1fr}}
-   .footer{background:#0a1931; color:#aaa; text-align:center; padding:16px; font-size:11px; margin-top:20px; line-height:1.6} @media(max-width:850px){.menu-btn{display:block}.links{display:none; flex-direction:column; align-items:flex-start; padding-top:12px}.links.show{display:flex} }
-    `}</style>
-    <Navbar/>
-    <Routes>
-      <Route path="/" element={<Home/>}/>
-      <Route path="/about" element={<About/>}/>
-      <Route path="/services" element={<Services/>}/>
-      <Route path="/blog" element={<Blog/>}/>
-      <Route path="/contact" element={<Contact/>}/>
-      <Route path="/join" element={<Join/>}/>
-      <Route path="/admin-login" element={<AdminLogin/>}/>
-      <Route path="/admin" element={<ProtectedAdmin/>}/>
-    </Routes>
-    <Footer/>
-  </>
-)
-export default App
